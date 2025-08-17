@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Canvas as FabricCanvas, Circle, Rect, PencilBrush } from 'fabric';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Palette, Square, Circle as CircleIcon, Pencil, Eraser, Save, Trash2, Sparkles } from 'lucide-react';
@@ -22,6 +23,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
   const [saving, setSaving] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
+  const [userDescription, setUserDescription] = useState('');
   const [lastSavedDrawingId, setLastSavedDrawingId] = useState<string | null>(null);
   const { user } = useAuth();
 
@@ -199,8 +201,8 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
   };
 
   const handleEnhance = async () => {
-    if (!fabricCanvas || !lastSavedDrawingId || !enhancementPrompt.trim()) {
-      toast.error('Please save your drawing first and enter an enhancement prompt');
+    if (!fabricCanvas || !lastSavedDrawingId) {
+      toast.error('Please save your drawing first');
       return;
     }
 
@@ -219,6 +221,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
         body: {
           imageData: dataURL,
           prompt: enhancementPrompt,
+          userDescription: userDescription,
           drawingId: lastSavedDrawingId,
         },
       });
@@ -227,6 +230,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
 
       toast.success('Drawing enhanced successfully! Check the gallery to see both versions.');
       setEnhancementPrompt('');
+      setUserDescription('');
       setLastSavedDrawingId(null);
       onSaveSuccess(); // Refresh the gallery
     } catch (error) {
@@ -336,24 +340,37 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
           </div>
 
           {lastSavedDrawingId && (
-            <div className="flex gap-2 mb-4 p-4 bg-muted rounded-lg">
-              <div className="flex-1">
-                <Label htmlFor="enhancement-prompt">✨ Enhance with AI</Label>
-                <Input
-                  id="enhancement-prompt"
-                  placeholder="Describe how to enhance your drawing (e.g., 'make it a watercolor painting', 'turn into realistic portrait')"
-                  value={enhancementPrompt}
-                  onChange={(e) => setEnhancementPrompt(e.target.value)}
+            <div className="mb-4 p-4 bg-muted rounded-lg space-y-4">
+              <div>
+                <Label htmlFor="user-description">What did you draw?</Label>
+                <Textarea
+                  id="user-description"
+                  placeholder="Describe what you drew (e.g., 'a house with trees', 'a portrait of my friend', 'abstract shapes')"
+                  value={userDescription}
+                  onChange={(e) => setUserDescription(e.target.value)}
+                  className="mt-1"
                 />
               </div>
-              <Button
-                onClick={handleEnhance}
-                disabled={enhancing || !enhancementPrompt.trim()}
-                className="self-end bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-              >
-                <Sparkles className="h-4 w-4 mr-1" />
-                {enhancing ? 'Enhancing...' : 'Enhance'}
-              </Button>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Label htmlFor="enhancement-prompt">✨ Enhancement Style (optional)</Label>
+                  <Input
+                    id="enhancement-prompt"
+                    placeholder="Style enhancement (e.g., 'watercolor painting', 'realistic portrait', 'cartoon style')"
+                    value={enhancementPrompt}
+                    onChange={(e) => setEnhancementPrompt(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <Button
+                  onClick={handleEnhance}
+                  disabled={enhancing}
+                  className="self-end bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  {enhancing ? 'Enhancing...' : 'Enhance'}
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

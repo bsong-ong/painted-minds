@@ -14,11 +14,11 @@ serve(async (req) => {
   }
 
   try {
-    const { imageData, prompt, drawingId } = await req.json();
+    const { imageData, prompt, userDescription, drawingId } = await req.json();
     
-    if (!imageData || !prompt || !drawingId) {
+    if (!imageData || !drawingId) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: imageData, prompt, and drawingId are required' }),
+        JSON.stringify({ error: 'Missing required fields: imageData and drawingId are required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
@@ -28,7 +28,7 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not set');
     }
 
-    console.log('Analyzing and enhancing drawing with prompt:', prompt);
+    console.log('Analyzing and enhancing drawing with user description:', userDescription, 'and style prompt:', prompt);
 
     // First, use OpenAI Vision to analyze the drawing
     const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -45,7 +45,7 @@ serve(async (req) => {
             content: [
               {
                 type: 'text',
-                text: `Analyze this drawing and provide a detailed description. Focus on the shapes, objects, composition, and artistic elements. Then create a detailed prompt for generating a charming colored pencil drawing based on this analysis. Additional context: ${prompt}`
+                text: `Analyze this drawing and provide a detailed description. The user says they drew: "${userDescription || 'no description provided'}". Focus on the shapes, objects, composition, and artistic elements that relate to what the user intended. Then create a detailed prompt for generating a charming colored pencil drawing that enhances what the user actually drew. Additional style context: ${prompt || 'colored pencil style'}`
               },
               {
                 type: 'image_url',
@@ -70,8 +70,10 @@ serve(async (req) => {
     const description = visionData.choices[0].message.content;
     console.log('Drawing analysis completed:', description);
 
-    // Create enhanced prompt for Flux
-    const enhancedPrompt = `A charming colored pencil drawing, soft and artistic style, beautiful colors, hand-drawn aesthetic. ${description}. Warm and inviting art style, detailed but not overly complex, pleasant and appealing.`;
+    // Create enhanced prompt for Flux, prioritizing user intent
+    const userIntent = userDescription ? `The user intended to draw: ${userDescription}. ` : '';
+    const styleHint = prompt ? `Style: ${prompt}. ` : '';
+    const enhancedPrompt = `A charming colored pencil drawing, soft and artistic style, beautiful colors, hand-drawn aesthetic. ${userIntent}${styleHint}Based on the visual analysis: ${description}. Warm and inviting art style, detailed but not overly complex, pleasant and appealing.`;
 
     // Get Replicate API key
     const REPLICATE_API_KEY = Deno.env.get('REPLICATE_API_TOKEN');
