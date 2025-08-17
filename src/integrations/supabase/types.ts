@@ -70,6 +70,36 @@ export type Database = {
           },
         ]
       }
+      drawings: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          storage_path: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          storage_path: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          storage_path?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       journal_preferences: {
         Row: {
           created_at: string
