@@ -33,7 +33,7 @@ serve(async (req) => {
     // Create the enhanced prompt
     const enhancedPrompt = `Transform this simple sketch into a beautiful, detailed drawing. ${prompt}. Make it artistic and visually appealing while maintaining the core elements of the original sketch.`;
 
-    // Call OpenAI's image generation API with the sketch as reference
+    // Call OpenAI's image generation API
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -41,12 +41,11 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-image-1',
+        model: 'dall-e-3',
         prompt: enhancedPrompt,
         n: 1,
         size: '1024x1024',
-        quality: 'high',
-        output_format: 'png'
+        quality: 'hd'
       }),
     });
 
@@ -59,18 +58,16 @@ serve(async (req) => {
     const data = await response.json();
     console.log('OpenAI response received');
 
-    if (!data.data || !data.data[0] || !data.data[0].b64_json) {
+    if (!data.data || !data.data[0] || !data.data[0].url) {
       throw new Error('Invalid response from OpenAI API');
     }
 
-    // Get the base64 image data
-    const base64Image = data.data[0].b64_json;
+    // Get the image URL
+    const imageUrl = data.data[0].url;
     
-    // Convert base64 to blob
-    const imageBlob = new Blob(
-      [Uint8Array.from(atob(base64Image), c => c.charCodeAt(0))],
-      { type: 'image/png' }
-    );
+    // Fetch the image and convert to blob
+    const imageResponse = await fetch(imageUrl);
+    const imageBlob = await imageResponse.blob();
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
