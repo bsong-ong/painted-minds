@@ -31,16 +31,24 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
       backgroundColor: '#ffffff',
       // Enable touch events for mobile
       enableRetinaScaling: true,
-      allowTouchScrolling: false,
     });
 
     // Touch events are handled by default in Fabric.js v6
     
-    // Prevent default touch behaviors that interfere with drawing
+    // Add touch debugging
     const canvasElement = canvas.upperCanvasEl;
-    canvasElement.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
-    canvasElement.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-    canvasElement.addEventListener('touchend', (e) => e.preventDefault(), { passive: false });
+    
+    canvasElement.addEventListener('touchstart', (e) => {
+      console.log('Touch start detected:', e.touches.length);
+    });
+    
+    canvasElement.addEventListener('touchmove', (e) => {
+      console.log('Touch move detected');
+    });
+    
+    canvasElement.addEventListener('touchend', (e) => {
+      console.log('Touch end detected');
+    });
 
     // Don't set drawing mode here - let the tool useEffect handle it
     setFabricCanvas(canvas);
@@ -58,9 +66,6 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      canvasElement.removeEventListener('touchstart', (e) => e.preventDefault());
-      canvasElement.removeEventListener('touchmove', (e) => e.preventDefault());
-      canvasElement.removeEventListener('touchend', (e) => e.preventDefault());
       canvas.dispose();
     };
   }, []);
@@ -286,7 +291,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
       </Card>
 
       <div className="border border-border rounded-lg overflow-hidden bg-card">
-        <canvas ref={canvasRef} className="touch-none select-none" style={{ touchAction: 'none' }} />
+        <canvas ref={canvasRef} style={{ touchAction: 'none' }} />
       </div>
     </div>
   );
