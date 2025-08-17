@@ -203,7 +203,7 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
                     </div>
                     <CardContent className="p-4">
                       <h3 className="font-medium truncate mb-2">{drawing.title}</h3>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mb-2">
                         <Badge variant="secondary" className="text-xs">
                           {new Date(drawing.created_at).toLocaleDateString()}
                         </Badge>
@@ -213,6 +213,14 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
                           </Badge>
                         )}
                       </div>
+                      
+                      {/* Debug: Show Flux Dev prompt */}
+                      {drawing.enhancement_prompt && (
+                        <div className="mt-2 p-2 bg-muted rounded text-xs">
+                          <div className="font-medium text-muted-foreground mb-1">Flux Dev Prompt:</div>
+                          <div className="text-muted-foreground break-words">{drawing.enhancement_prompt}</div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
