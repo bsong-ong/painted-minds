@@ -28,42 +28,117 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not set');
     }
 
-    console.log('Enhancing drawing with prompt:', prompt);
+    console.log('Analyzing and enhancing drawing with prompt:', prompt);
 
-    // Create the enhanced prompt
-    const enhancedPrompt = `Transform this simple sketch into a beautiful, detailed drawing. ${prompt}. Make it artistic and visually appealing while maintaining the core elements of the original sketch.`;
-
-    // Call OpenAI's image generation API
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    // First, use OpenAI Vision to analyze the drawing
+    const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt: enhancedPrompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'hd'
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Analyze this drawing and provide a detailed description. Focus on the shapes, objects, composition, and artistic elements. Then create a detailed prompt for generating a charming colored pencil drawing based on this analysis. Additional context: ${prompt}`
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: imageData
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 500
       }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+    if (!visionResponse.ok) {
+      const errorData = await visionResponse.json();
+      console.error('OpenAI Vision API error:', errorData);
+      throw new Error(`OpenAI Vision API error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
-    const data = await response.json();
-    console.log('OpenAI response received');
+    const visionData = await visionResponse.json();
+    const description = visionData.choices[0].message.content;
+    console.log('Drawing analysis completed:', description);
 
-    if (!data.data || !data.data[0] || !data.data[0].url) {
-      throw new Error('Invalid response from OpenAI API');
+    // Create enhanced prompt for Flux
+    const enhancedPrompt = `A charming colored pencil drawing, soft and artistic style, beautiful colors, hand-drawn aesthetic. ${description}. Warm and inviting art style, detailed but not overly complex, pleasant and appealing.`;
+
+    // Get Replicate API key
+    const REPLICATE_API_KEY = Deno.env.get('REPLICATE_API_TOKEN');
+    if (!REPLICATE_API_KEY) {
+      throw new Error('REPLICATE_API_TOKEN is not set');
     }
 
-    // Get the image URL
-    const imageUrl = data.data[0].url;
+    // Generate image using Flux via Replicate
+    const fluxResponse = await fetch('https://api.replicate.com/v1/predictions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${REPLICATE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        version: "1b9ac57d2d4f36e12b9b6ba5fc83a13e96c70ecc9ef3c1c2bb6b2b9d3b9f1f4c",
+        input: {
+          prompt: enhancedPrompt,
+          num_inference_steps: 50,
+          guidance_scale: 7.5,
+          width: 1024,
+          height: 1024
+        }
+      }),
+    });
+
+    if (!fluxResponse.ok) {
+      const errorData = await fluxResponse.json();
+      console.error('Replicate API error:', errorData);
+      throw new Error(`Replicate API error: ${errorData.detail || 'Unknown error'}`);
+    }
+
+    const fluxData = await fluxResponse.json();
+    console.log('Flux generation started:', fluxData.id);
+
+    // Poll for completion
+    let imageUrl = null;
+    const maxAttempts = 30;
+    let attempts = 0;
+
+    while (attempts < maxAttempts && !imageUrl) {
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+      
+      const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${fluxData.id}`, {
+        headers: {
+          'Authorization': `Token ${REPLICATE_API_KEY}`,
+        },
+      });
+
+      if (statusResponse.ok) {
+        const statusData = await statusResponse.json();
+        console.log('Status check:', statusData.status);
+        
+        if (statusData.status === 'succeeded' && statusData.output) {
+          imageUrl = Array.isArray(statusData.output) ? statusData.output[0] : statusData.output;
+          break;
+        } else if (statusData.status === 'failed') {
+          throw new Error('Flux generation failed');
+        }
+      }
+      
+      attempts++;
+    }
+
+    if (!imageUrl) {
+      throw new Error('Flux generation timed out');
+    }
     
     // Fetch the image and convert to blob
     const imageResponse = await fetch(imageUrl);
