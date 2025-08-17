@@ -87,11 +87,12 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        version: "1b9ac57d2d4f36e12b9b6ba5fc83a13e96c70ecc9ef3c1c2bb6b2b9d3b9f1f4c",
+        version: "ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
         input: {
           prompt: enhancedPrompt,
-          num_inference_steps: 50,
-          guidance_scale: 7.5,
+          num_outputs: 1,
+          guidance_scale: 3.5,
+          num_inference_steps: 28,
           width: 1024,
           height: 1024
         }
