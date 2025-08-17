@@ -31,10 +31,17 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
       backgroundColor: '#ffffff',
     });
 
-    canvas.freeDrawingBrush.color = activeColor;
-    canvas.freeDrawingBrush.width = 3;
+    // Enable drawing mode first to ensure brush is available
+    canvas.isDrawingMode = true;
+    
+    // Now safely set brush properties with null check
+    if (canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.color = activeColor;
+      canvas.freeDrawingBrush.width = 3;
+    }
 
     setFabricCanvas(canvas);
+    toast.success('Canvas ready! Start drawing!');
     
     // Handle window resize
     const handleResize = () => {
@@ -50,7 +57,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
       window.removeEventListener('resize', handleResize);
       canvas.dispose();
     };
-  }, []);
+  }, [activeColor]);
 
   useEffect(() => {
     if (!fabricCanvas) return;
