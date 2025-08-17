@@ -31,15 +31,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
       backgroundColor: '#ffffff',
     });
 
-    // Enable drawing mode first to ensure brush is available
-    canvas.isDrawingMode = true;
-    
-    // Now safely set brush properties with null check
-    if (canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush.color = activeColor;
-      canvas.freeDrawingBrush.width = 3;
-    }
-
+    // Don't set drawing mode here - let the tool useEffect handle it
     setFabricCanvas(canvas);
     toast.success('Canvas ready! Start drawing!');
     
@@ -57,16 +49,19 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
       window.removeEventListener('resize', handleResize);
       canvas.dispose();
     };
-  }, [activeColor]);
+  }, []);
 
   useEffect(() => {
     if (!fabricCanvas) return;
 
+    console.log('Setting drawing mode:', activeTool, activeTool === 'draw' || activeTool === 'eraser');
     fabricCanvas.isDrawingMode = activeTool === 'draw' || activeTool === 'eraser';
     
-    if (fabricCanvas.freeDrawingBrush) {
+    // Ensure brush exists when in drawing mode
+    if (fabricCanvas.isDrawingMode && fabricCanvas.freeDrawingBrush) {
       fabricCanvas.freeDrawingBrush.color = activeTool === 'eraser' ? '#ffffff' : activeColor;
       fabricCanvas.freeDrawingBrush.width = activeTool === 'eraser' ? 20 : 3;
+      console.log('Brush configured:', fabricCanvas.freeDrawingBrush.color, fabricCanvas.freeDrawingBrush.width);
     }
   }, [activeTool, activeColor, fabricCanvas]);
 
