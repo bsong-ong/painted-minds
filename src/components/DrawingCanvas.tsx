@@ -57,12 +57,24 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
     console.log('Setting drawing mode:', activeTool, activeTool === 'draw' || activeTool === 'eraser');
     fabricCanvas.isDrawingMode = activeTool === 'draw' || activeTool === 'eraser';
     
-    // Ensure brush exists when in drawing mode
-    if (fabricCanvas.isDrawingMode && fabricCanvas.freeDrawingBrush) {
-      fabricCanvas.freeDrawingBrush.color = activeTool === 'eraser' ? '#ffffff' : activeColor;
-      fabricCanvas.freeDrawingBrush.width = activeTool === 'eraser' ? 20 : 3;
-      console.log('Brush configured:', fabricCanvas.freeDrawingBrush.color, fabricCanvas.freeDrawingBrush.width);
+    // Force brush initialization if in drawing mode
+    if (fabricCanvas.isDrawingMode) {
+      // Check if brush exists, if not, create it using the correct API
+      if (!fabricCanvas.freeDrawingBrush) {
+        console.log('Creating new brush');
+        fabricCanvas.freeDrawingBrush = new PencilBrush(fabricCanvas);
+      }
+      
+      if (fabricCanvas.freeDrawingBrush) {
+        fabricCanvas.freeDrawingBrush.color = activeTool === 'eraser' ? '#ffffff' : activeColor;
+        fabricCanvas.freeDrawingBrush.width = activeTool === 'eraser' ? 20 : 3;
+        console.log('Brush configured:', fabricCanvas.freeDrawingBrush.color, fabricCanvas.freeDrawingBrush.width);
+      } else {
+        console.error('Failed to create brush');
+      }
     }
+    
+    fabricCanvas.renderAll();
   }, [activeTool, activeColor, fabricCanvas]);
 
   const handleToolClick = (tool: typeof activeTool) => {
