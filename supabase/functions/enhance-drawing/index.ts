@@ -194,6 +194,7 @@ serve(async (req) => {
         enhanced_image_url: publicUrl,
         enhanced_storage_path: enhancedFileName,
         enhancement_prompt: prompt,
+        flux_prompt: enhancedPrompt,
         is_enhanced: true,
         updated_at: new Date().toISOString()
       })

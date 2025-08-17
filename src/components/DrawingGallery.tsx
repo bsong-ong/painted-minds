@@ -16,6 +16,7 @@ interface Drawing {
   enhanced_image_url?: string;
   enhanced_storage_path?: string;
   enhancement_prompt?: string;
+  flux_prompt?: string;
   is_enhanced: boolean;
 }
 
@@ -215,10 +216,12 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
                       </div>
                       
                       {/* Debug: Show Flux Dev prompt */}
-                      {drawing.enhancement_prompt && (
+                      {drawing.flux_prompt && (
                         <div className="mt-2 p-2 bg-muted rounded text-xs">
-                          <div className="font-medium text-muted-foreground mb-1">Flux Dev Prompt:</div>
-                          <div className="text-muted-foreground break-words">{drawing.enhancement_prompt}</div>
+                          <div className="font-medium text-muted-foreground mb-1">Full Flux Dev Prompt:</div>
+                          <div className="text-muted-foreground break-words whitespace-pre-wrap max-h-32 overflow-y-auto">
+                            {drawing.flux_prompt}
+                          </div>
                         </div>
                       )}
                     </CardContent>

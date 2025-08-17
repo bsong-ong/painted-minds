@@ -76,6 +76,7 @@ export type Database = {
           enhanced_image_url: string | null
           enhanced_storage_path: string | null
           enhancement_prompt: string | null
+          flux_prompt: string | null
           id: string
           image_url: string
           is_enhanced: boolean | null
@@ -89,6 +90,7 @@ export type Database = {
           enhanced_image_url?: string | null
           enhanced_storage_path?: string | null
           enhancement_prompt?: string | null
+          flux_prompt?: string | null
           id?: string
           image_url: string
           is_enhanced?: boolean | null
@@ -102,6 +104,7 @@ export type Database = {
           enhanced_image_url?: string | null
           enhanced_storage_path?: string | null
           enhancement_prompt?: string | null
+          flux_prompt?: string | null
           id?: string
           image_url?: string
           is_enhanced?: boolean | null
