@@ -77,12 +77,15 @@ export type Database = {
           enhanced_storage_path: string | null
           enhancement_prompt: string | null
           flux_prompt: string | null
+          gratitude_prompt: string | null
           id: string
           image_url: string
           is_enhanced: boolean | null
+          is_gratitude_entry: boolean | null
           storage_path: string
           title: string
           updated_at: string
+          user_description: string | null
           user_id: string
         }
         Insert: {
@@ -91,12 +94,15 @@ export type Database = {
           enhanced_storage_path?: string | null
           enhancement_prompt?: string | null
           flux_prompt?: string | null
+          gratitude_prompt?: string | null
           id?: string
           image_url: string
           is_enhanced?: boolean | null
+          is_gratitude_entry?: boolean | null
           storage_path: string
           title: string
           updated_at?: string
+          user_description?: string | null
           user_id: string
         }
         Update: {
@@ -105,13 +111,37 @@ export type Database = {
           enhanced_storage_path?: string | null
           enhancement_prompt?: string | null
           flux_prompt?: string | null
+          gratitude_prompt?: string | null
           id?: string
           image_url?: string
           is_enhanced?: boolean | null
+          is_gratitude_entry?: boolean | null
           storage_path?: string
           title?: string
           updated_at?: string
+          user_description?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      gratitude_prompts: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          prompt_text: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          prompt_text: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          prompt_text?: string
         }
         Relationships: []
       }
@@ -562,6 +592,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_entry_date: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_entry_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_entry_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       users: {
         Row: {

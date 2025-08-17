@@ -39,7 +39,9 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
         .from('drawings')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .eq('is_gratitude_entry', true)
+        .order('created_at', { ascending: false })
+        .limit(6);
 
       if (error) throw error;
 
