@@ -73,8 +73,12 @@ export type Database = {
       drawings: {
         Row: {
           created_at: string
+          enhanced_image_url: string | null
+          enhanced_storage_path: string | null
+          enhancement_prompt: string | null
           id: string
           image_url: string
+          is_enhanced: boolean | null
           storage_path: string
           title: string
           updated_at: string
@@ -82,8 +86,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          enhanced_image_url?: string | null
+          enhanced_storage_path?: string | null
+          enhancement_prompt?: string | null
           id?: string
           image_url: string
+          is_enhanced?: boolean | null
           storage_path: string
           title: string
           updated_at?: string
@@ -91,8 +99,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          enhanced_image_url?: string | null
+          enhanced_storage_path?: string | null
+          enhancement_prompt?: string | null
           id?: string
           image_url?: string
+          is_enhanced?: boolean | null
           storage_path?: string
           title?: string
           updated_at?: string

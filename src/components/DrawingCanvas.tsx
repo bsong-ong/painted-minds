@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Palette, Square, Circle as CircleIcon, Pencil, Eraser, Save, Trash2 } from 'lucide-react';
+import { Palette, Square, Circle as CircleIcon, Pencil, Eraser, Save, Trash2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +20,9 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
   const [activeTool, setActiveTool] = useState<'select' | 'draw' | 'rectangle' | 'circle' | 'eraser'>('draw');
   const [drawingTitle, setDrawingTitle] = useState('');
   const [saving, setSaving] = useState(false);
+  const [enhancing, setEnhancing] = useState(false);
+  const [enhancementPrompt, setEnhancementPrompt] = useState('');
+  const [lastSavedDrawingId, setLastSavedDrawingId] = useState<string | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -167,16 +170,21 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
         .getPublicUrl(fileName);
 
       // Save drawing metadata to database
-      const { error: dbError } = await supabase
+      const { data: drawingData, error: dbError } = await supabase
         .from('drawings')
         .insert({
           user_id: user.id,
           title: drawingTitle,
           image_url: publicUrl,
           storage_path: fileName,
-        });
+        })
+        .select('id')
+        .single();
 
       if (dbError) throw dbError;
+
+      // Store the drawing ID for potential enhancement
+      setLastSavedDrawingId(drawingData.id);
 
       toast.success('Drawing saved successfully!');
       setDrawingTitle('');
@@ -187,6 +195,45 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
       toast.error('Failed to save drawing. Please try again.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleEnhance = async () => {
+    if (!fabricCanvas || !lastSavedDrawingId || !enhancementPrompt.trim()) {
+      toast.error('Please save your drawing first and enter an enhancement prompt');
+      return;
+    }
+
+    setEnhancing(true);
+
+    try {
+      // Get the current canvas as image data
+      const dataURL = fabricCanvas.toDataURL({
+        format: 'png',
+        quality: 0.9,
+        multiplier: 1,
+      });
+
+      // Call the enhance-drawing edge function
+      const { data, error } = await supabase.functions.invoke('enhance-drawing', {
+        body: {
+          imageData: dataURL,
+          prompt: enhancementPrompt,
+          drawingId: lastSavedDrawingId,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success('Drawing enhanced successfully! Check the gallery to see both versions.');
+      setEnhancementPrompt('');
+      setLastSavedDrawingId(null);
+      onSaveSuccess(); // Refresh the gallery
+    } catch (error) {
+      console.error('Error enhancing drawing:', error);
+      toast.error('Failed to enhance drawing. Please try again.');
+    } finally {
+      setEnhancing(false);
     }
   };
 
@@ -287,6 +334,28 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({ onSaveSuccess }) => {
               {saving ? 'Saving...' : 'Save'}
             </Button>
           </div>
+
+          {lastSavedDrawingId && (
+            <div className="flex gap-2 mb-4 p-4 bg-muted rounded-lg">
+              <div className="flex-1">
+                <Label htmlFor="enhancement-prompt">✨ Enhance with AI</Label>
+                <Input
+                  id="enhancement-prompt"
+                  placeholder="Describe how to enhance your drawing (e.g., 'make it a watercolor painting', 'turn into realistic portrait')"
+                  value={enhancementPrompt}
+                  onChange={(e) => setEnhancementPrompt(e.target.value)}
+                />
+              </div>
+              <Button
+                onClick={handleEnhance}
+                disabled={enhancing || !enhancementPrompt.trim()}
+                className="self-end bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              >
+                <Sparkles className="h-4 w-4 mr-1" />
+                {enhancing ? 'Enhancing...' : 'Enhance'}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
