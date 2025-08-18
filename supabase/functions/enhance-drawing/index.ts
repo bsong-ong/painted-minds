@@ -89,7 +89,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        version: "b0306d92aa025bb747dc74162f3c27d6ed83798e08e5f8977adf3d859d0536a3",
+        version: "black-forest-labs/flux-dev",
         input: {
           prompt: enhancedPrompt,
           num_outputs: 1,
