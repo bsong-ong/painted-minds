@@ -112,11 +112,11 @@ serve(async (req) => {
 
     // Poll for completion
     let imageUrl = null;
-    const maxAttempts = 30;
+    const maxAttempts = 60; // Increased from 30 to 60 attempts
     let attempts = 0;
 
     while (attempts < maxAttempts && !imageUrl) {
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
       
       const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${fluxData.id}`, {
         headers: {
