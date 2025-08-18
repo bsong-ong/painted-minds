@@ -52,50 +52,16 @@ const Drawing = () => {
       width: 600,
       height: 600,
       backgroundColor: '#ffffff',
-      enablePointerEvents: true,
-      allowTouchScrolling: false,
     });
 
-    // Initialize drawing brush
-    canvas.freeDrawingBrush = new PencilBrush(canvas);
+    // Initialize the freeDrawingBrush right after canvas creation
     canvas.freeDrawingBrush.color = activeColor;
     canvas.freeDrawingBrush.width = 3;
     canvas.isDrawingMode = true;
-    
-    // Add debugging and path preservation
+
+    // Simple path creation logging without manual intervention
     canvas.on('path:created', (e) => {
-      console.log('Path created and preserved on canvas');
-      console.log('Canvas objects before:', canvas.getObjects().length);
-      // Ensure the path stays on canvas
-      const path = e.path;
-      if (path) {
-        path.selectable = false; // Prevent accidental selection
-        console.log('Path object:', path);
-        console.log('Canvas objects after adding path:', canvas.getObjects().length);
-      }
-    });
-
-    canvas.on('object:added', (e) => {
-      console.log('Object added to canvas:', e.target);
-      console.log('Total objects now:', canvas.getObjects().length);
-    });
-
-    canvas.on('object:removed', (e) => {
-      console.log('Object REMOVED from canvas:', e.target);
-      console.log('Total objects now:', canvas.getObjects().length);
-    });
-
-    canvas.on('canvas:cleared', () => {
-      console.log('Canvas was CLEARED!');
-    });
-
-    // Add more debugging
-    canvas.on('mouse:down', () => {
-      console.log('Mouse down - drawing started');
-    });
-
-    canvas.on('mouse:up', () => {
-      console.log('Mouse up - drawing ended, canvas objects:', canvas.getObjects().length);
+      console.log('Path created - objects on canvas:', canvas.getObjects().length);
     });
 
     setFabricCanvas(canvas);
