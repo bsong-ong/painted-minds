@@ -29,7 +29,7 @@ const Journal = () => {
   const [loading, setLoading] = useState(true);
   const [daysToShow, setDaysToShow] = useState(7);
   const [showEnhanced, setShowEnhanced] = useState<{ [key: string]: boolean }>({});
-  const [globalEnhancedView, setGlobalEnhancedView] = useState(false);
+  const [globalEnhancedView, setGlobalEnhancedView] = useState(true);
 
   useEffect(() => {
     if (user) {

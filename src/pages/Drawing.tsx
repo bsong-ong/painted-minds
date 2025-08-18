@@ -394,9 +394,9 @@ const Drawing = () => {
               </div>
             </div>
 
-            <div className="border border-primary/30 rounded-lg overflow-hidden bg-card w-full max-w-full shadow-lg">
-              <div className="w-full overflow-hidden flex justify-center p-4">
-                <canvas ref={canvasRef} className="max-w-full h-auto block rounded border border-border/20" />
+            <div className="border-2 border-primary/50 rounded-lg overflow-hidden bg-card w-full max-w-full shadow-xl">
+              <div className="w-full overflow-hidden flex justify-center p-6 bg-gradient-to-br from-primary/5 to-accent/10">
+                <canvas ref={canvasRef} className="max-w-full h-auto block rounded-lg border-4 border-primary/30 shadow-lg bg-white" />
               </div>
             </div>
 

@@ -56,7 +56,26 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
 
   useEffect(() => {
     fetchDrawings();
+    // Default to showing enhanced versions
+    const initialShowEnhanced: { [key: string]: boolean } = {};
+    drawings.forEach(drawing => {
+      if (drawing.enhanced_image_url) {
+        initialShowEnhanced[drawing.id] = true;
+      }
+    });
+    setShowEnhanced(initialShowEnhanced);
   }, [user, refreshTrigger]);
+
+  useEffect(() => {
+    // Set enhanced view as default for drawings with enhanced versions
+    const initialShowEnhanced: { [key: string]: boolean } = {};
+    drawings.forEach(drawing => {
+      if (drawing.enhanced_image_url) {
+        initialShowEnhanced[drawing.id] = true;
+      }
+    });
+    setShowEnhanced(initialShowEnhanced);
+  }, [drawings]);
 
   const handleDelete = async (drawing: Drawing) => {
     if (!user) return;
