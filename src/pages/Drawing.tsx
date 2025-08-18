@@ -52,18 +52,28 @@ const Drawing = () => {
       width: 600,
       height: 600,
       backgroundColor: '#ffffff',
+      enablePointerEvents: true,
+      allowTouchScrolling: false,
     });
 
-    // Create the PencilBrush first, then assign it to canvas
-    const brush = new PencilBrush(canvas);
-    brush.color = activeColor;
-    brush.width = 3;
-    canvas.freeDrawingBrush = brush;
-    canvas.isDrawingMode = true;
-
-    // Simple path creation logging without manual intervention
-    canvas.on('path:created', (e) => {
-      console.log('Path created - objects on canvas:', canvas.getObjects().length);
+    canvas.freeDrawingBrush = new PencilBrush(canvas);
+    canvas.freeDrawingBrush.color = activeColor;
+    canvas.freeDrawingBrush.width = 3;
+    
+    // Ensure touch and mouse events work properly on all devices
+    canvas.isDrawingMode = true; // Start with drawing mode enabled
+    
+    // Add proper event handling for both mouse and touch
+    canvas.on('path:created', () => {
+      console.log('Path created on canvas');
+    });
+    
+    // Ensure pointer events are properly handled
+    canvas.on('mouse:down', (e) => {
+      if (activeTool === 'draw' || activeTool === 'erase') {
+        canvas.isDrawingMode = true;
+        canvas.freeDrawingBrush.color = activeTool === 'erase' ? '#ffffff' : activeColor;
+      }
     });
 
     setFabricCanvas(canvas);
@@ -104,28 +114,23 @@ const Drawing = () => {
   useEffect(() => {
     if (!fabricCanvas) return;
 
-    console.log('Updating tool and color:', activeTool, activeColor);
-    
-    // Set drawing mode based on tool
     fabricCanvas.isDrawingMode = activeTool === 'draw' || activeTool === 'erase';
     
-    // Update brush properties
     if (fabricCanvas.freeDrawingBrush) {
       fabricCanvas.freeDrawingBrush.color = activeTool === 'erase' ? '#ffffff' : activeColor;
       fabricCanvas.freeDrawingBrush.width = activeTool === 'erase' ? 10 : 3;
     }
     
-    // Don't call renderAll() here as it can interfere with drawing
+    // Force canvas refresh to ensure drawing mode is active
+    fabricCanvas.renderAll();
   }, [activeTool, activeColor, fabricCanvas]);
 
   const handleToolClick = (tool: typeof activeTool) => {
-    console.log('Tool clicked:', tool);
     setActiveTool(tool);
   };
 
   const handleClear = () => {
     if (!fabricCanvas) return;
-    console.log('Clearing canvas');
     fabricCanvas.clear();
     fabricCanvas.backgroundColor = '#ffffff';
     fabricCanvas.renderAll();
@@ -389,9 +394,9 @@ const Drawing = () => {
               </div>
             </div>
 
-            <div className="border-2 border-primary/50 rounded-lg overflow-hidden bg-card w-full max-w-full shadow-xl">
-              <div className="w-full overflow-hidden flex justify-center p-6 bg-gradient-to-br from-primary/5 to-accent/10">
-                <canvas ref={canvasRef} className="max-w-full h-auto block rounded-lg border-4 border-primary/30 shadow-lg bg-white" />
+            <div className="border border-primary/30 rounded-lg overflow-hidden bg-card w-full max-w-full shadow-lg">
+              <div className="w-full overflow-hidden flex justify-center p-4">
+                <canvas ref={canvasRef} className="max-w-full h-auto block rounded border border-border/20" />
               </div>
             </div>
 
