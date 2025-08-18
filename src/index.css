@@ -8,39 +8,39 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 340 100% 99%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 220 15% 97%;
+    --foreground: 220 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 15% 15%;
 
-    --primary: 338 76% 58%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 338 35% 65%;
+    --primary-foreground: 210 20% 98%;
 
-    --secondary: 340 100% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 220 15% 25%;
 
-    --muted: 340 50% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 15% 45%;
 
-    --accent: 338 76% 88%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 338 25% 85%;
+    --accent-foreground: 220 15% 25%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 50% 65%;
+    --destructive-foreground: 210 20% 98%;
 
-    --border: 340 30% 91.4%;
-    --input: 340 30% 94%;
-    --ring: 338 76% 58%;
+    --border: 220 15% 88%;
+    --input: 220 15% 92%;
+    --ring: 338 35% 65%;
 
-    /* Custom gratitude colors */
-    --gratitude-success: 142 71% 45%;
-    --gratitude-success-foreground: 355.7 100% 97.3%;
-    --gratitude-warm: 25 95% 53%;
-    --gratitude-warm-foreground: 210 40% 98%;
+    /* Custom gratitude colors - calmer versions */
+    --gratitude-success: 142 35% 55%;
+    --gratitude-success-foreground: 220 15% 98%;
+    --gratitude-warm: 25 45% 65%;
+    --gratitude-warm-foreground: 210 20% 98%;
 
     --radius: 0.5rem;
 
