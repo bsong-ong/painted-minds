@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { toast } from 'sonner';
 
 const Auth = () => {
@@ -13,6 +15,7 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,7 +33,7 @@ const Auth = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Successfully signed in!');
+      toast.success(t('successfullySignedIn'));
     }
     
     setLoading(false);
@@ -45,7 +48,7 @@ const Auth = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Check your email for the confirmation link!');
+      toast.success(t('checkEmailConfirmation'));
     }
     
     setLoading(false);
@@ -55,44 +58,47 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Drawing App</CardTitle>
+          <div className="flex justify-end mb-4">
+            <LanguageSwitcher />
+          </div>
+          <CardTitle className="text-2xl font-bold">{t('drawingApp')}</CardTitle>
           <CardDescription>
-            Sign in to save and view your drawings
+            {t('signInToSave')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">{t('signIn')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('signUp')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email">{t('email')}</Label>
                   <Input
                     id="signin-email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t('emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="signin-password">{t('password')}</Label>
                   <Input
                     id="signin-password"
                     type="password"
-                    placeholder="Your password"
+                    placeholder={t('passwordPlaceholder')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {loading ? t('signingIn') : t('signIn')}
                 </Button>
               </form>
             </TabsContent>
@@ -100,22 +106,22 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">{t('email')}</Label>
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t('emailPlaceholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password">{t('password')}</Label>
                   <Input
                     id="signup-password"
                     type="password"
-                    placeholder="Create a password"
+                    placeholder={t('createPasswordPlaceholder')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -123,7 +129,7 @@ const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Creating account...' : 'Sign Up'}
+                  {loading ? t('creatingAccount') : t('signUp')}
                 </Button>
               </form>
             </TabsContent>

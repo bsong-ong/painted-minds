@@ -7,11 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Sparkles, RefreshCw, Lightbulb, LogOut, Heart } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const TextEntry = () => {
   const { user, signOut, loading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [selectedPrompt, setSelectedPrompt] = useState('');
   const [customPrompt, setCustomPrompt] = useState('');
@@ -62,7 +65,7 @@ const TextEntry = () => {
   const handleNext = () => {
     const gratitudeText = selectedPrompt || customPrompt;
     if (!gratitudeText.trim()) {
-      toast.error('Please enter what you\'re grateful for first');
+      toast.error(t('pleaseEnterText'));
       return;
     }
     
@@ -80,7 +83,7 @@ const TextEntry = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-pulse">Loading...</div>
+          <div className="animate-pulse">{t('loading')}</div>
         </div>
       </div>
     );
@@ -97,15 +100,16 @@ const TextEntry = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">Gratitude Art Journal</h1>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">{t('gratitudeArtJournal')}</h1>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <LanguageSwitcher />
               <span className="text-sm text-muted-foreground hidden sm:block">
-                Welcome, {user.email}
+                {t('welcome')}, {user.email}
               </span>
               <Button variant="outline" size="sm" onClick={handleSignOut} className="w-full sm:w-auto">
                 <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+                {t('signOut')}
               </Button>
             </div>
           </div>
@@ -117,7 +121,7 @@ const TextEntry = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-center justify-center bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">
               <Lightbulb className="h-6 w-6 text-primary" />
-              What are you grateful for today?
+              {t('whatAreYouGratefulFor')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -133,7 +137,7 @@ const TextEntry = () => {
                 ) : (
                   <Sparkles className="h-4 w-4 mr-2" />
                 )}
-                Get AI Suggestions
+                {t('getRandomPrompt')}
               </Button>
             </div>
 
@@ -156,10 +160,10 @@ const TextEntry = () => {
             )}
 
             <div className="space-y-3">
-              <Label htmlFor="custom-prompt">Or write your own gratitude prompt:</Label>
+              <Label htmlFor="custom-prompt">{t('writeAboutWhatMakes')}</Label>
               <Input
                 id="custom-prompt"
-                placeholder="I'm grateful for..."
+                placeholder={t('writeAboutWhatMakes')}
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 className="text-base py-3"
@@ -173,7 +177,7 @@ const TextEntry = () => {
                 disabled={!selectedPrompt && !customPrompt.trim()}
                 className="bg-gradient-to-r from-primary to-gratitude-warm hover:from-primary/90 hover:to-gratitude-warm/90"
               >
-                Next: Draw Your Gratitude
+                {t('continueToDrawing')}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
