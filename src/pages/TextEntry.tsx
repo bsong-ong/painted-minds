@@ -91,13 +91,13 @@ const TextEntry = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-primary/10">
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold">Gratitude Art Journal</h1>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">Gratitude Art Journal</h1>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <span className="text-sm text-muted-foreground hidden sm:block">
@@ -113,10 +113,10 @@ const TextEntry = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card>
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-center justify-center">
-              <Lightbulb className="h-6 w-6" />
+            <CardTitle className="flex items-center gap-2 text-center justify-center bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">
+              <Lightbulb className="h-6 w-6 text-primary" />
               What are you grateful for today?
             </CardTitle>
           </CardHeader>
@@ -171,6 +171,7 @@ const TextEntry = () => {
                 onClick={handleNext} 
                 size="lg"
                 disabled={!selectedPrompt && !customPrompt.trim()}
+                className="bg-gradient-to-r from-primary to-gratitude-warm hover:from-primary/90 hover:to-gratitude-warm/90"
               >
                 Next: Draw Your Gratitude
                 <ArrowRight className="h-4 w-4 ml-2" />

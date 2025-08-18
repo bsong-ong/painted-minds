@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { Pencil, Eraser, Square, Circle as CircleIcon, Palette, Save, RefreshCw, ArrowLeft, Heart, LogOut } from 'lucide-react';
+import { Pencil, Eraser, Palette, Save, RefreshCw, ArrowLeft, Heart, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -16,22 +16,15 @@ const Drawing = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
   const [activeTool, setActiveTool] = useState<'select' | 'draw' | 'erase' | 'rectangle' | 'circle'>('draw');
-  const [activeColor, setActiveColor] = useState('#2563eb');
+  const [activeColor, setActiveColor] = useState('#000000');
   const [gratitudeText, setGratitudeText] = useState('');
   const [saving, setSaving] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
 
   const colors = [
-    '#2563eb', // blue
+    '#000000', // black
     '#dc2626', // red
     '#16a34a', // green
-    '#ca8a04', // yellow
-    '#9333ea', // purple
-    '#ea580c', // orange
-    '#0891b2', // cyan
-    '#be123c', // rose
-    '#374151', // gray
-    '#000000', // black
   ];
 
   useEffect(() => {
@@ -53,8 +46,8 @@ const Drawing = () => {
     if (!canvasRef.current) return;
 
     const canvas = new FabricCanvas(canvasRef.current, {
-      width: 800,
-      height: 400,
+      width: 600,
+      height: 600,
       backgroundColor: '#ffffff',
     });
 
@@ -68,25 +61,21 @@ const Drawing = () => {
       const container = canvasRef.current?.parentElement;
       if (container && canvas) {
         const containerRect = container.getBoundingClientRect();
-        const availableWidth = Math.max(containerRect.width - 16, 280);
-        const availableHeight = Math.min(window.innerHeight * 0.4, 400);
+        const availableWidth = Math.max(containerRect.width - 32, 280);
+        const maxSize = Math.min(availableWidth, window.innerHeight * 0.5, 600);
         
-        const scaleX = availableWidth / 800;
-        const scaleY = availableHeight / 400;
-        const scale = Math.min(scaleX, scaleY, 1);
-        
-        const scaledWidth = 800 * scale;
-        const scaledHeight = 400 * scale;
+        const scale = maxSize / 600;
+        const scaledSize = 600 * scale;
         
         canvas.setDimensions({
-          width: scaledWidth,
-          height: scaledHeight
+          width: scaledSize,
+          height: scaledSize
         });
         canvas.setZoom(scale);
         
         if (canvasRef.current) {
-          canvasRef.current.style.width = `${scaledWidth}px`;
-          canvasRef.current.style.height = `${scaledHeight}px`;
+          canvasRef.current.style.width = `${scaledSize}px`;
+          canvasRef.current.style.height = `${scaledSize}px`;
           canvasRef.current.style.maxWidth = '100%';
         }
       }
@@ -114,25 +103,6 @@ const Drawing = () => {
 
   const handleToolClick = (tool: typeof activeTool) => {
     setActiveTool(tool);
-
-    if (tool === 'rectangle') {
-      const rect = new Rect({
-        left: 100,
-        top: 100,
-        fill: activeColor,
-        width: 100,
-        height: 100,
-      });
-      fabricCanvas?.add(rect);
-    } else if (tool === 'circle') {
-      const circle = new Circle({
-        left: 100,
-        top: 100,
-        fill: activeColor,
-        radius: 50,
-      });
-      fabricCanvas?.add(circle);
-    }
   };
 
   const handleClear = () => {
@@ -288,13 +258,13 @@ const Drawing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/20 to-primary/10">
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold">Gratitude Art Journal</h1>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">Gratitude Art Journal</h1>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <Button variant="outline" size="sm" onClick={() => navigate('/text-entry')} className="w-full sm:w-auto">
@@ -315,21 +285,21 @@ const Drawing = () => {
 
       <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full overflow-hidden">
         {/* Gratitude Prompt Display */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-gradient-to-r from-primary/10 to-gratitude-warm/10 border-primary/20">
           <CardHeader>
-            <CardTitle className="text-center">Draw your gratitude:</CardTitle>
+            <CardTitle className="text-center bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">Draw your gratitude:</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center text-lg font-medium text-muted-foreground italic">
+            <p className="text-center text-lg font-medium text-foreground italic">
               "{gratitudeText}"
             </p>
           </CardContent>
         </Card>
 
         {/* Drawing Tools */}
-        <Card>
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
-            <CardTitle>Express Your Gratitude Through Art</CardTitle>
+            <CardTitle className="bg-gradient-to-r from-primary to-gratitude-success bg-clip-text text-transparent">Express Your Gratitude Through Art</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 p-3 sm:p-6">
             <div className="flex flex-wrap items-center gap-2 overflow-x-auto">
@@ -348,22 +318,6 @@ const Drawing = () => {
               >
                 <Eraser className="h-4 w-4 mr-2" />
                 Eraser
-              </Button>
-              <Button
-                variant={activeTool === 'rectangle' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleToolClick('rectangle')}
-              >
-                <Square className="h-4 w-4 mr-2" />
-                Rectangle
-              </Button>
-              <Button
-                variant={activeTool === 'circle' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleToolClick('circle')}
-              >
-                <CircleIcon className="h-4 w-4 mr-2" />
-                Circle
               </Button>
               <Button variant="outline" size="sm" onClick={handleClear}>
                 Clear
@@ -391,14 +345,14 @@ const Drawing = () => {
               </div>
             </div>
 
-            <div className="border border-border rounded-lg overflow-hidden bg-card w-full max-w-full">
-              <div className="w-full overflow-hidden flex justify-center">
-                <canvas ref={canvasRef} className="max-w-full h-auto block" />
+            <div className="border border-primary/30 rounded-lg overflow-hidden bg-card w-full max-w-full shadow-lg">
+              <div className="w-full overflow-hidden flex justify-center p-4">
+                <canvas ref={canvasRef} className="max-w-full h-auto block rounded border border-border/20" />
               </div>
             </div>
 
             <div className="flex justify-center pt-4">
-              <Button onClick={handleSave} disabled={saving || enhancing} size="lg">
+              <Button onClick={handleSave} disabled={saving || enhancing} size="lg" className="bg-gradient-to-r from-primary to-gratitude-warm hover:from-primary/90 hover:to-gratitude-warm/90">
                 {saving || enhancing ? (
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 ) : (

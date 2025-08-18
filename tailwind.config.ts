@@ -52,6 +52,14 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				'gratitude-success': {
+					DEFAULT: 'hsl(var(--gratitude-success))',
+					foreground: 'hsl(var(--gratitude-success-foreground))'
+				},
+				'gratitude-warm': {
+					DEFAULT: 'hsl(var(--gratitude-warm))',
+					foreground: 'hsl(var(--gratitude-warm-foreground))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
