@@ -60,20 +60,14 @@ const Drawing = () => {
     canvas.freeDrawingBrush.color = activeColor;
     canvas.freeDrawingBrush.width = 3;
     
-    // Ensure touch and mouse events work properly on all devices
-    canvas.isDrawingMode = true; // Start with drawing mode enabled
+    // Start with drawing mode enabled
+    canvas.isDrawingMode = true;
     
-    // Add proper event handling for both mouse and touch
-    canvas.on('path:created', () => {
+    // Add event handler to ensure paths are preserved
+    canvas.on('path:created', (e) => {
       console.log('Path created on canvas');
-    });
-    
-    // Ensure pointer events are properly handled
-    canvas.on('mouse:down', (e) => {
-      if (activeTool === 'draw' || activeTool === 'erase') {
-        canvas.isDrawingMode = true;
-        canvas.freeDrawingBrush.color = activeTool === 'erase' ? '#ffffff' : activeColor;
-      }
+      // Force canvas to render and preserve the path
+      canvas.renderAll();
     });
 
     setFabricCanvas(canvas);
