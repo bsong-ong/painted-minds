@@ -76,20 +76,20 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3">
-            <Card className="h-fit">
-              <CardHeader>
-                <CardTitle>Express Your Gratitude</CardTitle>
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full overflow-hidden">
+        <div className="grid lg:grid-cols-4 gap-4 sm:gap-8 w-full">
+          <div className="lg:col-span-3 w-full min-w-0">
+            <Card className="h-fit w-full">
+              <CardHeader className="px-3 sm:px-6">
+                <CardTitle className="text-lg sm:text-xl">Express Your Gratitude</CardTitle>
               </CardHeader>
-              <CardContent className="p-4">
+              <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
                 <GratitudeCanvas onSaveSuccess={handleSaveSuccess} />
               </CardContent>
             </Card>
           </div>
           
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 w-full min-w-0">
             <RewardsPanel />
           </div>
         </div>

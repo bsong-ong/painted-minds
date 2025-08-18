@@ -61,22 +61,35 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
     const handleResize = () => {
       const container = canvasRef.current?.parentElement;
       if (container && canvas) {
-        const containerWidth = container.clientWidth - 32; // Account for padding
-        const containerHeight = Math.min(window.innerHeight * 0.4, 400); // Limit to 40% of viewport height or 400px max
+        // Get the actual available width, accounting for all padding and margins
+        const containerRect = container.getBoundingClientRect();
+        const availableWidth = Math.max(containerRect.width - 16, 280); // Minimum 280px width
+        const availableHeight = Math.min(window.innerHeight * 0.35, 400); // Limit to 35% of viewport height
         
-        const scaleX = containerWidth / 800;
-        const scaleY = containerHeight / 400;
+        const scaleX = availableWidth / 800;
+        const scaleY = availableHeight / 400;
         const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond original size
         
+        const scaledWidth = 800 * scale;
+        const scaledHeight = 400 * scale;
+        
         canvas.setDimensions({
-          width: 800 * scale,
-          height: 400 * scale
+          width: scaledWidth,
+          height: scaledHeight
         });
         canvas.setZoom(scale);
+        
+        // Ensure the canvas element doesn't exceed container
+        if (canvasRef.current) {
+          canvasRef.current.style.width = `${scaledWidth}px`;
+          canvasRef.current.style.height = `${scaledHeight}px`;
+          canvasRef.current.style.maxWidth = '100%';
+        }
       }
     };
 
-    handleResize();
+    // Initial resize with slight delay to ensure DOM is ready
+    setTimeout(handleResize, 100);
     window.addEventListener('resize', handleResize);
 
     return () => {
@@ -313,7 +326,7 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
       {/* Gratitude Prompts Section */}
       <Card>
         <CardHeader>
@@ -374,8 +387,8 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
         <CardHeader>
           <CardTitle>Draw Your Gratitude</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
+        <CardContent className="space-y-4 p-3 sm:p-6">
+          <div className="flex flex-wrap items-center gap-2 overflow-x-auto">
             <Button
               variant={activeTool === 'draw' ? 'default' : 'outline'}
               size="sm"
@@ -434,8 +447,10 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
             </div>
           </div>
 
-          <div className="border border-border rounded-lg overflow-hidden bg-card w-full">
-            <canvas ref={canvasRef} className="w-full h-auto block" />
+          <div className="border border-border rounded-lg overflow-hidden bg-card w-full max-w-full">
+            <div className="w-full overflow-hidden flex justify-center">
+              <canvas ref={canvasRef} className="max-w-full h-auto block" />
+            </div>
           </div>
         </CardContent>
       </Card>
