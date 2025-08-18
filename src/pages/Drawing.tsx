@@ -54,9 +54,11 @@ const Drawing = () => {
       backgroundColor: '#ffffff',
     });
 
-    // Initialize the freeDrawingBrush right after canvas creation
-    canvas.freeDrawingBrush.color = activeColor;
-    canvas.freeDrawingBrush.width = 3;
+    // Create the PencilBrush first, then assign it to canvas
+    const brush = new PencilBrush(canvas);
+    brush.color = activeColor;
+    brush.width = 3;
+    canvas.freeDrawingBrush = brush;
     canvas.isDrawingMode = true;
 
     // Simple path creation logging without manual intervention
