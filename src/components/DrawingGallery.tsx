@@ -143,7 +143,9 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {drawings.map((drawing) => {
-              const isShowingEnhanced = showEnhanced[drawing.id] && drawing.enhanced_image_url;
+              const isShowingEnhanced = showEnhanced[drawing.id] !== undefined 
+                ? showEnhanced[drawing.id] && drawing.enhanced_image_url
+                : drawing.enhanced_image_url; // Default to enhanced if available
               const currentImageUrl = isShowingEnhanced ? drawing.enhanced_image_url! : drawing.image_url;
               
               return (

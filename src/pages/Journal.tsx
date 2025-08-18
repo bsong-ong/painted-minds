@@ -191,7 +191,10 @@ const Journal = () => {
         ) : (
           <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {drawings.map((drawing) => {
-              const showEnhancedForThis = globalEnhancedView || showEnhanced[drawing.id];
+              const showEnhancedForThis = globalEnhancedView || 
+                (showEnhanced[drawing.id] !== undefined 
+                  ? showEnhanced[drawing.id] 
+                  : !!drawing.enhanced_image_url); // Default to enhanced if available
               const currentImageUrl = showEnhancedForThis && drawing.enhanced_image_url
                 ? drawing.enhanced_image_url
                 : drawing.image_url;
