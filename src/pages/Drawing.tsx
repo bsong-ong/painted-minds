@@ -56,18 +56,31 @@ const Drawing = () => {
       allowTouchScrolling: false,
     });
 
+    // Initialize drawing brush
     canvas.freeDrawingBrush = new PencilBrush(canvas);
     canvas.freeDrawingBrush.color = activeColor;
     canvas.freeDrawingBrush.width = 3;
-    
-    // Start with drawing mode enabled
     canvas.isDrawingMode = true;
     
-    // Add event handler to ensure paths are preserved
+    // Add debugging and path preservation
     canvas.on('path:created', (e) => {
-      console.log('Path created on canvas');
-      // Force canvas to render and preserve the path
-      canvas.renderAll();
+      console.log('Path created and preserved on canvas');
+      // Ensure the path stays on canvas
+      const path = e.path;
+      if (path) {
+        path.selectable = false; // Prevent accidental selection
+        canvas.add(path);
+        canvas.renderAll();
+      }
+    });
+
+    // Add more debugging
+    canvas.on('mouse:down', () => {
+      console.log('Mouse down - drawing started');
+    });
+
+    canvas.on('mouse:up', () => {
+      console.log('Mouse up - drawing ended, canvas objects:', canvas.getObjects().length);
     });
 
     setFabricCanvas(canvas);
@@ -108,23 +121,28 @@ const Drawing = () => {
   useEffect(() => {
     if (!fabricCanvas) return;
 
+    console.log('Updating tool and color:', activeTool, activeColor);
+    
+    // Set drawing mode based on tool
     fabricCanvas.isDrawingMode = activeTool === 'draw' || activeTool === 'erase';
     
+    // Update brush properties
     if (fabricCanvas.freeDrawingBrush) {
       fabricCanvas.freeDrawingBrush.color = activeTool === 'erase' ? '#ffffff' : activeColor;
       fabricCanvas.freeDrawingBrush.width = activeTool === 'erase' ? 10 : 3;
     }
     
-    // Force canvas refresh to ensure drawing mode is active
-    fabricCanvas.renderAll();
+    // Don't call renderAll() here as it can interfere with drawing
   }, [activeTool, activeColor, fabricCanvas]);
 
   const handleToolClick = (tool: typeof activeTool) => {
+    console.log('Tool clicked:', tool);
     setActiveTool(tool);
   };
 
   const handleClear = () => {
     if (!fabricCanvas) return;
+    console.log('Clearing canvas');
     fabricCanvas.clear();
     fabricCanvas.backgroundColor = '#ffffff';
     fabricCanvas.renderAll();
