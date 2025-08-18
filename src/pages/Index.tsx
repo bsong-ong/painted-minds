@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, Heart, BookOpen } from 'lucide-react';
+import { LogOut, Heart, BookOpen, PenTool } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import GratitudeCanvas from '@/components/GratitudeCanvas';
 import DrawingGallery from '@/components/DrawingGallery';
 import RewardsPanel from '@/components/RewardsPanel';
 
@@ -29,6 +28,10 @@ const Index = () => {
 
   const handleSaveSuccess = () => {
     setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleStartGratitudeEntry = () => {
+    navigate('/text-entry');
   };
 
   const handleSignOut = async () => {
@@ -78,13 +81,30 @@ const Index = () => {
 
       <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full overflow-hidden">
         <div className="grid lg:grid-cols-4 gap-4 sm:gap-8 w-full">
-          <div className="lg:col-span-3 w-full min-w-0">
+          <div className="lg:col-span-3 w-full min-w-0 space-y-4">
+            {/* Start Gratitude Entry Card */}
             <Card className="h-fit w-full">
               <CardHeader className="px-3 sm:px-6">
-                <CardTitle className="text-lg sm:text-xl">Express Your Gratitude</CardTitle>
+                <CardTitle className="text-lg sm:text-xl text-center">Start Your Daily Gratitude Practice</CardTitle>
+              </CardHeader>
+              <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6 text-center">
+                <p className="text-muted-foreground mb-6">
+                  Take a moment to reflect on what you're grateful for today, then express it through art.
+                </p>
+                <Button onClick={handleStartGratitudeEntry} size="lg" className="w-full sm:w-auto">
+                  <PenTool className="h-4 w-4 mr-2" />
+                  Start Gratitude Entry
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Recent Drawings */}
+            <Card className="h-fit w-full">
+              <CardHeader className="px-3 sm:px-6">
+                <CardTitle className="text-lg sm:text-xl">Your Recent Gratitude Art</CardTitle>
               </CardHeader>
               <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
-                <GratitudeCanvas onSaveSuccess={handleSaveSuccess} />
+                <DrawingGallery refreshTrigger={refreshTrigger} />
               </CardContent>
             </Card>
           </div>

@@ -1,0 +1,186 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight, Sparkles, RefreshCw, Lightbulb, LogOut, Heart } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+const TextEntry = () => {
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+  const [selectedPrompt, setSelectedPrompt] = useState('');
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [aiHints, setAiHints] = useState<string[]>([]);
+  const [loadingHints, setLoadingHints] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  const generateAIHints = async () => {
+    try {
+      setLoadingHints(true);
+      
+      // Get recent drawings for context
+      const { data: recentDrawings } = await supabase
+        .from('drawings')
+        .select('gratitude_prompt, user_description')
+        .eq('user_id', user?.id)
+        .eq('is_gratitude_entry', true)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const recentEntries = recentDrawings?.map(d => 
+        d.gratitude_prompt || d.user_description
+      ).filter(Boolean) || [];
+
+      const { data, error } = await supabase.functions.invoke('generate-gratitude-hints', {
+        body: { 
+          mood: null,
+          recentEntries 
+        }
+      });
+
+      if (error) throw error;
+      setAiHints(data.prompts || []);
+      toast.success('AI hints generated!');
+    } catch (error) {
+      console.error('Error generating AI hints:', error);
+      toast.error('Failed to generate AI hints');
+    } finally {
+      setLoadingHints(false);
+    }
+  };
+
+  const handleNext = () => {
+    const gratitudeText = selectedPrompt || customPrompt;
+    if (!gratitudeText.trim()) {
+      toast.error('Please enter what you\'re grateful for first');
+      return;
+    }
+    
+    // Store the gratitude text in localStorage to pass to drawing page
+    localStorage.setItem('gratitude_text', gratitudeText);
+    navigate('/drawing');
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-pulse">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Heart className="h-6 w-6 text-primary" />
+              <h1 className="text-xl font-bold">Gratitude Art Journal</h1>
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <span className="text-sm text-muted-foreground hidden sm:block">
+                Welcome, {user.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={handleSignOut} className="w-full sm:w-auto">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 max-w-2xl">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-center justify-center">
+              <Lightbulb className="h-6 w-6" />
+              What are you grateful for today?
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={generateAIHints}
+                disabled={loadingHints}
+              >
+                {loadingHints ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-2" />
+                )}
+                Get AI Suggestions
+              </Button>
+            </div>
+
+            {aiHints.length > 0 && (
+              <div className="space-y-3">
+                <Label>AI Suggestions:</Label>
+                <div className="flex flex-wrap gap-2">
+                  {aiHints.map((hint, index) => (
+                    <Badge
+                      key={index}
+                      variant={selectedPrompt === hint ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setSelectedPrompt(selectedPrompt === hint ? '' : hint)}
+                    >
+                      {hint}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <Label htmlFor="custom-prompt">Or write your own gratitude prompt:</Label>
+              <Input
+                id="custom-prompt"
+                placeholder="I'm grateful for..."
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                className="text-base py-3"
+              />
+            </div>
+
+            <div className="flex justify-center pt-4">
+              <Button 
+                onClick={handleNext} 
+                size="lg"
+                disabled={!selectedPrompt && !customPrompt.trim()}
+              >
+                Next: Draw Your Gratitude
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+};
+
+export default TextEntry;
