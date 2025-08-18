@@ -105,6 +105,19 @@ const translations = {
     green: 'Green',
     clear: 'Clear',
     saveDrawing: 'Save Drawing',
+    drawYourGratitude: 'Draw your gratitude:',
+    expressYourGratitudeThrough: 'Express Your Gratitude Through Art',
+    pencil: 'Pencil',
+    eraser: 'Eraser',
+    colors: 'Colors',
+    saving: 'Saving...',
+    enhancing: 'Enhancing...',
+    saveAndEnhanceEntry: 'Save & Enhance Entry',
+    canvasCleared: 'Canvas cleared',
+    pleaseDrawSomething: 'Please draw something first',
+    gratitudeDrawingSaved: 'Gratitude drawing saved!',
+    gratitudeDrawingEnhanced: 'Your gratitude drawing is being enhanced! Check your journal.',
+    failedToSaveDrawing: 'Failed to save drawing',
     
     // Text entry page
     whatAreYouGratefulFor: 'What are you grateful for today?',
@@ -112,6 +125,9 @@ const translations = {
     getRandomPrompt: 'Get Random Prompt',
     continueToDrawing: 'Continue to Drawing',
     pleaseEnterText: 'Please enter some text before continuing.',
+    aiSuggestions: 'AI Suggestions:',
+    aiHintsGenerated: 'AI hints generated!',
+    failedToGenerateHints: 'Failed to generate AI hints',
     
     // Language switcher
     language: 'Language',
@@ -212,6 +228,19 @@ const translations = {
     green: 'เขียว',
     clear: 'ล้าง',
     saveDrawing: 'บันทึกภาพวาด',
+    drawYourGratitude: 'วาดความกตัญญูของคุณ:',
+    expressYourGratitudeThrough: 'แสดงความกตัญญูของคุณผ่านศิลปะ',
+    pencil: 'ดินสอ',
+    eraser: 'ยางลบ',
+    colors: 'สี',
+    saving: 'กำลังบันทึก...',
+    enhancing: 'กำลังปรับปรุง...',
+    saveAndEnhanceEntry: 'บันทึกและปรับปรุงรายการ',
+    canvasCleared: 'ล้างผ้าใบแล้ว',
+    pleaseDrawSomething: 'กรุณาวาดอะไรสักอย่างก่อน',
+    gratitudeDrawingSaved: 'บันทึกภาพวาดความกตัญญูแล้ว!',
+    gratitudeDrawingEnhanced: 'ภาพวาดความกตัญญูของคุณกำลังถูกปรับปรุง! ตรวจสอบไดอารี่ของคุณ',
+    failedToSaveDrawing: 'บันทึกภาพวาดไม่สำเร็จ',
     
     // Text entry page
     whatAreYouGratefulFor: 'วันนี้คุณรู้สึกขอบคุณอะไร?',
@@ -219,6 +248,9 @@ const translations = {
     getRandomPrompt: 'รับคำแนะนำแบบสุ่ม',
     continueToDrawing: 'ไปต่อที่การวาดรูป',
     pleaseEnterText: 'กรุณาใส่ข้อความก่อนดำเนินการต่อ',
+    aiSuggestions: 'คำแนะนำจาก AI:',
+    aiHintsGenerated: 'สร้างคำแนะนำจาก AI แล้ว!',
+    failedToGenerateHints: 'สร้างคำแนะนำจาก AI ไม่สำเร็จ',
     
     // Language switcher
     language: 'ภาษา',

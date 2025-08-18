@@ -53,10 +53,10 @@ const TextEntry = () => {
 
       if (error) throw error;
       setAiHints(data.prompts || []);
-      toast.success('AI hints generated!');
+      toast.success(t('aiHintsGenerated'));
     } catch (error) {
       console.error('Error generating AI hints:', error);
-      toast.error('Failed to generate AI hints');
+      toast.error(t('failedToGenerateHints'));
     } finally {
       setLoadingHints(false);
     }
@@ -100,7 +100,7 @@ const TextEntry = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">{t('gratitudeArtJournal')}</h1>
+              <h1 className="text-xl font-bold text-primary">{t('gratitudeArtJournal')}</h1>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <LanguageSwitcher />
@@ -119,7 +119,7 @@ const TextEntry = () => {
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-center justify-center bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">
+            <CardTitle className="flex items-center gap-2 text-center justify-center text-primary">
               <Lightbulb className="h-6 w-6 text-primary" />
               {t('whatAreYouGratefulFor')}
             </CardTitle>
@@ -143,7 +143,7 @@ const TextEntry = () => {
 
             {aiHints.length > 0 && (
               <div className="space-y-3">
-                <Label>AI Suggestions:</Label>
+                <Label>{t('aiSuggestions')}</Label>
                 <div className="flex flex-wrap gap-2">
                   {aiHints.map((hint, index) => (
                     <Badge
@@ -175,7 +175,7 @@ const TextEntry = () => {
                 onClick={handleNext} 
                 size="lg"
                 disabled={!selectedPrompt && !customPrompt.trim()}
-                className="bg-gradient-to-r from-primary to-gratitude-warm hover:from-primary/90 hover:to-gratitude-warm/90"
+                className="bg-primary hover:bg-primary/90"
               >
                 {t('continueToDrawing')}
                 <ArrowRight className="h-4 w-4 ml-2" />

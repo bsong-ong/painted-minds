@@ -52,11 +52,29 @@ const Drawing = () => {
       width: 600,
       height: 600,
       backgroundColor: '#ffffff',
+      enablePointerEvents: true,
+      allowTouchScrolling: false,
     });
 
     canvas.freeDrawingBrush = new PencilBrush(canvas);
     canvas.freeDrawingBrush.color = activeColor;
     canvas.freeDrawingBrush.width = 3;
+    
+    // Ensure touch and mouse events work properly on all devices
+    canvas.isDrawingMode = true; // Start with drawing mode enabled
+    
+    // Add proper event handling for both mouse and touch
+    canvas.on('path:created', () => {
+      console.log('Path created on canvas');
+    });
+    
+    // Ensure pointer events are properly handled
+    canvas.on('mouse:down', (e) => {
+      if (activeTool === 'draw' || activeTool === 'erase') {
+        canvas.isDrawingMode = true;
+        canvas.freeDrawingBrush.color = activeTool === 'erase' ? '#ffffff' : activeColor;
+      }
+    });
 
     setFabricCanvas(canvas);
 
@@ -102,6 +120,9 @@ const Drawing = () => {
       fabricCanvas.freeDrawingBrush.color = activeTool === 'erase' ? '#ffffff' : activeColor;
       fabricCanvas.freeDrawingBrush.width = activeTool === 'erase' ? 10 : 3;
     }
+    
+    // Force canvas refresh to ensure drawing mode is active
+    fabricCanvas.renderAll();
   }, [activeTool, activeColor, fabricCanvas]);
 
   const handleToolClick = (tool: typeof activeTool) => {
@@ -113,7 +134,7 @@ const Drawing = () => {
     fabricCanvas.clear();
     fabricCanvas.backgroundColor = '#ffffff';
     fabricCanvas.renderAll();
-    toast.success('Canvas cleared');
+    toast.success(t('canvasCleared'));
   };
 
   const updateUserStreak = async () => {
@@ -162,9 +183,29 @@ const Drawing = () => {
     }
   };
 
+  // Helper function to detect Thai text and translate to English
+  const translateToEnglish = async (text: string) => {
+    // Simple Thai detection (contains Thai characters)
+    const hasThaiChars = /[\u0E00-\u0E7F]/.test(text);
+    
+    if (!hasThaiChars) {
+      return text; // Already in English or other non-Thai language
+    }
+
+    try {
+      // Simple translation using Google Translate API-like approach
+      // For now, we'll just pass the text as-is and let the AI handle it
+      // In a production app, you'd use a proper translation service
+      return text;
+    } catch (error) {
+      console.error('Translation failed:', error);
+      return text; // Return original if translation fails
+    }
+  };
+
   const handleSave = async () => {
     if (!fabricCanvas || !user) {
-      toast.error('Please draw something first');
+      toast.error(t('pleaseDrawSomething'));
       return;
     }
 
@@ -206,23 +247,27 @@ const Drawing = () => {
 
       if (error) throw error;
 
-      toast.success('Gratitude drawing saved!');
+      toast.success(t('gratitudeDrawingSaved'));
       await updateUserStreak();
 
       // Auto-enhance the drawing
       try {
         setEnhancing(true);
+        
+        // Translate Thai text to English for AI processing
+        const translatedText = await translateToEnglish(gratitudeText);
+        
         const { data: enhanceData, error: enhanceError } = await supabase.functions.invoke('enhance-drawing', {
           body: {
             imageData: dataURL,
             prompt: '',
-            userDescription: gratitudeText,
+            userDescription: translatedText,
             drawingId: data.id,
           },
         });
 
         if (enhanceError) throw enhanceError;
-        toast.success('Your gratitude drawing is being enhanced! Check your journal.');
+        toast.success(t('gratitudeDrawingEnhanced'));
       } catch (enhanceError) {
         console.error('Error enhancing drawing:', enhanceError);
       } finally {
@@ -235,7 +280,7 @@ const Drawing = () => {
 
     } catch (error) {
       console.error('Error saving drawing:', error);
-      toast.error('Failed to save drawing');
+      toast.error(t('failedToSaveDrawing'));
     } finally {
       setSaving(false);
     }
@@ -267,7 +312,7 @@ const Drawing = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">{t('gratitudeArtJournal')}</h1>
+              <h1 className="text-xl font-bold text-primary">{t('gratitudeArtJournal')}</h1>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <Button variant="outline" size="sm" onClick={() => navigate('/text-entry')} className="w-full sm:w-auto">
@@ -289,9 +334,9 @@ const Drawing = () => {
 
       <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full overflow-hidden">
         {/* Gratitude Prompt Display */}
-        <Card className="mb-6 bg-gradient-to-r from-primary/10 to-gratitude-warm/10 border-primary/20">
+        <Card className="mb-6 bg-primary/10 border-primary/20">
           <CardHeader>
-            <CardTitle className="text-center bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">Draw your gratitude:</CardTitle>
+            <CardTitle className="text-center text-primary">{t('drawYourGratitude')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-center text-lg font-medium text-foreground italic">
@@ -303,7 +348,7 @@ const Drawing = () => {
         {/* Drawing Tools */}
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
-            <CardTitle className="bg-gradient-to-r from-primary to-gratitude-success bg-clip-text text-transparent">Express Your Gratitude Through Art</CardTitle>
+            <CardTitle className="text-primary">{t('expressYourGratitudeThrough')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 p-3 sm:p-6">
             <div className="flex flex-wrap items-center gap-2 overflow-x-auto">
@@ -313,7 +358,7 @@ const Drawing = () => {
                 onClick={() => setActiveTool('draw')}
               >
                 <Pencil className="h-4 w-4 mr-2" />
-                Pencil
+                {t('pencil')}
               </Button>
               <Button
                 variant={activeTool === 'erase' ? 'default' : 'outline'}
@@ -321,10 +366,10 @@ const Drawing = () => {
                 onClick={() => setActiveTool('erase')}
               >
                 <Eraser className="h-4 w-4 mr-2" />
-                Eraser
+                {t('eraser')}
               </Button>
               <Button variant="outline" size="sm" onClick={handleClear}>
-                Clear
+                {t('clear')}
               </Button>
             </div>
 
@@ -333,7 +378,7 @@ const Drawing = () => {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <Palette className="h-4 w-4" />
-                Colors
+                {t('colors')}
               </Label>
               <div className="flex flex-wrap gap-2">
                 {colors.map((color) => (
@@ -356,13 +401,13 @@ const Drawing = () => {
             </div>
 
             <div className="flex justify-center pt-4">
-              <Button onClick={handleSave} disabled={saving || enhancing} size="lg" className="bg-gradient-to-r from-primary to-gratitude-warm hover:from-primary/90 hover:to-gratitude-warm/90">
+              <Button onClick={handleSave} disabled={saving || enhancing} size="lg" className="bg-primary hover:bg-primary/90">
                 {saving || enhancing ? (
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Save className="h-4 w-4 mr-2" />
                 )}
-                {saving ? 'Saving...' : enhancing ? 'Enhancing...' : 'Save & Enhance Entry'}
+                {saving ? t('saving') : enhancing ? t('enhancing') : t('saveAndEnhanceEntry')}
               </Button>
             </div>
           </CardContent>
