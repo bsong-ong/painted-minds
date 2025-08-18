@@ -79,11 +79,11 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3">
-            <Card>
+            <Card className="h-fit">
               <CardHeader>
                 <CardTitle>Express Your Gratitude</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4">
                 <GratitudeCanvas onSaveSuccess={handleSaveSuccess} />
               </CardContent>
             </Card>

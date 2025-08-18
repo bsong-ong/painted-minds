@@ -48,7 +48,7 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
 
     const canvas = new FabricCanvas(canvasRef.current, {
       width: 800,
-      height: 600,
+      height: 400,
       backgroundColor: '#ffffff',
     });
 
@@ -61,13 +61,16 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
     const handleResize = () => {
       const container = canvasRef.current?.parentElement;
       if (container && canvas) {
-        const containerWidth = container.clientWidth;
-        const maxWidth = Math.min(containerWidth - 32, 800);
-        const scale = maxWidth / 800;
+        const containerWidth = container.clientWidth - 32; // Account for padding
+        const containerHeight = Math.min(window.innerHeight * 0.4, 400); // Limit to 40% of viewport height or 400px max
+        
+        const scaleX = containerWidth / 800;
+        const scaleY = containerHeight / 400;
+        const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond original size
         
         canvas.setDimensions({
           width: 800 * scale,
-          height: 600 * scale
+          height: 400 * scale
         });
         canvas.setZoom(scale);
       }
@@ -431,8 +434,8 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
             </div>
           </div>
 
-          <div className="border border-border rounded-lg overflow-hidden bg-card">
-            <canvas ref={canvasRef} className="max-w-full" />
+          <div className="border border-border rounded-lg overflow-hidden bg-card w-full">
+            <canvas ref={canvasRef} className="w-full h-auto block" />
           </div>
         </CardContent>
       </Card>
