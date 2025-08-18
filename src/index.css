@@ -8,39 +8,39 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 340 100% 99%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 120 20% 98%;
+    --foreground: 120 10% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 120 10% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 120 10% 15%;
 
-    --primary: 338 76% 58%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 140 60% 45%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 340 100% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 120 30% 92%;
+    --secondary-foreground: 120 10% 15%;
 
-    --muted: 340 50% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 120 20% 95%;
+    --muted-foreground: 120 8% 50%;
 
-    --accent: 338 76% 88%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 140 40% 85%;
+    --accent-foreground: 120 10% 15%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 340 30% 91.4%;
-    --input: 340 30% 94%;
-    --ring: 338 76% 58%;
+    --border: 120 20% 88%;
+    --input: 120 20% 92%;
+    --ring: 140 60% 45%;
 
     /* Custom gratitude colors */
-    --gratitude-success: 142 71% 45%;
-    --gratitude-success-foreground: 355.7 100% 97.3%;
-    --gratitude-warm: 25 95% 53%;
-    --gratitude-warm-foreground: 210 40% 98%;
+    --gratitude-success: 140 60% 45%;
+    --gratitude-success-foreground: 0 0% 98%;
+    --gratitude-warm: 140 40% 35%;
+    --gratitude-warm-foreground: 0 0% 98%;
 
     --radius: 0.5rem;
 
@@ -62,39 +62,39 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 120 15% 8%;
+    --foreground: 120 10% 90%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 120 15% 10%;
+    --card-foreground: 120 10% 90%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 120 15% 10%;
+    --popover-foreground: 120 10% 90%;
 
-    --primary: 338 76% 68%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 140 50% 55%;
+    --primary-foreground: 120 15% 8%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 120 15% 15%;
+    --secondary-foreground: 120 10% 90%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 120 15% 15%;
+    --muted-foreground: 120 10% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 120 15% 15%;
+    --accent-foreground: 120 10% 90%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 338 76% 68%;
+    --border: 120 15% 18%;
+    --input: 120 15% 18%;
+    --ring: 140 50% 55%;
 
     /* Custom gratitude colors dark mode */
-    --gratitude-success: 142 71% 55%;
-    --gratitude-success-foreground: 355.7 100% 97.3%;
-    --gratitude-warm: 25 95% 63%;
-    --gratitude-warm-foreground: 210 40% 98%;
+    --gratitude-success: 140 50% 55%;
+    --gratitude-success-foreground: 120 15% 8%;
+    --gratitude-warm: 140 30% 45%;
+    --gratitude-warm-foreground: 120 15% 8%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
