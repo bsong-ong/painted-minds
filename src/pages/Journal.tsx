@@ -135,9 +135,9 @@ const Journal = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="self-start">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Drawing
             </Button>
@@ -151,7 +151,7 @@ const Journal = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex items-center gap-2">
               <Label htmlFor="days">Show past</Label>
               <Input
@@ -189,7 +189,7 @@ const Journal = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {drawings.map((drawing) => {
               const showEnhancedForThis = globalEnhancedView || showEnhanced[drawing.id];
               const currentImageUrl = showEnhancedForThis && drawing.enhanced_image_url

@@ -21,8 +21,6 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
   const [activeTool, setActiveTool] = useState<'select' | 'draw' | 'erase' | 'rectangle' | 'circle'>('draw');
   const [activeColor, setActiveColor] = useState('#2563eb');
-  const [title, setTitle] = useState('');
-  const [userDescription, setUserDescription] = useState('');
   const [selectedPrompt, setSelectedPrompt] = useState('');
   const [customPrompt, setCustomPrompt] = useState('');
   const [aiHints, setAiHints] = useState<string[]>([]);
@@ -163,8 +161,8 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
   };
 
   const handleSave = async () => {
-    if (!fabricCanvas || !user || !title.trim()) {
-      toast.error('Please provide a title for your gratitude drawing');
+    if (!fabricCanvas || !user) {
+      toast.error('Please draw something first');
       return;
     }
 
@@ -197,11 +195,10 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
         .from('drawings')
         .insert({
           user_id: user.id,
-          title: title.trim(),
+          title: finalPrompt || 'My Gratitude Drawing',
           image_url: urlData.publicUrl,
           storage_path: filePath,
           gratitude_prompt: finalPrompt,
-          user_description: userDescription.trim() || null,
           is_gratitude_entry: true,
         })
         .select()
@@ -215,6 +212,9 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
 
       // Update user streak
       await updateUserStreak();
+
+      // Auto-enhance the drawing
+      await handleEnhance(data.id, dataURL, finalPrompt);
 
     } catch (error) {
       console.error('Error saving drawing:', error);
@@ -270,28 +270,30 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
     }
   };
 
-  const handleEnhance = async () => {
-    if (!fabricCanvas || !savedDrawingId) {
+  const handleEnhance = async (drawingId?: string, imageData?: string, enhancementPrompt?: string) => {
+    const targetDrawingId = drawingId || savedDrawingId;
+    
+    if (!fabricCanvas || !targetDrawingId) {
       toast.error('Please save your drawing first');
       return;
     }
 
     try {
       setEnhancing(true);
-      const dataURL = fabricCanvas.toDataURL({
+      const dataURL = imageData || fabricCanvas.toDataURL({
         format: 'png',
         quality: 0.8,
         multiplier: 1,
       });
 
-      const enhancementPrompt = userDescription || selectedPrompt || customPrompt || '';
+      const promptText = enhancementPrompt || selectedPrompt || customPrompt || '';
 
       const { data, error } = await supabase.functions.invoke('enhance-drawing', {
         body: {
           imageData: dataURL,
           prompt: '',
-          userDescription: enhancementPrompt,
-          drawingId: savedDrawingId,
+          userDescription: promptText,
+          drawingId: targetDrawingId,
         },
       });
 
@@ -435,58 +437,20 @@ const GratitudeCanvas: React.FC<GratitudeCanvasProps> = ({ onSaveSuccess }) => {
         </CardContent>
       </Card>
 
-      {/* Save and Enhance */}
+      {/* Save Entry */}
       <Card>
         <CardHeader>
           <CardTitle>Save Your Gratitude Entry</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title for your drawing</Label>
-            <Input
-              id="title"
-              placeholder="e.g., 'Morning coffee with my cat'"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Describe what this means to you (optional)</Label>
-            <Textarea
-              id="description"
-              placeholder="Write about why you're grateful for this..."
-              value={userDescription}
-              onChange={(e) => setUserDescription(e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Button onClick={handleSave} disabled={saving || !title.trim()}>
-              {saving ? (
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4 mr-2" />
-              )}
-              Save Entry
-            </Button>
-
-            {savedDrawingId && (
-              <Button 
-                variant="secondary" 
-                onClick={handleEnhance} 
-                disabled={enhancing}
-              >
-                {enhancing ? (
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4 mr-2" />
-                )}
-                Enhance with AI
-              </Button>
+        <CardContent>
+          <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
+            {saving || enhancing ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
             )}
-          </div>
+            {saving ? 'Saving...' : enhancing ? 'Enhancing...' : 'Save & Enhance Entry'}
+          </Button>
         </CardContent>
       </Card>
     </div>

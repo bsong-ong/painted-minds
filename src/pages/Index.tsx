@@ -53,30 +53,32 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Heart className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold">Gratitude Art Journal</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" onClick={() => navigate('/journal')}>
-              <BookOpen className="h-4 w-4 mr-2" />
-              View Journal
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Welcome, {user.email}
-            </span>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <Heart className="h-6 w-6 text-primary" />
+              <h1 className="text-xl font-bold">Gratitude Art Journal</h1>
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <Button variant="outline" size="sm" onClick={() => navigate('/journal')} className="w-full sm:w-auto">
+                <BookOpen className="h-4 w-4 mr-2" />
+                View Journal
+              </Button>
+              <span className="text-sm text-muted-foreground hidden sm:block">
+                Welcome, {user.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={handleSignOut} className="w-full sm:w-auto">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-8">
+          <div className="lg:col-span-3">
             <Card>
               <CardHeader>
                 <CardTitle>Express Your Gratitude</CardTitle>
@@ -85,8 +87,6 @@ const Index = () => {
                 <GratitudeCanvas onSaveSuccess={handleSaveSuccess} />
               </CardContent>
             </Card>
-
-            <DrawingGallery refreshTrigger={refreshTrigger} />
           </div>
           
           <div className="lg:col-span-1">
