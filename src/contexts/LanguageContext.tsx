@@ -38,7 +38,7 @@ const translations = {
     successfullySignedIn: 'Successfully signed in!',
     
     // Index page
-    gratitudeArtJournal: 'Gratitude Art Journal',
+    gratitudeArtJournal: 'Painted Smiles',
     viewJournal: 'View Journal',
     startYourDailyGratitude: 'Start Your Daily Gratitude Practice',
     takeAMomentToReflect: 'Take a moment to reflect on what you\'re grateful for today, then express it through art.',

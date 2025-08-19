@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Sparkles, Trophy, Palette } from 'lucide-react';
-import gratitudeHeroImage from '@/assets/gratitude-hero.jpg';
+import paintedSmilesHeroImage from '@/assets/painted-smiles-hero.jpg';
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -27,21 +27,21 @@ const Onboarding = () => {
             <div className="flex flex-col items-center justify-center mb-8">
               <div className="relative mb-8">
                 <img 
-                  src={gratitudeHeroImage} 
-                  alt="Gratitude and mindfulness illustration" 
+                  src={paintedSmilesHeroImage} 
+                  alt="Painted Smiles - Creative happiness and artistic expression" 
                   className="w-full max-w-2xl h-64 sm:h-80 object-cover rounded-2xl shadow-2xl"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-2xl" />
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-center">
                   <Heart className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 text-amber-300" />
                   <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold">
-                    Gratitude Art Journal
+                    Painted Smiles
                   </h1>
                 </div>
               </div>
               <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Transform your daily gratitude practice into beautiful visual memories with AI-enhanced artwork. 
-                Express your thankfulness through simple drawings and watch them bloom into stunning art.
+                Capture happiness through art and creativity. Express your emotions, memories, and joyful moments 
+                through simple drawings and watch them transform into beautiful, smile-inducing artwork.
               </p>
             </div>
           </div>
@@ -134,13 +134,13 @@ const Onboarding = () => {
           </Card>
 
           <div className="text-center space-y-6">
-            <Button 
-              onClick={handleGetStarted} 
-              size="lg" 
-              className="px-12 py-6 text-lg bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              Start Your Gratitude Journey
-            </Button>
+              <Button 
+                onClick={handleGetStarted} 
+                size="lg" 
+                className="px-12 py-6 text-lg bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+              >
+                Start Painting Smiles
+              </Button>
             <div>
               <Button 
                 variant="ghost" 
