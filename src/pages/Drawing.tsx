@@ -242,9 +242,9 @@ const Drawing = () => {
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/onboarding')}>
               <Heart className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold text-primary">{t('gratitudeArtJournal')}</h1>
+              <h1 className="text-xl font-bold text-primary hover:opacity-80 transition-opacity">{t('gratitudeArtJournal')}</h1>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <Button variant="outline" size="sm" onClick={() => navigate('/text-entry')} className="w-full sm:w-auto">

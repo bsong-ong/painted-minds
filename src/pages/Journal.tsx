@@ -141,9 +141,9 @@ const Journal = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Drawing
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/onboarding')}>
               <Calendar className="h-6 w-6 text-primary" />
-              <h1 className="text-xl font-bold">Gratitude Journal</h1>
+              <h1 className="text-xl font-bold hover:opacity-80 transition-opacity">Painted Smiles</h1>
             </div>
           </div>
         </div>
