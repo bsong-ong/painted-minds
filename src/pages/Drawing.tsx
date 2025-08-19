@@ -1,14 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Canvas as FabricCanvas, Circle, Rect, PencilBrush } from 'fabric';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { Pencil, Eraser, Palette, Save, RefreshCw, ArrowLeft, Heart, LogOut } from 'lucide-react';
+import { Save, RefreshCw, ArrowLeft, Heart, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { MobileCanvas, MobileCanvasRef } from '@/components/MobileCanvas';
+import { MobileToolbar } from '@/components/MobileToolbar';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -16,18 +17,25 @@ const Drawing = () => {
   const { user, signOut, loading } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
+  const canvasRef = useRef<MobileCanvasRef>(null);
   const [activeTool, setActiveTool] = useState<'select' | 'draw' | 'erase' | 'rectangle' | 'circle'>('draw');
   const [activeColor, setActiveColor] = useState('#000000');
   const [gratitudeText, setGratitudeText] = useState('');
   const [saving, setSaving] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
+  const isMobile = useIsMobile();
 
   const colors = [
     '#000000', // black
     '#dc2626', // red
     '#16a34a', // green
+    '#2563eb', // blue
+    '#ca8a04', // yellow
+    '#9333ea', // purple
+    '#ea580c', // orange
+    '#0891b2', // cyan
+    '#be123c', // rose
+    '#374151', // gray
   ];
 
   useEffect(() => {
@@ -45,96 +53,24 @@ const Drawing = () => {
     setGratitudeText(storedText);
   }, [user, loading, navigate]);
 
-  useEffect(() => {
-    if (!canvasRef.current) return;
+  // Canvas initialization is now handled by MobileCanvas component
 
-    const canvas = new FabricCanvas(canvasRef.current, {
-      width: 600,
-      height: 600,
-      backgroundColor: '#ffffff',
-      enablePointerEvents: true,
-      allowTouchScrolling: false,
-    });
-
-    canvas.freeDrawingBrush = new PencilBrush(canvas);
-    canvas.freeDrawingBrush.color = activeColor;
-    canvas.freeDrawingBrush.width = 3;
-    
-    // Ensure touch and mouse events work properly on all devices
-    canvas.isDrawingMode = true; // Start with drawing mode enabled
-    
-    // Add proper event handling for both mouse and touch
-    canvas.on('path:created', () => {
-      console.log('Path created on canvas');
-    });
-    
-    // Ensure pointer events are properly handled
-    canvas.on('mouse:down', (e) => {
-      if (activeTool === 'draw' || activeTool === 'erase') {
-        canvas.isDrawingMode = true;
-        canvas.freeDrawingBrush.color = activeTool === 'erase' ? '#ffffff' : activeColor;
-      }
-    });
-
-    setFabricCanvas(canvas);
-
-    const handleResize = () => {
-      const container = canvasRef.current?.parentElement;
-      if (container && canvas) {
-        const containerRect = container.getBoundingClientRect();
-        const availableWidth = Math.max(containerRect.width - 32, 280);
-        const maxSize = Math.min(availableWidth, window.innerHeight * 0.5, 600);
-        
-        const scale = maxSize / 600;
-        const scaledSize = 600 * scale;
-        
-        canvas.setDimensions({
-          width: scaledSize,
-          height: scaledSize
-        });
-        canvas.setZoom(scale);
-        
-        if (canvasRef.current) {
-          canvasRef.current.style.width = `${scaledSize}px`;
-          canvasRef.current.style.height = `${scaledSize}px`;
-          canvasRef.current.style.maxWidth = '100%';
-        }
-      }
-    };
-
-    setTimeout(handleResize, 100);
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      canvas.dispose();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!fabricCanvas) return;
-
-    fabricCanvas.isDrawingMode = activeTool === 'draw' || activeTool === 'erase';
-    
-    if (fabricCanvas.freeDrawingBrush) {
-      fabricCanvas.freeDrawingBrush.color = activeTool === 'erase' ? '#ffffff' : activeColor;
-      fabricCanvas.freeDrawingBrush.width = activeTool === 'erase' ? 10 : 3;
-    }
-    
-    // Force canvas refresh to ensure drawing mode is active
-    fabricCanvas.renderAll();
-  }, [activeTool, activeColor, fabricCanvas]);
+  // Tool and color changes are now handled by MobileCanvas component
 
   const handleToolClick = (tool: typeof activeTool) => {
     setActiveTool(tool);
   };
 
   const handleClear = () => {
-    if (!fabricCanvas) return;
-    fabricCanvas.clear();
-    fabricCanvas.backgroundColor = '#ffffff';
-    fabricCanvas.renderAll();
-    toast.success(t('canvasCleared'));
+    canvasRef.current?.clear();
+  };
+
+  const handleUndo = () => {
+    canvasRef.current?.undo();
+  };
+
+  const handleRedo = () => {
+    canvasRef.current?.redo();
   };
 
   const updateUserStreak = async () => {
@@ -204,7 +140,7 @@ const Drawing = () => {
   };
 
   const handleSave = async () => {
-    if (!fabricCanvas || !user) {
+    if (!canvasRef.current?.canvas || !user) {
       toast.error(t('pleaseDrawSomething'));
       return;
     }
@@ -212,11 +148,7 @@ const Drawing = () => {
     try {
       setSaving(true);
       
-      const dataURL = fabricCanvas.toDataURL({
-        format: 'png',
-        quality: 0.8,
-        multiplier: 1,
-      });
+      const dataURL = canvasRef.current.getDataURL();
 
       const blob = await fetch(dataURL).then(res => res.blob());
       const fileName = `gratitude-${Date.now()}.png`;
@@ -345,63 +277,43 @@ const Drawing = () => {
           </CardContent>
         </Card>
 
-        {/* Drawing Tools */}
+        {/* Drawing Canvas */}
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
             <CardTitle className="text-primary">{t('expressYourGratitudeThrough')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4 p-3 sm:p-6">
-            <div className="flex flex-wrap items-center gap-2 overflow-x-auto">
-              <Button
-                variant={activeTool === 'draw' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveTool('draw')}
-              >
-                <Pencil className="h-4 w-4 mr-2" />
-                {t('pencil')}
-              </Button>
-              <Button
-                variant={activeTool === 'erase' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveTool('erase')}
-              >
-                <Eraser className="h-4 w-4 mr-2" />
-                {t('eraser')}
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleClear}>
-                {t('clear')}
-              </Button>
-            </div>
+          <CardContent className={`space-y-4 p-3 sm:p-6 ${activeTool === 'draw' || activeTool === 'erase' ? 'drawing-mode' : ''}`}>
+            {/* Desktop toolbar or mobile canvas */}
+            {!isMobile && (
+              <>
+                <MobileToolbar
+                  activeTool={activeTool}
+                  activeColor={activeColor}
+                  colors={colors}
+                  onToolClick={handleToolClick}
+                  onColorChange={setActiveColor}
+                  onClear={handleClear}
+                  onUndo={handleUndo}
+                  onRedo={handleRedo}
+                />
+                <div className="my-4" />
+              </>
+            )}
 
-            <Separator />
-
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Palette className="h-4 w-4" />
-                {t('colors')}
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {colors.map((color) => (
-                  <button
-                    key={color}
-                    className={`w-8 h-8 rounded border-2 ${
-                      activeColor === color ? 'border-primary' : 'border-gray-300'
-                    }`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setActiveColor(color)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="border border-primary/30 rounded-lg overflow-hidden bg-card w-full max-w-full shadow-lg">
-              <div className="w-full overflow-hidden flex justify-center p-4">
-                <canvas ref={canvasRef} className="max-w-full h-auto block rounded border border-border/20" />
-              </div>
-            </div>
+            <MobileCanvas
+              ref={canvasRef}
+              activeTool={activeTool}
+              activeColor={activeColor}
+              onToolChange={setActiveTool}
+            />
 
             <div className="flex justify-center pt-4">
-              <Button onClick={handleSave} disabled={saving || enhancing} size="lg" className="bg-primary hover:bg-primary/90">
+              <Button 
+                onClick={handleSave} 
+                disabled={saving || enhancing} 
+                size={isMobile ? "lg" : "default"}
+                className="bg-primary hover:bg-primary/90 min-h-[48px] px-6"
+              >
                 {saving || enhancing ? (
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
@@ -412,6 +324,20 @@ const Drawing = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Mobile toolbar */}
+        {isMobile && (
+          <MobileToolbar
+            activeTool={activeTool}
+            activeColor={activeColor}
+            colors={colors}
+            onToolClick={handleToolClick}
+            onColorChange={setActiveColor}
+            onClear={handleClear}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+          />
+        )}
       </main>
     </div>
   );

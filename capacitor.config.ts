@@ -24,6 +24,16 @@ const config: CapacitorConfig = {
       layoutName: "launch_screen",
       useDialog: true,
     },
+    StatusBar: {
+      style: 'DARK',
+      backgroundColor: '#ffffff',
+    },
+    Keyboard: {
+      resize: 'body',
+      style: 'DARK',
+      resizeOnFullScreen: true,
+    },
+    Haptics: {},
   },
 };
 
