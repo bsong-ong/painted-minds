@@ -38,7 +38,13 @@ serve(async (req) => {
     ${recentEntries ? `Recent entries the user has done: ${recentEntries.join(', ')}` : ''}
     ${mood ? `User's current mood: ${mood}` : ''}
     
-    Generate 3 unique, personalized gratitude drawing prompts that are different from recent entries.`;
+    Return ONLY 3 short, specific gratitude prompts separated by newlines. Each should be 2-8 words.
+    Examples:
+    A warm cup of coffee
+    My pet's playful energy
+    A sunset through my window
+    
+    Do not include numbered lists, bullets, or introduction text.`;
 
     console.log('Generating gratitude hints with mood:', mood);
 
@@ -52,10 +58,10 @@ serve(async (req) => {
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: 'Generate 3 personalized gratitude drawing prompts for me.' }
+          { role: 'user', content: 'Generate 3 short gratitude prompts that are different from my recent entries.' }
         ],
         temperature: 0.7,
-        max_tokens: 300,
+        max_tokens: 150,
       }),
     });
 
@@ -66,13 +72,26 @@ serve(async (req) => {
     const data = await response.json();
     const generatedContent = data.choices[0].message.content;
 
-    // Parse the generated content into individual prompts
-    const prompts = generatedContent
+    console.log('Raw AI response:', generatedContent);
+
+    // Parse the generated content into individual prompts - more robust parsing
+    let prompts = generatedContent
       .split('\n')
-      .filter(line => line.trim() && !line.match(/^\d+\./))
-      .map(line => line.replace(/^[-•]\s*/, '').trim())
-      .filter(line => line.length > 10)
+      .map(line => line.trim())
+      .filter(line => line.length > 3 && line.length < 100) // Keep reasonable length prompts
+      .map(line => line.replace(/^\d+[\.\)]\s*/, '')) // Remove numbering
+      .map(line => line.replace(/^[-•*]\s*/, '')) // Remove bullets
+      .filter(line => !line.toLowerCase().includes('here are') && !line.toLowerCase().includes('prompts'))
       .slice(0, 3);
+
+    // Fallback prompts if parsing fails
+    if (prompts.length === 0) {
+      prompts = [
+        "A moment of peace today",
+        "Someone who made me smile",
+        "Something beautiful in nature"
+      ];
+    }
 
     console.log('Generated gratitude hints:', prompts);
 
