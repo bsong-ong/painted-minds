@@ -59,24 +59,21 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-rose-950/20">
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="container mx-auto px-4 py-2">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/onboarding')}>
               <Heart className="h-6 w-6 text-primary" />
               <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent hover:opacity-80 transition-opacity">{t('gratitudeArtJournal')}</h1>
             </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
-              <Button variant="outline" size="sm" onClick={() => navigate('/journal')} className="w-full sm:w-auto">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate('/journal')}>
                 <BookOpen className="h-4 w-4 mr-2" />
-                {t('viewJournal')}
+                <span className="hidden sm:inline">{t('viewJournal')}</span>
               </Button>
               <LanguageSwitcher />
-              <span className="text-sm text-muted-foreground hidden sm:block">
-                {t('welcome')}, {user.email}
-              </span>
-              <Button variant="outline" size="sm" onClick={handleSignOut} className="w-full sm:w-auto">
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4 mr-2" />
-                {t('signOut')}
+                <span className="hidden sm:inline">{t('signOut')}</span>
               </Button>
             </div>
           </div>
