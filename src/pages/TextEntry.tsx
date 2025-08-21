@@ -63,14 +63,13 @@ const TextEntry = () => {
   };
 
   const handleNext = () => {
-    const gratitudeText = selectedPrompt || customPrompt;
-    if (!gratitudeText.trim()) {
+    if (!customPrompt.trim()) {
       toast.error(t('pleaseEnterText'));
       return;
     }
     
     // Store the gratitude text in localStorage to pass to drawing page
-    localStorage.setItem('gratitude_text', gratitudeText);
+    localStorage.setItem('gratitude_text', customPrompt);
     navigate('/drawing');
   };
 
@@ -145,12 +144,16 @@ const TextEntry = () => {
               <div className="space-y-3">
                 <Label>{t('aiSuggestions')}</Label>
                 <div className="flex flex-wrap gap-2">
-                  {aiHints.map((hint, index) => (
+                  {aiHints.slice(0, 3).map((hint, index) => (
                     <Badge
                       key={index}
-                      variant={selectedPrompt === hint ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => setSelectedPrompt(selectedPrompt === hint ? '' : hint)}
+                      variant="outline"
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                      onClick={() => {
+                        const currentText = customPrompt.trim();
+                        const newText = currentText ? `${currentText} ${hint}` : hint;
+                        setCustomPrompt(newText);
+                      }}
                     >
                       {hint}
                     </Badge>
@@ -174,7 +177,7 @@ const TextEntry = () => {
               <Button 
                 onClick={handleNext} 
                 size="lg"
-                disabled={!selectedPrompt && !customPrompt.trim()}
+                disabled={!customPrompt.trim()}
                 className="bg-primary hover:bg-primary/90"
               >
                 {t('continueToDrawing')}
