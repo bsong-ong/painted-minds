@@ -219,15 +219,6 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
                         )}
                       </div>
                       
-                      {/* Debug: Show Flux Dev prompt */}
-                      {drawing.flux_prompt && (
-                        <div className="mt-2 p-2 bg-muted rounded text-xs">
-                          <div className="font-medium text-muted-foreground mb-1">Full Flux Dev Prompt:</div>
-                          <div className="text-muted-foreground break-words whitespace-pre-wrap max-h-32 overflow-y-auto">
-                            {drawing.flux_prompt}
-                          </div>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 </div>

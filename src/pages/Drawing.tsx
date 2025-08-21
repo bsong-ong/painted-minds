@@ -240,22 +240,19 @@ const Drawing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-rose-950/20">
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="container mx-auto px-4 py-2">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/onboarding')}>
               <Heart className="h-6 w-6 text-primary" />
               <h1 className="text-xl font-bold text-primary hover:opacity-80 transition-opacity">{t('gratitudeArtJournal')}</h1>
             </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
-              <Button variant="outline" size="sm" onClick={() => navigate('/text-entry')} className="w-full sm:w-auto">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate('/text-entry')}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t('back')}
               </Button>
               <LanguageSwitcher />
-              <span className="text-sm text-muted-foreground hidden sm:block">
-                {t('welcome')}, {user.email}
-              </span>
-              <Button variant="outline" size="sm" onClick={handleSignOut} className="w-full sm:w-auto">
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4 mr-2" />
                 {t('signOut')}
               </Button>
@@ -264,16 +261,16 @@ const Drawing = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full overflow-hidden">
+      <main className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 max-w-full overflow-hidden">
         {/* Gratitude Prompt Display */}
-        <Card className="mb-6 bg-primary/10 border-primary/20">
-          <CardHeader>
-            <CardTitle className="text-center text-primary">{t('drawYourGratitude')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center text-lg font-medium text-foreground italic">
-              "{gratitudeText}"
-            </p>
+        <Card className="mb-3 bg-primary/10 border-primary/20">
+          <CardContent className="py-3">
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-primary mb-2">{t('drawYourGratitude')}</h2>
+              <p className="text-base font-medium text-foreground italic">
+                "{gratitudeText}"
+              </p>
+            </div>
           </CardContent>
         </Card>
 
