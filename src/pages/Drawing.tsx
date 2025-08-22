@@ -276,9 +276,6 @@ const Drawing = () => {
 
         {/* Drawing Canvas */}
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-          <CardHeader>
-            <CardTitle className="text-primary">{t('expressYourGratitudeThrough')}</CardTitle>
-          </CardHeader>
           <CardContent className={`space-y-4 p-3 sm:p-6 ${activeTool === 'draw' || activeTool === 'erase' ? 'drawing-mode' : ''}`}>
             {/* Desktop toolbar or mobile canvas */}
             {!isMobile && (
