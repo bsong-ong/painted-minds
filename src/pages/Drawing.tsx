@@ -301,7 +301,7 @@ const Drawing = () => {
               onToolChange={setActiveTool}
             />
 
-            <div className={`flex justify-center pt-4 ${isMobile ? 'pb-24' : ''}`}>
+            <div className={`flex justify-center pt-4 ${isMobile ? 'pb-16' : ''}`}>
               <Button 
                 onClick={handleSave} 
                 disabled={saving || enhancing} 

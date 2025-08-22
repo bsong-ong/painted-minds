@@ -91,41 +91,41 @@ export const MobileToolbar: React.FC<MobileToolbarProps> = ({
     );
   }
 
-  // Mobile toolbar with drawer
+  // Mobile toolbar with drawer - more compact
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50">
-      <div className="flex items-center justify-between gap-2 p-3 bg-card rounded-xl border shadow-lg backdrop-blur-sm">
+    <div className="fixed bottom-2 left-2 right-2 z-50">
+      <div className="flex items-center justify-between gap-2 p-2 bg-card rounded-lg border shadow-lg backdrop-blur-sm">
         {/* Quick access tools */}
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <Button
             variant={activeTool === 'draw' ? 'default' : 'outline'}
             size="sm"
             onClick={() => onToolClick('draw')}
-            className="min-w-[48px] min-h-[48px] rounded-xl"
+            className="min-w-[40px] min-h-[40px] rounded-lg"
           >
-            <Pencil className="h-5 w-5" />
+            <Pencil className="h-4 w-4" />
           </Button>
           <Button
             variant={activeTool === 'erase' ? 'default' : 'outline'}
             size="sm"
             onClick={() => onToolClick('erase')}
-            className="min-w-[48px] min-h-[48px] rounded-xl"
+            className="min-w-[40px] min-h-[40px] rounded-lg"
           >
-            <Eraser className="h-5 w-5" />
+            <Eraser className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Color indicator */}
         <div 
-          className="w-10 h-10 rounded-full border-2 border-primary"
+          className="w-8 h-8 rounded-full border-2 border-primary"
           style={{ backgroundColor: activeColor }}
         />
 
         {/* More tools drawer */}
         <Drawer>
           <DrawerTrigger asChild>
-            <Button variant="outline" size="sm" className="min-w-[48px] min-h-[48px] rounded-xl">
-              <Settings className="h-5 w-5" />
+            <Button variant="outline" size="sm" className="min-w-[40px] min-h-[40px] rounded-lg">
+              <Settings className="h-4 w-4" />
             </Button>
           </DrawerTrigger>
           <DrawerContent className="max-h-[80vh]">
