@@ -66,14 +66,16 @@ const Index = () => {
               <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent hover:opacity-80 transition-opacity">{t('gratitudeArtJournal')}</h1>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => navigate('/journal')}>
-                <BookOpen className="h-4 w-4 mr-2" />
-                <span className="hidden xs:inline">{t('viewJournal')}</span>
+              <Button variant="outline" size="sm" onClick={() => navigate('/journal')} className="flex-shrink-0">
+                <BookOpen className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">{t('viewJournal')}</span>
+                <span className="ml-2 sm:hidden">Journal</span>
               </Button>
               <LanguageSwitcher />
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                <span className="hidden xs:inline">{t('signOut')}</span>
+              <Button variant="outline" size="sm" onClick={handleSignOut} className="flex-shrink-0">
+                <LogOut className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">{t('signOut')}</span>
+                <span className="ml-2 sm:hidden">Sign Out</span>
               </Button>
             </div>
           </div>
