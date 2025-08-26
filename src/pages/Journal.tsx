@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Calendar, Eye, Download, Trash2, Share2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Eye, Download, Trash2, Share2, BookOpen } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ShareDrawingDialog from '@/components/ShareDrawingDialog';
+import StoryGeneratorDialog from '@/components/StoryGeneratorDialog';
 
 interface Drawing {
   id: string;
@@ -157,6 +158,19 @@ const Journal = () => {
                 <Calendar className="h-6 w-6 text-primary" />
                 <h1 className="text-lg sm:text-xl font-bold hover:opacity-80 transition-opacity">Painted Smiles</h1>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <StoryGeneratorDialog drawings={drawings}>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                  disabled={drawings.length < 3}
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <span className="hidden sm:inline">Create Story</span>
+                </Button>
+              </StoryGeneratorDialog>
             </div>
           </div>
         </div>
