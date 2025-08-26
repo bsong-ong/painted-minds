@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, Heart, BookOpen, PenTool } from 'lucide-react';
+import { LogOut, Heart, BookOpen, PenTool, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import DrawingGallery from '@/components/DrawingGallery';
@@ -70,6 +70,11 @@ const Index = () => {
                 <BookOpen className="h-4 w-4" />
                 <span className="ml-2 hidden sm:inline">{t('viewJournal')}</span>
                 <span className="ml-2 sm:hidden">Journal</span>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/gallery')} className="flex-shrink-0">
+                <Globe className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Public Gallery</span>
+                <span className="ml-2 sm:hidden">Gallery</span>
               </Button>
               <LanguageSwitcher />
               <Button variant="outline" size="sm" onClick={handleSignOut} className="flex-shrink-0">

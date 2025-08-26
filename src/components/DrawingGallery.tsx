@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Image, Trash2, Download, Sparkles, Eye } from 'lucide-react';
+import { Image, Trash2, Download, Sparkles, Eye, Share2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import ShareDrawingDialog from '@/components/ShareDrawingDialog';
 
 interface Drawing {
   id: string;
@@ -18,6 +19,8 @@ interface Drawing {
   enhancement_prompt?: string;
   flux_prompt?: string;
   is_enhanced: boolean;
+  is_public?: boolean;
+  star_count?: number;
 }
 
 interface DrawingGalleryProps {
@@ -113,6 +116,14 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
     }));
   };
 
+  const handleToggleShare = (drawingId: string, isPublic: boolean) => {
+    setDrawings(prev => prev.map(drawing => 
+      drawing.id === drawingId 
+        ? { ...drawing, is_public: isPublic }
+        : drawing
+    ));
+  };
+
   if (loading) {
     return (
       <Card>
@@ -157,35 +168,47 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
                         alt={drawing.title}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <div className="flex gap-2">
-                          {drawing.enhanced_image_url && (
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => toggleView(drawing.id)}
-                              className="bg-purple-100 hover:bg-purple-200 text-purple-700"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => handleDownload(drawing, !!isShowingEnhanced)}
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDelete(drawing)}
-                            disabled={deleting === drawing.id}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                         <div className="flex gap-2">
+                           {drawing.enhanced_image_url && (
+                             <Button
+                               size="sm"
+                               variant="secondary"
+                               onClick={() => toggleView(drawing.id)}
+                               className="bg-purple-100 hover:bg-purple-200 text-purple-700"
+                             >
+                               <Eye className="h-4 w-4" />
+                             </Button>
+                           )}
+                           <ShareDrawingDialog 
+                             drawingId={drawing.id}
+                             isPublic={drawing.is_public || false}
+                             onToggle={(isPublic) => handleToggleShare(drawing.id, isPublic)}
+                           >
+                             <Button
+                               size="sm"
+                               variant="secondary"
+                             >
+                               <Share2 className="h-4 w-4" />
+                             </Button>
+                           </ShareDrawingDialog>
+                           <Button
+                             size="sm"
+                             variant="secondary"
+                             onClick={() => handleDownload(drawing, !!isShowingEnhanced)}
+                           >
+                             <Download className="h-4 w-4" />
+                           </Button>
+                           <Button
+                             size="sm"
+                             variant="destructive"
+                             onClick={() => handleDelete(drawing)}
+                             disabled={deleting === drawing.id}
+                           >
+                             <Trash2 className="h-4 w-4" />
+                           </Button>
+                         </div>
+                       </div>
                       
                       {/* Enhanced indicator */}
                       {drawing.enhanced_image_url && (
@@ -206,20 +229,31 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
                         </div>
                       )}
                     </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-medium truncate mb-2">{drawing.title}</h3>
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge variant="secondary" className="text-xs">
-                          {new Date(drawing.created_at).toLocaleDateString()}
-                        </Badge>
-                        {drawing.enhanced_image_url && isShowingEnhanced && drawing.enhancement_prompt && (
-                          <Badge variant="outline" className="text-xs max-w-[120px] truncate">
-                            {drawing.enhancement_prompt}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                    </CardContent>
+                     <CardContent className="p-4">
+                       <h3 className="font-medium truncate mb-2">{drawing.title}</h3>
+                       <div className="flex items-center justify-between mb-2">
+                         <Badge variant="secondary" className="text-xs">
+                           {new Date(drawing.created_at).toLocaleDateString()}
+                         </Badge>
+                         <div className="flex gap-1">
+                           {drawing.is_public && (
+                             <Badge variant="outline" className="text-xs">
+                               Public
+                             </Badge>
+                           )}
+                           {drawing.enhanced_image_url && isShowingEnhanced && drawing.enhancement_prompt && (
+                             <Badge variant="outline" className="text-xs max-w-[120px] truncate">
+                               {drawing.enhancement_prompt}
+                             </Badge>
+                           )}
+                         </div>
+                       </div>
+                       {drawing.is_public && (
+                         <div className="text-xs text-muted-foreground">
+                           ⭐ {drawing.star_count || 0} stars
+                         </div>
+                       )}
+                     </CardContent>
                   </Card>
                 </div>
               );
