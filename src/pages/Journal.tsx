@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Calendar, Eye, Download, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Eye, Download, Trash2, Share2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import ShareDrawingDialog from '@/components/ShareDrawingDialog';
 
 interface Drawing {
   id: string;
@@ -20,6 +21,8 @@ interface Drawing {
   created_at: string;
   storage_path: string;
   enhanced_storage_path?: string;
+  is_public?: boolean;
+  star_count?: number;
 }
 
 const Journal = () => {
@@ -122,6 +125,14 @@ const Journal = () => {
     }));
   };
 
+  const handleToggleShare = (drawingId: string, isPublic: boolean) => {
+    setDrawings(prev => prev.map(drawing => 
+      drawing.id === drawingId 
+        ? { ...drawing, is_public: isPublic }
+        : drawing
+    ));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -217,6 +228,19 @@ const Journal = () => {
                             <Eye className="h-4 w-4" />
                           </Button>
                         )}
+                        <ShareDrawingDialog 
+                          drawingId={drawing.id}
+                          isPublic={drawing.is_public || false}
+                          onToggle={(isPublic) => handleToggleShare(drawing.id, isPublic)}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Share"
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                        </ShareDrawingDialog>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -243,6 +267,14 @@ const Journal = () => {
                         day: 'numeric'
                       })}
                     </p>
+                    {drawing.is_public && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                          Public
+                        </span>
+                        <span>⭐ {drawing.star_count || 0} stars</span>
+                      </div>
+                    )}
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
