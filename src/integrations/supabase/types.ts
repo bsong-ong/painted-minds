@@ -16,22 +16,37 @@ export type Database = {
     Tables: {
       admin_settings: {
         Row: {
+          admin_only_registration: boolean | null
           chatbot_enabled: boolean | null
           default_language: string | null
+          enable_ai_insights: boolean
+          enable_cgm_functionality: boolean
+          enable_few_shot_prompting: boolean
+          enable_username_login: boolean | null
           id: string
           language_switcher_enabled: boolean | null
           show_nutritional_ranges: boolean | null
         }
         Insert: {
+          admin_only_registration?: boolean | null
           chatbot_enabled?: boolean | null
           default_language?: string | null
+          enable_ai_insights?: boolean
+          enable_cgm_functionality?: boolean
+          enable_few_shot_prompting?: boolean
+          enable_username_login?: boolean | null
           id?: string
           language_switcher_enabled?: boolean | null
           show_nutritional_ranges?: boolean | null
         }
         Update: {
+          admin_only_registration?: boolean | null
           chatbot_enabled?: boolean | null
           default_language?: string | null
+          enable_ai_insights?: boolean
+          enable_cgm_functionality?: boolean
+          enable_few_shot_prompting?: boolean
+          enable_username_login?: boolean | null
           id?: string
           language_switcher_enabled?: boolean | null
           show_nutritional_ranges?: boolean | null
@@ -60,12 +75,66 @@ export type Database = {
           role?: string
           user_id?: string | null
         }
+        Relationships: []
+      }
+      cgm_readings: {
+        Row: {
+          created_at: string
+          extracted_data: Json
+          id: string
+          image_url: string
+          notes: string | null
+          screenshot_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          extracted_data?: Json
+          id?: string
+          image_url: string
+          notes?: string | null
+          screenshot_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          extracted_data?: Json
+          id?: string
+          image_url?: string
+          notes?: string | null
+          screenshot_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      drawing_stars: {
+        Row: {
+          created_at: string
+          drawing_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          drawing_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          drawing_id?: string
+          id?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "admins_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "drawing_stars_drawing_id_fkey"
+            columns: ["drawing_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "drawings"
             referencedColumns: ["id"]
           },
         ]
@@ -82,6 +151,8 @@ export type Database = {
           image_url: string
           is_enhanced: boolean | null
           is_gratitude_entry: boolean | null
+          is_public: boolean | null
+          star_count: number | null
           storage_path: string
           title: string
           updated_at: string
@@ -99,6 +170,8 @@ export type Database = {
           image_url: string
           is_enhanced?: boolean | null
           is_gratitude_entry?: boolean | null
+          is_public?: boolean | null
+          star_count?: number | null
           storage_path: string
           title: string
           updated_at?: string
@@ -116,11 +189,49 @@ export type Database = {
           image_url?: string
           is_enhanced?: boolean | null
           is_gratitude_entry?: boolean | null
+          is_public?: boolean | null
+          star_count?: number | null
           storage_path?: string
           title?: string
           updated_at?: string
           user_description?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      example_foods: {
+        Row: {
+          category: string
+          created_at: string
+          dish_name_en: string
+          dish_name_th: string
+          id: string
+          image_url: string
+          is_active: boolean
+          updated_at: string
+          verified_nutrition_data: Json
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          dish_name_en: string
+          dish_name_th: string
+          id?: string
+          image_url: string
+          is_active?: boolean
+          updated_at?: string
+          verified_nutrition_data?: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          dish_name_en?: string
+          dish_name_th?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          updated_at?: string
+          verified_nutrition_data?: Json
         }
         Relationships: []
       }
@@ -380,6 +491,7 @@ export type Database = {
           email: string
           id: string
           updated_at: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -388,6 +500,7 @@ export type Database = {
           email: string
           id: string
           updated_at?: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -396,6 +509,7 @@ export type Database = {
           email?: string
           id?: string
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
