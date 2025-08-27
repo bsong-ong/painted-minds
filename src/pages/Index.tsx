@@ -105,16 +105,6 @@ const Index = () => {
                 </Button>
               </CardContent>
             </Card>
-
-            {/* Recent Drawings */}
-            <Card className="h-fit w-full bg-card/50 backdrop-blur-sm border-border/50">
-              <CardHeader className="px-3 sm:px-6">
-                <CardTitle className="text-lg sm:text-xl bg-gradient-to-r from-primary to-gratitude-success bg-clip-text text-transparent">{t('yourRecentGratitudeArt')}</CardTitle>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
-                <DrawingGallery refreshTrigger={refreshTrigger} />
-              </CardContent>
-            </Card>
           </div>
           
           <div className="lg:col-span-1 w-full min-w-0">
