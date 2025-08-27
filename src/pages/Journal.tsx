@@ -123,10 +123,16 @@ const Journal = () => {
   };
 
   const toggleView = (drawingId: string) => {
-    setShowEnhanced(prev => ({
-      ...prev,
-      [drawingId]: !prev[drawingId]
-    }));
+    setShowEnhanced(prev => {
+      const currentlyShowing = prev[drawingId] !== undefined 
+        ? prev[drawingId] 
+        : !!drawings.find(d => d.id === drawingId)?.enhanced_image_url;
+      
+      return {
+        ...prev,
+        [drawingId]: !currentlyShowing
+      };
+    });
   };
 
   const handleToggleShare = (drawingId: string, isPublic: boolean) => {
