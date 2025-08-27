@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Star, StarOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 interface Drawing {
   id: string;
@@ -203,6 +204,7 @@ const Gallery = () => {
               {t('publicGallery')}
             </h1>
           </div>
+          <LanguageSwitcher />
         </div>
 
         {/* Gallery Grid */}

@@ -25,7 +25,7 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
   const [generatedStory, setGeneratedStory] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [open, setOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const handleSelectDrawing = (drawing: Drawing) => {
     if (selectedDrawings.find(d => d.id === drawing.id)) {
@@ -49,7 +49,11 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
       const titles = selectedDrawings.map(d => d.title);
 
       const { data, error } = await supabase.functions.invoke('generate-story', {
-        body: { imageUrls, titles }
+        body: { 
+          imageUrls, 
+          titles, 
+          language: language === 'th' ? 'thai' : 'english'
+        }
       });
 
       if (error) throw error;

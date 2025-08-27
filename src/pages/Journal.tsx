@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ShareDrawingDialog from '@/components/ShareDrawingDialog';
 import StoryGeneratorDialog from '@/components/StoryGeneratorDialog';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface Drawing {
   id: string;
@@ -173,6 +174,7 @@ const Journal = () => {
                   <span className="hidden sm:inline">{t('generateStory')}</span>
                 </Button>
               </StoryGeneratorDialog>
+              <LanguageSwitcher />
             </div>
           </div>
         </div>

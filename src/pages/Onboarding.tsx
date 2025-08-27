@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Sparkles, Trophy, Palette } from 'lucide-react';
 import paintedSmilesHeroImage from '@/assets/painted-smiles-hero.jpg';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -20,6 +21,9 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-rose-950/20">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Hero Section */}

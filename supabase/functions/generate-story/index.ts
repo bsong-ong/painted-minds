@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrls, titles } = await req.json();
+    const { imageUrls, titles, language = 'english' } = await req.json();
     
     if (!imageUrls || imageUrls.length !== 3) {
       throw new Error('Exactly 3 image URLs are required');
@@ -27,11 +27,17 @@ serve(async (req) => {
     console.log('Generating story for images:', imageUrls);
 
     // Create the prompt for story generation
+    const languageInstruction = language === 'thai' 
+      ? 'Write the story in Thai language (ภาษาไทย).' 
+      : 'Write the story in English.';
+    
     const prompt = `You are a creative storyteller. Based on these 3 gratitude art images and their titles, write a captivating, heartwarming story that connects all three images as illustrations. The story should be about 300-500 words and celebrate the themes of gratitude, growth, and human connection.
 
 Image titles: ${titles.join(', ')}
 
 Make the story engaging, with a clear beginning, middle, and end. The story should naturally reference the three images as key moments or scenes. Write in a warm, inspiring tone that celebrates life's beautiful moments.
+
+${languageInstruction}
 
 Return only the story text, no additional formatting or explanations.`;
 
