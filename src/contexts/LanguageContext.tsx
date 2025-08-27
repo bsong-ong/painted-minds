@@ -132,7 +132,53 @@ const translations = {
     // Language switcher
     language: 'Language',
     english: 'English',
-    thai: 'ไทย'
+    thai: 'ไทย',
+    
+    // Gallery page
+    publicGallery: 'Public Gallery',
+    loadingPublicGallery: 'Loading public gallery...',
+    noPublicDrawingsYet: 'No Public Drawings Yet',
+    beTheFirstToShare: 'Be the first to share your gratitude art with the community!',
+    by: 'by',
+    anonymous: 'Anonymous',
+    authenticationRequired: 'Authentication Required',
+    pleaseSignInToStar: 'Please sign in to star drawings',
+    error: 'Error',
+    failedToLoadPublicDrawings: 'Failed to load public drawings',
+    failedToUpdateStar: 'Failed to update star',
+    aiEnhanced: 'AI Enhanced',
+    
+    // Share dialog
+    share: 'Share',
+    shareYourGratitudeArt: 'Share Your Gratitude Art',
+    public: 'Public',
+    private: 'Private',
+    anyoneCanSeeYourDrawing: 'Anyone can see your drawing in the public gallery',
+    onlyYouCanSeeThis: 'Only you can see this drawing',
+    yourArtIsNowPublic: 'Your art is now public!',
+    othersCanViewAndStar: 'Others can view and star your gratitude art in the public gallery. Sharing your creativity helps inspire the community!',
+    drawingShared: 'Drawing Shared!',
+    drawingMadePrivate: 'Drawing Made Private',
+    artNowVisibleInGallery: 'Your gratitude art is now visible in the public gallery',
+    drawingNowPrivate: 'Your drawing is now private',
+    failedToUpdateSharingStatus: 'Failed to update sharing status',
+    
+    // Story generator
+    createYourGratitudeStory: 'Create Your Gratitude Story',
+    selectExactly3Images: 'Select exactly 3 images from your journal to create a captivating story. The AI will weave these images together into a heartwarming narrative.',
+    selected: 'Selected',
+    readyToGenerate: 'Ready to generate!',
+    youCanOnlySelect3Images: 'You can only select 3 images',
+    pleaseSelectExactly3Images: 'Please select exactly 3 images',
+    generateStory: 'Generate Story',
+    generatingStory: 'Generating Story...',
+    reset: 'Reset',
+    yourGratitudeStory: 'Your Gratitude Story',
+    createNewStory: 'Create New Story',
+    illustration: 'Illustration',
+    storyGeneratedSuccessfully: 'Story generated successfully!',
+    failedToGenerateStory: 'Failed to generate story. Please try again.',
+    generateStoryFromImages: 'Generate Story from Images'
   },
   th: {
     // Common
@@ -255,7 +301,53 @@ const translations = {
     // Language switcher
     language: 'ภาษา',
     english: 'English',
-    thai: 'ไทย'
+    thai: 'ไทย',
+    
+    // Gallery page
+    publicGallery: 'แกลเลอรี่สาธารณะ',
+    loadingPublicGallery: 'กำลังโหลดแกลเลอรี่สาธารณะ...',
+    noPublicDrawingsYet: 'ยังไม่มีงานวาดสาธารณะ',
+    beTheFirstToShare: 'เป็นคนแรกที่แบ่งปันศิลปะความกตัญญูของคุณกับชุมชน!',
+    by: 'โดย',
+    anonymous: 'ไม่ระบุชื่อ',
+    authenticationRequired: 'จำเป็นต้องยืนยันตัวตน',
+    pleaseSignInToStar: 'กรุณาเข้าสู่ระบบเพื่อให้ดาวงานวาด',
+    error: 'ข้อผิดพลาด',
+    failedToLoadPublicDrawings: 'โหลดงานวาดสาธารณะไม่สำเร็จ',
+    failedToUpdateStar: 'อัปเดตดาวไม่สำเร็จ',
+    aiEnhanced: 'ปรับปรุงด้วย AI',
+    
+    // Share dialog
+    share: 'แบ่งปัน',
+    shareYourGratitudeArt: 'แบ่งปันศิลปะความกตัญญูของคุณ',
+    public: 'สาธารณะ',
+    private: 'ส่วนตัว',
+    anyoneCanSeeYourDrawing: 'ทุกคนสามารถเห็นงานวาดของคุณในแกลเลอรี่สาธารณะ',
+    onlyYouCanSeeThis: 'เฉพาะคุณเท่านั้นที่เห็นงานวาดนี้',
+    yourArtIsNowPublic: 'งานศิลปะของคุณเป็นสาธารณะแล้ว!',
+    othersCanViewAndStar: 'ผู้อื่นสามารถดูและให้ดาวศิลปะความกตัญญูของคุณในแกลเลอรี่สาธารณะ การแบ่งปันความคิดสร้างสรรคของคุณช่วยสร้างแรงบันดาลใจให้กับชุมชน!',
+    drawingShared: 'แบ่งปันงานวาดแล้ว!',
+    drawingMadePrivate: 'ทำให้งานวาดเป็นส่วนตัวแล้ว',
+    artNowVisibleInGallery: 'ศิลปะความกตัญญูของคุณปรากฏในแกลเลอรี่สาธารณะแล้ว',
+    drawingNowPrivate: 'งานวาดของคุณเป็นส่วนตัวแล้ว',
+    failedToUpdateSharingStatus: 'อัปเดตสถานะการแบ่งปันไม่สำเร็จ',
+    
+    // Story generator
+    createYourGratitudeStory: 'สร้างเรื่องราวความกตัญญูของคุณ',
+    selectExactly3Images: 'เลือกรูปภาพ 3 รูปจากไดอารี่ของคุณเพื่อสร้างเรื่องราวที่น่าติดตาม AI จะสานรูปภาพเหล่านี้เข้าด้วยกันเป็นเรื่องเล่าที่อบอุ่นหัวใจ',
+    selected: 'เลือกแล้ว',
+    readyToGenerate: 'พร้อมสร้าง!',
+    youCanOnlySelect3Images: 'คุณสามารถเลือกได้เพียง 3 รูปเท่านั้น',
+    pleaseSelectExactly3Images: 'กรุณาเลือกรูปภาพ 3 รูปพอดี',
+    generateStory: 'สร้างเรื่องราว',
+    generatingStory: 'กำลังสร้างเรื่องราว...',
+    reset: 'รีเซ็ต',
+    yourGratitudeStory: 'เรื่องราวความกตัญญูของคุณ',
+    createNewStory: 'สร้างเรื่องราวใหม่',
+    illustration: 'ภาพประกอบ',
+    storyGeneratedSuccessfully: 'สร้างเรื่องราวสำเร็จ!',
+    failedToGenerateStory: 'สร้างเรื่องราวไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
+    generateStoryFromImages: 'สร้างเรื่องราวจากรูปภาพ'
   }
 };
 

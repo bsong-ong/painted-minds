@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Calendar, Eye, Download, Trash2, Share2, BookOpen } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ShareDrawingDialog from '@/components/ShareDrawingDialog';
@@ -28,6 +29,7 @@ interface Drawing {
 
 const Journal = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [drawings, setDrawings] = useState<Drawing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -168,7 +170,7 @@ const Journal = () => {
                   disabled={drawings.length < 3}
                 >
                   <BookOpen className="h-4 w-4" />
-                  <span className="hidden sm:inline">Create Story</span>
+                  <span className="hidden sm:inline">{t('generateStory')}</span>
                 </Button>
               </StoryGeneratorDialog>
             </div>

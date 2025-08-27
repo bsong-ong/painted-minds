@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, BookOpen, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Drawing {
   id: string;
@@ -24,6 +25,7 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
   const [generatedStory, setGeneratedStory] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
 
   const handleSelectDrawing = (drawing: Drawing) => {
     if (selectedDrawings.find(d => d.id === drawing.id)) {
@@ -31,13 +33,13 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
     } else if (selectedDrawings.length < 3) {
       setSelectedDrawings(prev => [...prev, drawing]);
     } else {
-      toast.error('You can only select 3 images');
+      toast.error(t('youCanOnlySelect3Images'));
     }
   };
 
   const handleGenerateStory = async () => {
     if (selectedDrawings.length !== 3) {
-      toast.error('Please select exactly 3 images');
+      toast.error(t('pleaseSelectExactly3Images'));
       return;
     }
 
@@ -53,10 +55,10 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
       if (error) throw error;
 
       setGeneratedStory(data.story);
-      toast.success('Story generated successfully!');
+      toast.success(t('storyGeneratedSuccessfully'));
     } catch (error) {
       console.error('Error generating story:', error);
-      toast.error('Failed to generate story. Please try again.');
+      toast.error(t('failedToGenerateStory'));
     } finally {
       setIsGenerating(false);
     }
@@ -91,7 +93,7 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            Create Your Gratitude Story
+            {t('createYourGratitudeStory')}
           </DialogTitle>
         </DialogHeader>
         
@@ -100,13 +102,12 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
             <>
               <div>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Select exactly 3 images from your journal to create a captivating story. 
-                  The AI will weave these images together into a heartwarming narrative.
+                  {t('selectExactly3Images')}
                 </p>
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="text-sm font-medium">Selected: {selectedDrawings.length}/3</span>
+                  <span className="text-sm font-medium">{t('selected')}: {selectedDrawings.length}/3</span>
                   {selectedDrawings.length === 3 && (
-                    <Badge variant="secondary">Ready to generate!</Badge>
+                    <Badge variant="secondary">{t('readyToGenerate')}</Badge>
                   )}
                 </div>
               </div>
@@ -135,7 +136,7 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
                         <p className="text-xs font-medium truncate">{drawing.title}</p>
                         {isSelected && (
                           <Badge variant="default" className="mt-1 text-xs">
-                            Selected #{selectedDrawings.findIndex(d => d.id === drawing.id) + 1}
+                            {t('selected')} #{selectedDrawings.findIndex(d => d.id === drawing.id) + 1}
                           </Badge>
                         )}
                       </CardContent>
@@ -153,28 +154,28 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
                   {isGenerating ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Generating Story...
+                      {t('generatingStory')}
                     </>
                   ) : (
-                    'Generate Story'
+                    t('generateStory')
                   )}
                 </Button>
                 <Button variant="outline" onClick={handleReset}>
-                  Reset
+                  {t('reset')}
                 </Button>
               </div>
             </>
           ) : (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Your Gratitude Story</h3>
+                <h3 className="text-lg font-semibold">{t('yourGratitudeStory')}</h3>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={handleDownloadStory}>
                     <Download className="h-4 w-4 mr-2" />
-                    Download
+                    {t('download')}
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleReset}>
-                    Create New Story
+                    {t('createNewStory')}
                   </Button>
                 </div>
               </div>
@@ -190,7 +191,7 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
                       />
                     </div>
                     <Badge variant="outline" className="text-xs">
-                      Illustration {index + 1}
+                      {t('illustration')} {index + 1}
                     </Badge>
                   </div>
                 ))}

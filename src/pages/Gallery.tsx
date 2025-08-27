@@ -107,8 +107,8 @@ const Gallery = () => {
     } catch (error) {
       console.error('Error in fetchPublicDrawings:', error);
       toast({
-        title: "Error",
-        description: "Failed to load public drawings",
+        title: t('error'),
+        description: t('failedToLoadPublicDrawings'),
         variant: "destructive",
       });
     } finally {
@@ -119,8 +119,8 @@ const Gallery = () => {
   const handleStar = async (drawingId: string, isCurrentlyStarred: boolean) => {
     if (!user) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to star drawings",
+        title: t('authenticationRequired'),
+        description: t('pleaseSignInToStar'),
         variant: "destructive",
       });
       return;
@@ -164,8 +164,8 @@ const Gallery = () => {
     } catch (error) {
       console.error('Error starring drawing:', error);
       toast({
-        title: "Error",
-        description: "Failed to update star",
+        title: t('error'),
+        description: t('failedToUpdateStar'),
         variant: "destructive",
       });
     } finally {
@@ -178,7 +178,7 @@ const Gallery = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading public gallery...</p>
+          <p className="text-muted-foreground">{t('loadingPublicGallery')}</p>
         </div>
       </div>
     );
@@ -197,10 +197,10 @@ const Gallery = () => {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              {t('back')}
             </Button>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">
-              Public Gallery
+              {t('publicGallery')}
             </h1>
           </div>
         </div>
@@ -209,9 +209,9 @@ const Gallery = () => {
         {drawings.length === 0 ? (
           <div className="text-center py-12">
             <Star className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Public Drawings Yet</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('noPublicDrawingsYet')}</h3>
             <p className="text-muted-foreground">
-              Be the first to share your gratitude art with the community!
+              {t('beTheFirstToShare')}
             </p>
           </div>
         ) : (
@@ -249,7 +249,7 @@ const Gallery = () => {
                         variant="secondary" 
                         className="absolute top-2 left-2 text-xs"
                       >
-                        AI Enhanced
+                        {t('aiEnhanced')}
                       </Badge>
                     )}
                   </div>
@@ -261,7 +261,7 @@ const Gallery = () => {
                     
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>
-                        by {drawing.profiles?.display_name || 'Anonymous'}
+                        {t('by')} {drawing.profiles?.display_name || t('anonymous')}
                       </span>
                       <div className="flex items-center gap-1">
                         <Star className="h-3 w-3 fill-current text-yellow-400" />

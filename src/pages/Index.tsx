@@ -73,7 +73,7 @@ const Index = () => {
               </Button>
               <Button variant="outline" size="sm" onClick={() => navigate('/gallery')} className="flex-shrink-0">
                 <Globe className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">Public Gallery</span>
+                <span className="ml-2 hidden sm:inline">{t('publicGallery')}</span>
                 <span className="ml-2 sm:hidden">Gallery</span>
               </Button>
               <LanguageSwitcher />

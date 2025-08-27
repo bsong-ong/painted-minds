@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Share2, Globe, Lock } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ShareDrawingDialogProps {
   drawingId: string;
@@ -17,6 +18,7 @@ interface ShareDrawingDialogProps {
 const ShareDrawingDialog = ({ drawingId, isPublic, onToggle, children }: ShareDrawingDialogProps) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleToggleShare = async (newIsPublic: boolean) => {
     setLoading(true);
@@ -32,16 +34,16 @@ const ShareDrawingDialog = ({ drawingId, isPublic, onToggle, children }: ShareDr
       onToggle(newIsPublic);
       
       toast({
-        title: newIsPublic ? "Drawing Shared!" : "Drawing Made Private",
+        title: newIsPublic ? t('drawingShared') : t('drawingMadePrivate'),
         description: newIsPublic 
-          ? "Your gratitude art is now visible in the public gallery" 
-          : "Your drawing is now private",
+          ? t('artNowVisibleInGallery')
+          : t('drawingNowPrivate'),
       });
     } catch (error) {
       console.error('Error updating sharing status:', error);
       toast({
-        title: "Error",
-        description: "Failed to update sharing status",
+        title: t('error'),
+        description: t('failedToUpdateSharingStatus'),
         variant: "destructive",
       });
     } finally {
@@ -55,7 +57,7 @@ const ShareDrawingDialog = ({ drawingId, isPublic, onToggle, children }: ShareDr
         {children || (
           <Button variant="outline" size="sm">
             <Share2 className="h-4 w-4 mr-2" />
-            Share
+            {t('share')}
           </Button>
         )}
       </DialogTrigger>
@@ -63,7 +65,7 @@ const ShareDrawingDialog = ({ drawingId, isPublic, onToggle, children }: ShareDr
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5" />
-            Share Your Gratitude Art
+            {t('shareYourGratitudeArt')}
           </DialogTitle>
         </DialogHeader>
         
@@ -77,12 +79,12 @@ const ShareDrawingDialog = ({ drawingId, isPublic, onToggle, children }: ShareDr
               )}
               <div>
                 <Label className="text-sm font-medium">
-                  {isPublic ? "Public" : "Private"}
+                  {isPublic ? t('public') : t('private')}
                 </Label>
                 <p className="text-xs text-muted-foreground">
                   {isPublic 
-                    ? "Anyone can see your drawing in the public gallery"
-                    : "Only you can see this drawing"
+                    ? t('anyoneCanSeeYourDrawing')
+                    : t('onlyYouCanSeeThis')
                   }
                 </p>
               </div>
@@ -98,11 +100,10 @@ const ShareDrawingDialog = ({ drawingId, isPublic, onToggle, children }: ShareDr
           {isPublic && (
             <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
               <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
-                Your art is now public!
+                {t('yourArtIsNowPublic')}
               </h4>
               <p className="text-xs text-blue-700 dark:text-blue-300">
-                Others can view and star your gratitude art in the public gallery. 
-                Sharing your creativity helps inspire the community!
+                {t('othersCanViewAndStar')}
               </p>
             </div>
           )}
