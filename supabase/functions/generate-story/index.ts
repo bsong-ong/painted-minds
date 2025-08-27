@@ -44,7 +44,7 @@ Return only the story text, no additional formatting or explanations.`;
         'X-Title': 'Gratitude Story Generator'
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'openai/gpt-4o',
         messages: [
           {
             role: 'user',
