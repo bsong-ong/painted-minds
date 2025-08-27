@@ -37,7 +37,7 @@ const Onboarding = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-2xl" />
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-center">
-                  <Heart className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 text-amber-300" />
+                  <img src="/lovable-uploads/01795ac7-0239-4692-8c4d-ef3130b2f3eb.png" alt="Painted Smiles Logo" className="h-12 w-auto mx-auto mb-2" />
                   <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold">
                     Painted Smiles
                   </h1>
