@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Trophy, Flame, Star, Target } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UserStreak {
@@ -20,6 +21,7 @@ interface UserPoints {
 
 const RewardsPanel = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [streak, setStreak] = useState<UserStreak | null>(null);
   const [points, setPoints] = useState<UserPoints | null>(null);
   const [totalEntries, setTotalEntries] = useState(0);
@@ -74,19 +76,19 @@ const RewardsPanel = () => {
   };
 
   const getStreakLevel = (streakCount: number) => {
-    if (streakCount >= 30) return { name: 'Gratitude Master', color: 'bg-purple-500' };
-    if (streakCount >= 14) return { name: 'Mindful Soul', color: 'bg-blue-500' };
-    if (streakCount >= 7) return { name: 'Thankful Heart', color: 'bg-green-500' };
-    if (streakCount >= 3) return { name: 'Grateful Beginner', color: 'bg-yellow-500' };
-    return { name: 'Starting Journey', color: 'bg-gray-500' };
+    if (streakCount >= 30) return { name: t('gratitudeMaster'), color: 'bg-purple-500' };
+    if (streakCount >= 14) return { name: t('mindfulSoul'), color: 'bg-blue-500' };
+    if (streakCount >= 7) return { name: t('thankfulHeart'), color: 'bg-green-500' };
+    if (streakCount >= 3) return { name: t('gratefulBeginner'), color: 'bg-yellow-500' };
+    return { name: t('startingJourney'), color: 'bg-gray-500' };
   };
 
   const getEntryMilestone = (count: number) => {
-    if (count >= 100) return { name: 'Century Creator', icon: Star };
-    if (count >= 50) return { name: 'Dedicated Artist', icon: Trophy };
-    if (count >= 25) return { name: 'Consistent Creator', icon: Target };
-    if (count >= 10) return { name: 'Growing Artist', icon: Flame };
-    return { name: 'New Artist', icon: Flame };
+    if (count >= 100) return { name: t('centuryCreator'), icon: Star };
+    if (count >= 50) return { name: t('dedicatedArtist'), icon: Trophy };
+    if (count >= 25) return { name: t('consistentCreator'), icon: Target };
+    if (count >= 10) return { name: t('growingArtist'), icon: Flame };
+    return { name: t('newArtist'), icon: Flame };
   };
 
   if (loading) {
@@ -114,14 +116,14 @@ const RewardsPanel = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-primary" />
-          Your Gratitude Journey
+          {t('yourGratitudeJourney')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Current Streak */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Current Streak</span>
+            <span className="text-sm font-medium">{t('currentStreak')}</span>
             <Badge className={`${streakLevel.color} text-white`}>
               {streakLevel.name}
             </Badge>
@@ -129,11 +131,11 @@ const RewardsPanel = () => {
           <div className="flex items-center gap-2">
             <Flame className="h-5 w-5 text-orange-500" />
             <span className="text-2xl font-bold">{currentStreak}</span>
-            <span className="text-muted-foreground">days</span>
+            <span className="text-muted-foreground">{t('days')}</span>
           </div>
           {longestStreak > currentStreak && (
             <p className="text-xs text-muted-foreground">
-              Personal best: {longestStreak} days
+              {t('personalBest')}: {longestStreak} {t('days')}
             </p>
           )}
         </div>
@@ -141,7 +143,7 @@ const RewardsPanel = () => {
         {/* Total Entries */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Gratitude Entries</span>
+            <span className="text-sm font-medium">{t('gratitudeEntries')}</span>
             <Badge variant="outline">
               {entryMilestone.name}
             </Badge>
@@ -149,35 +151,35 @@ const RewardsPanel = () => {
           <div className="flex items-center gap-2">
             <MilestoneIcon className="h-5 w-5 text-primary" />
             <span className="text-2xl font-bold">{totalEntries}</span>
-            <span className="text-muted-foreground">entries</span>
+            <span className="text-muted-foreground">{t('entries')}</span>
           </div>
         </div>
 
         {/* Progress to next milestone */}
         <div className="space-y-2">
-          <span className="text-sm font-medium">Next Milestone</span>
+          <span className="text-sm font-medium">{t('nextMilestone')}</span>
           {(() => {
             let nextTarget = 0;
             let nextName = '';
             
             if (totalEntries < 10) {
               nextTarget = 10;
-              nextName = 'Growing Artist';
+              nextName = t('growingArtist');
             } else if (totalEntries < 25) {
               nextTarget = 25;
-              nextName = 'Consistent Creator';
+              nextName = t('consistentCreator');
             } else if (totalEntries < 50) {
               nextTarget = 50;
-              nextName = 'Dedicated Artist';
+              nextName = t('dedicatedArtist');
             } else if (totalEntries < 100) {
               nextTarget = 100;
-              nextName = 'Century Creator';
+              nextName = t('centuryCreator');
             } else {
               return (
                 <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
                   <Star className="h-8 w-8 text-purple-500 mx-auto mb-2" />
                   <p className="text-sm font-medium text-purple-700">
-                    🎉 You've reached the highest milestone!
+                    {t('highestMilestone')}
                   </p>
                 </div>
               );
@@ -194,7 +196,7 @@ const RewardsPanel = () => {
                 </div>
                 <Progress value={progress} className="h-2" />
                 <p className="text-xs text-center text-muted-foreground">
-                  {nextTarget - totalEntries} more entries to go!
+                  {nextTarget - totalEntries} {t('moreEntriesToGo')}
                 </p>
               </div>
             );
@@ -205,14 +207,14 @@ const RewardsPanel = () => {
         <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-4 rounded-lg">
           <p className="text-sm text-center text-muted-foreground">
             {currentStreak === 0 
-              ? "Start your gratitude journey today! 🌱"
+              ? t('startGratitudeToday')
               : currentStreak === 1
-              ? "Great start! Keep the momentum going! 💪"
+              ? t('greatStart')
               : currentStreak < 7
-              ? "You're building a beautiful habit! ✨"
+              ? t('buildingHabit')
               : currentStreak < 30
-              ? "Amazing consistency! You're inspiring! 🌟"
-              : "You're a true gratitude master! 🏆"
+              ? t('amazingConsistency')
+              : t('gratitudeMasterMsg')
             }
           </p>
         </div>

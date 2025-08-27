@@ -178,7 +178,46 @@ const translations = {
     illustration: 'Illustration',
     storyGeneratedSuccessfully: 'Story generated successfully!',
     failedToGenerateStory: 'Failed to generate story. Please try again.',
-    generateStoryFromImages: 'Generate Story from Images'
+    generateStoryFromImages: 'Generate Story from Images',
+
+    // Rewards panel
+    yourGratitudeJourney: 'Your Gratitude Journey',
+    currentStreak: 'Current Streak',
+    gratitudeMaster: 'Gratitude Master',
+    mindfulSoul: 'Mindful Soul',
+    thankfulHeart: 'Thankful Heart',
+    gratefulBeginner: 'Grateful Beginner',
+    startingJourney: 'Starting Journey',
+    personalBest: 'Personal best',
+    gratitudeEntries: 'Gratitude Entries',
+    centuryCreator: 'Century Creator',
+    dedicatedArtist: 'Dedicated Artist',
+    consistentCreator: 'Consistent Creator',
+    growingArtist: 'Growing Artist',
+    newArtist: 'New Artist',
+    entries: 'entries',
+    nextMilestone: 'Next Milestone',
+    moreEntriesToGo: 'more entries to go!',
+    highestMilestone: "🎉 You've reached the highest milestone!",
+    startGratitudeToday: 'Start your gratitude journey today! 🌱',
+    greatStart: 'Great start! Keep the momentum going! 💪',
+    buildingHabit: "You're building a beautiful habit! ✨",
+    amazingConsistency: "Amazing consistency! You're inspiring! 🌟",
+    gratitudeMasterMsg: "You're a true gratitude master! 🏆",
+
+    // Drawing gallery
+    myDrawings: 'My Drawings',
+    noDrawingsYet: 'No drawings yet',
+    createFirstDrawing: 'Create your first drawing using the canvas above!',
+    aiEnhancedBadge: 'AI Enhanced',
+    originalBadge: 'Original',
+    enhancedBadge: 'Enhanced',
+    publicBadge: 'Public',
+    stars: 'stars',
+    loadingDrawings: 'Loading your drawings...',
+    failedToLoadDrawings: 'Failed to load drawings',
+    drawingDeleted: 'Drawing deleted successfully',
+    failedToDeleteDrawing: 'Failed to delete drawing'
   },
   th: {
     // Common
@@ -347,7 +386,46 @@ const translations = {
     illustration: 'ภาพประกอบ',
     storyGeneratedSuccessfully: 'สร้างเรื่องราวสำเร็จ!',
     failedToGenerateStory: 'สร้างเรื่องราวไม่สำเร็จ กรุณาลองใหม่อีกครั้ง',
-    generateStoryFromImages: 'สร้างเรื่องราวจากรูปภาพ'
+    generateStoryFromImages: 'สร้างเรื่องราวจากรูปภาพ',
+
+    // Rewards panel
+    yourGratitudeJourney: 'การเดินทางความกตัญญูของคุณ',
+    currentStreak: 'ความต่อเนื่องปัจจุบัน',
+    gratitudeMaster: 'ปรมาจารย์ความกตัญญู',
+    mindfulSoul: 'วิญญาณมีสติ',
+    thankfulHeart: 'หัวใจขอบคุณ',
+    gratefulBeginner: 'มือใหม่ผู้กตัญญู',
+    startingJourney: 'เริ่มต้นการเดินทาง',
+    personalBest: 'สถิติส่วนตัวดีที่สุด',
+    gratitudeEntries: 'รายการความกตัญญู',
+    centuryCreator: 'นักสร้างสรรค์ร้อยผลงาน',
+    dedicatedArtist: 'ศิลปินผู้ทุ่มเท',
+    consistentCreator: 'นักสร้างสรรค์ที่สม่ำเสมอ',
+    growingArtist: 'ศิลปินที่เติบโต',
+    newArtist: 'ศิลปินใหม่',
+    entries: 'รายการ',
+    nextMilestone: 'เป้าหมายถัดไป',
+    moreEntriesToGo: 'รายการเพิ่มเติมที่ต้องทำ!',
+    highestMilestone: '🎉 คุณไปถึงเป้าหมายสูงสุดแล้ว!',
+    startGratitudeToday: 'เริ่มต้นการเดินทางความกตัญญูวันนี้! 🌱',
+    greatStart: 'เริ่มต้นที่ดี! รักษาโมเมนตัมไว้! 💪',
+    buildingHabit: 'คุณกำลังสร้างนิสัยที่งดงาม! ✨',
+    amazingConsistency: 'ความสม่ำเสมอที่น่าทึ่ง! คุณเป็นแรงบันดาลใจ! 🌟',
+    gratitudeMasterMsg: 'คุณเป็นปรมาจารย์ความกตัญญูตัวจริง! 🏆',
+
+    // Drawing gallery
+    myDrawings: 'งานวาดของฉัน',
+    noDrawingsYet: 'ยังไม่มีงานวาด',
+    createFirstDrawing: 'สร้างงานวาดแรกของคุณโดยใช้ผ้าใบด้านบน!',
+    aiEnhancedBadge: 'ปรับปรุงด้วย AI',
+    originalBadge: 'ต้นฉบับ',
+    enhancedBadge: 'ปรับปรุงแล้ว',
+    publicBadge: 'สาธารณะ',
+    stars: 'ดาว',
+    loadingDrawings: 'กำลังโหลดงานวาดของคุณ...',
+    failedToLoadDrawings: 'โหลดงานวาดไม่สำเร็จ',
+    drawingDeleted: 'ลบงานวาดสำเร็จ',
+    failedToDeleteDrawing: 'ลบงานวาดไม่สำเร็จ'
   }
 };
 

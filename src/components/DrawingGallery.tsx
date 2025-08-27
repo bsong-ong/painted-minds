@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Image, Trash2, Download, Sparkles, Eye, Share2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 import ShareDrawingDialog from '@/components/ShareDrawingDialog';
 
@@ -33,6 +34,7 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [showEnhanced, setShowEnhanced] = useState<{ [key: string]: boolean }>({});
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const fetchDrawings = async () => {
     if (!user) return;
@@ -51,7 +53,7 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
       setDrawings(data || []);
     } catch (error) {
       console.error('Error fetching drawings:', error);
-      toast.error('Failed to load drawings');
+      toast.error(t('failedToLoadDrawings'));
     } finally {
       setLoading(false);
     }
@@ -88,10 +90,10 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
       if (dbError) throw dbError;
 
       setDrawings(drawings.filter(d => d.id !== drawing.id));
-      toast.success('Drawing deleted successfully');
+      toast.success(t('drawingDeleted'));
     } catch (error) {
       console.error('Error deleting drawing:', error);
-      toast.error('Failed to delete drawing');
+      toast.error(t('failedToDeleteDrawing'));
     } finally {
       setDeleting(null);
     }
@@ -128,7 +130,7 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
-          <div className="text-muted-foreground">Loading your drawings...</div>
+          <div className="text-muted-foreground">{t('loadingDrawings')}</div>
         </CardContent>
       </Card>
     );
@@ -139,16 +141,16 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Image className="h-5 w-5" />
-          My Drawings ({drawings.length})
+          {t('myDrawings')} ({drawings.length})
         </CardTitle>
       </CardHeader>
       <CardContent>
         {drawings.length === 0 ? (
           <div className="text-center py-8">
             <Image className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No drawings yet</h3>
+            <h3 className="text-lg font-medium mb-2">{t('noDrawingsYet')}</h3>
             <p className="text-muted-foreground">
-              Create your first drawing using the canvas above!
+              {t('createFirstDrawing')}
             </p>
           </div>
         ) : (
@@ -212,21 +214,21 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
                       
                       {/* Enhanced indicator */}
                       {drawing.enhanced_image_url && (
-                        <div className="absolute top-2 right-2">
-                          <Badge variant="secondary" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                            <Sparkles className="h-3 w-3 mr-1" />
-                            AI Enhanced
-                          </Badge>
-                        </div>
+                         <div className="absolute top-2 right-2">
+                           <Badge variant="secondary" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                             <Sparkles className="h-3 w-3 mr-1" />
+                             {t('aiEnhancedBadge')}
+                           </Badge>
+                         </div>
                       )}
                       
                       {/* View toggle indicator */}
                       {drawing.enhanced_image_url && (
-                        <div className="absolute bottom-2 left-2">
-                          <Badge variant={isShowingEnhanced ? "default" : "secondary"} className="text-xs">
-                            {isShowingEnhanced ? "Enhanced" : "Original"}
-                          </Badge>
-                        </div>
+                         <div className="absolute bottom-2 left-2">
+                           <Badge variant={isShowingEnhanced ? "default" : "secondary"} className="text-xs">
+                             {isShowingEnhanced ? t('enhancedBadge') : t('originalBadge')}
+                           </Badge>
+                         </div>
                       )}
                     </div>
                      <CardContent className="p-4">
@@ -236,11 +238,11 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
                            {new Date(drawing.created_at).toLocaleDateString()}
                          </Badge>
                          <div className="flex gap-1">
-                           {drawing.is_public && (
-                             <Badge variant="outline" className="text-xs">
-                               Public
-                             </Badge>
-                           )}
+                            {drawing.is_public && (
+                              <Badge variant="outline" className="text-xs">
+                                {t('publicBadge')}
+                              </Badge>
+                            )}
                            {drawing.enhanced_image_url && isShowingEnhanced && drawing.enhancement_prompt && (
                              <Badge variant="outline" className="text-xs max-w-[120px] truncate">
                                {drawing.enhancement_prompt}
@@ -248,11 +250,11 @@ const DrawingGallery: React.FC<DrawingGalleryProps> = ({ refreshTrigger }) => {
                            )}
                          </div>
                        </div>
-                       {drawing.is_public && (
-                         <div className="text-xs text-muted-foreground">
-                           ⭐ {drawing.star_count || 0} stars
-                         </div>
-                       )}
+                        {drawing.is_public && (
+                          <div className="text-xs text-muted-foreground">
+                            ⭐ {drawing.star_count || 0} {t('stars')}
+                          </div>
+                        )}
                      </CardContent>
                   </Card>
                 </div>
