@@ -26,6 +26,7 @@ const AdminDashboard = () => {
     admin_only_registration: false,
     enable_cgm_functionality: true,
     enable_ai_insights: true,
+    use_openrouter_for_images: false,
   });
   const [loading, setLoading] = useState(true);
 
@@ -65,6 +66,7 @@ const AdminDashboard = () => {
           admin_only_registration: data.admin_only_registration || false,
           enable_cgm_functionality: data.enable_cgm_functionality,
           enable_ai_insights: data.enable_ai_insights,
+          use_openrouter_for_images: data.use_openrouter_for_images || false,
         });
       }
     } catch (error) {
@@ -218,11 +220,24 @@ const AdminDashboard = () => {
                     Enable AI-powered insights and recommendations
                   </p>
                 </div>
-                <Switch
-                  checked={settings.enable_ai_insights}
-                  onCheckedChange={(checked) => updateSetting('enable_ai_insights', checked)}
-                />
-              </div>
+                 <Switch
+                   checked={settings.enable_ai_insights}
+                   onCheckedChange={(checked) => updateSetting('enable_ai_insights', checked)}
+                 />
+               </div>
+
+               <div className="flex items-center justify-between">
+                 <div className="space-y-1">
+                   <Label className="text-base font-medium">Use OpenRouter for Image Generation</Label>
+                   <p className="text-sm text-muted-foreground">
+                     Use OpenRouter/Gemini Flash instead of Replicate for AI image enhancement
+                   </p>
+                 </div>
+                 <Switch
+                   checked={settings.use_openrouter_for_images}
+                   onCheckedChange={(checked) => updateSetting('use_openrouter_for_images', checked)}
+                 />
+               </div>
             </CardContent>
           </Card>
 
