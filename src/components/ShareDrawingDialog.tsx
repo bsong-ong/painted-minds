@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Share2, Globe, Lock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAdminSettings } from "@/hooks/useAdminSettings";
 
 interface ShareDrawingDialogProps {
   drawingId: string;
@@ -19,6 +20,12 @@ const ShareDrawingDialog = ({ drawingId, isPublic, onToggle, children }: ShareDr
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { settings } = useAdminSettings();
+
+  // Don't render if art sharing is disabled
+  if (!settings.art_sharing_enabled) {
+    return null;
+  }
 
   const handleToggleShare = async (newIsPublic: boolean) => {
     setLoading(true);

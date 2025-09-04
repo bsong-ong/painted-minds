@@ -17,6 +17,7 @@ export type Database = {
       admin_settings: {
         Row: {
           admin_only_registration: boolean | null
+          art_sharing_enabled: boolean
           chatbot_enabled: boolean | null
           default_language: string | null
           enable_ai_insights: boolean
@@ -26,9 +27,11 @@ export type Database = {
           id: string
           language_switcher_enabled: boolean | null
           show_nutritional_ranges: boolean | null
+          story_creation_enabled: boolean
         }
         Insert: {
           admin_only_registration?: boolean | null
+          art_sharing_enabled?: boolean
           chatbot_enabled?: boolean | null
           default_language?: string | null
           enable_ai_insights?: boolean
@@ -38,9 +41,11 @@ export type Database = {
           id?: string
           language_switcher_enabled?: boolean | null
           show_nutritional_ranges?: boolean | null
+          story_creation_enabled?: boolean
         }
         Update: {
           admin_only_registration?: boolean | null
+          art_sharing_enabled?: boolean
           chatbot_enabled?: boolean | null
           default_language?: string | null
           enable_ai_insights?: boolean
@@ -50,6 +55,7 @@ export type Database = {
           id?: string
           language_switcher_enabled?: boolean | null
           show_nutritional_ranges?: boolean | null
+          story_creation_enabled?: boolean
         }
         Relationships: []
       }
@@ -667,6 +673,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          daily_calorie_limit: number | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_calorie_limit?: number | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_calorie_limit?: number | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_rewards: {
         Row: {

@@ -7,6 +7,7 @@ import { Loader2, BookOpen, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAdminSettings } from '@/hooks/useAdminSettings';
 
 interface Drawing {
   id: string;
@@ -26,6 +27,12 @@ const StoryGeneratorDialog = ({ drawings, children }: StoryGeneratorDialogProps)
   const [isGenerating, setIsGenerating] = useState(false);
   const [open, setOpen] = useState(false);
   const { t, language } = useLanguage();
+  const { settings } = useAdminSettings();
+
+  // Don't render if story creation is disabled
+  if (!settings.story_creation_enabled) {
+    return null;
+  }
 
   const handleSelectDrawing = (drawing: Drawing) => {
     if (selectedDrawings.find(d => d.id === drawing.id)) {
