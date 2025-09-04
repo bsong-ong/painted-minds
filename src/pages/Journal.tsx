@@ -36,7 +36,7 @@ const Journal = () => {
   const [loading, setLoading] = useState(true);
   const [daysToShow, setDaysToShow] = useState(7);
   const [showEnhanced, setShowEnhanced] = useState<{ [key: string]: boolean }>({});
-  const [globalEnhancedView, setGlobalEnhancedView] = useState(false);
+  
 
   useEffect(() => {
     if (user) {
@@ -203,14 +203,6 @@ const Journal = () => {
               <span className="text-sm text-muted-foreground">days</span>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Label htmlFor="global-enhanced">Show all as enhanced</Label>
-              <Switch
-                id="global-enhanced"
-                checked={globalEnhancedView}
-                onCheckedChange={setGlobalEnhancedView}
-              />
-            </div>
           </div>
         </div>
 
@@ -228,10 +220,9 @@ const Journal = () => {
         ) : (
           <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {drawings.map((drawing) => {
-              const showEnhancedForThis = globalEnhancedView || 
-                (showEnhanced[drawing.id] !== undefined 
-                  ? showEnhanced[drawing.id] 
-                  : !!drawing.enhanced_image_url); // Default to enhanced if available
+              const showEnhancedForThis = showEnhanced[drawing.id] !== undefined 
+                ? showEnhanced[drawing.id] 
+                : !!drawing.enhanced_image_url; // Default to enhanced if available
               const currentImageUrl = showEnhancedForThis && drawing.enhanced_image_url
                 ? drawing.enhanced_image_url
                 : drawing.image_url;
