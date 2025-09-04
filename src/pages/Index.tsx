@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, Heart, BookOpen, PenTool, Globe } from 'lucide-react';
+import { LogOut, Heart, BookOpen, PenTool, Globe, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 import DrawingGallery from '@/components/DrawingGallery';
 import RewardsPanel from '@/components/RewardsPanel';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -12,6 +13,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 const Index = () => {
   const { user, signOut, loading } = useAuth();
   const { t } = useLanguage();
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -66,6 +68,13 @@ const Index = () => {
               <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent hover:opacity-80 transition-opacity">{t('gratitudeArtJournal')}</h1>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
+              {isAdmin && (
+                <Button variant="outline" size="sm" onClick={() => navigate('/admin')} className="flex-shrink-0">
+                  <Settings className="h-4 w-4" />
+                  <span className="ml-2 hidden sm:inline">Admin</span>
+                  <span className="ml-2 sm:hidden">Admin</span>
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={() => navigate('/journal')} className="flex-shrink-0">
                 <BookOpen className="h-4 w-4" />
                 <span className="ml-2 hidden sm:inline">{t('viewJournal')}</span>
