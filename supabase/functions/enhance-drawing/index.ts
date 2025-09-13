@@ -149,15 +149,55 @@ serve(async (req) => {
       }
 
       const openRouterData = await openRouterResponse.json();
-      const generatedContent = openRouterData.choices[0].message.content;
-      
-      // Extract image URL from the response if it contains one
-      const imageUrlMatch = generatedContent.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|webp)/i);
-      if (imageUrlMatch) {
-        imageUrl = imageUrlMatch[0];
-        console.log('Gemini 2.5 Flash Image Preview generation completed');
+      // Log a compact preview of the response for debugging
+      try {
+        console.log('OpenRouter response (preview):', JSON.stringify(openRouterData).slice(0, 1500));
+      } catch (_) {}
+
+      // Try to extract an image from various possible response shapes
+      const choice = openRouterData?.choices?.[0];
+      const content = choice?.message?.content;
+      let foundUrl: string | null = null;
+      let dataUrl: string | null = null;
+
+      const tryExtractFromText = (txt: string) => {
+        const urlMatch = txt.match(/https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|webp|gif)/i);
+        if (urlMatch) foundUrl = urlMatch[0];
+        const dataMatch = txt.match(/data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=]+)/);
+        if (dataMatch) dataUrl = dataMatch[0];
+      };
+
+      if (Array.isArray(content)) {
+        for (const part of content) {
+          if (typeof part === 'string') {
+            tryExtractFromText(part);
+          } else if (part && typeof part === 'object') {
+            // Common OpenRouter content formats
+            if (typeof part.text === 'string') tryExtractFromText(part.text);
+            if (typeof part.image_url === 'string') foundUrl = part.image_url;
+            if (typeof part.url === 'string' && /^(data:image\/.+;base64,|https?:\/\/)/i.test(part.url)) {
+              if (part.url.startsWith('data:')) dataUrl = part.url; else foundUrl = part.url;
+            }
+            if (typeof part.b64_json === 'string') dataUrl = `data:image/png;base64,${part.b64_json}`;
+            if (typeof part.image_base64 === 'string') dataUrl = `data:image/png;base64,${part.image_base64}`;
+            if (part.image && typeof part.image === 'string') {
+              if (part.image.startsWith('data:')) dataUrl = part.image; else foundUrl = part.image;
+            }
+          }
+          if (foundUrl || dataUrl) break;
+        }
+      } else if (typeof content === 'string') {
+        tryExtractFromText(content);
+      }
+
+      if (foundUrl) {
+        imageUrl = foundUrl;
+        console.log('Gemini image URL extracted');
+      } else if (dataUrl) {
+        imageUrl = dataUrl; // Will be handled later as data URL
+        console.log('Gemini image data URL extracted');
       } else {
-        throw new Error('No image URL found in Gemini response');
+        throw new Error('No image found in Gemini response');
       }
 
     } else {
@@ -231,9 +271,32 @@ serve(async (req) => {
       }
     }
     
-    // Fetch the image and convert to blob
-    const imageResponse = await fetch(imageUrl);
-    const imageBlob = await imageResponse.blob();
+    // Fetch the image (or decode data URL) and convert to blob
+    let imageBlob: Blob;
+    let contentType = 'image/png';
+
+    if (typeof imageUrl === 'string' && imageUrl.startsWith('data:')) {
+      const match = imageUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+      if (!match) {
+        throw new Error('Invalid data URL returned by model');
+      }
+      contentType = match[1];
+      const base64Data = match[2];
+      const binaryString = atob(base64Data);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      imageBlob = new Blob([bytes], { type: contentType });
+    } else {
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error(`Failed to fetch generated image: ${imageResponse.status}`);
+      }
+      contentType = imageResponse.headers.get('content-type') || contentType;
+      imageBlob = await imageResponse.blob();
+    }
 
     // Get the original drawing to extract user_id
     const { data: originalDrawing, error: fetchError } = await supabase
@@ -252,7 +315,7 @@ serve(async (req) => {
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('drawings')
       .upload(enhancedFileName, imageBlob, {
-        contentType: 'image/png',
+        contentType,
       });
 
     if (uploadError) {
