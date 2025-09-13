@@ -103,40 +103,28 @@ serve(async (req) => {
     let imageUrl = null;
 
     if (useOpenRouter) {
-      // Use OpenRouter with Gemini Flash for image generation
+      // Use OpenRouter with DALL-E 3 for image generation
       const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
       if (!OPENROUTER_API_KEY) {
         throw new Error('OPENROUTER_API_KEY is not set');
       }
 
-      console.log('Generating image with OpenRouter/Gemini Flash');
+      console.log('Generating image with OpenRouter/DALL-E 3');
       
-      const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const openRouterResponse = await fetch('https://openrouter.ai/api/v1/images/generations', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://painted-smiles.lovable.app',
+          'X-Title': 'Painted Smiles Drawing Enhancement'
         },
         body: JSON.stringify({
-          model: 'google/gemini-flash-1.5-8b', // Gemini Flash model
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: `Create a beautiful enhanced version of this drawing. ${enhancedPrompt}`
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: imageData
-                  }
-                }
-              ]
-            }
-          ],
-          max_tokens: 1000
+          model: 'openai/dall-e-3',
+          prompt: enhancedPrompt,
+          n: 1,
+          size: '1024x1024',
+          quality: 'hd'
         }),
       });
 
@@ -147,39 +135,8 @@ serve(async (req) => {
       }
 
       const openRouterData = await openRouterResponse.json();
-      
-      // For Gemini Flash, we'll need to extract the image URL from the response
-      // Note: This is a simplified implementation - actual Gemini Flash image generation may differ
-      const generatedContent = openRouterData.choices[0].message.content;
-      console.log('OpenRouter generation completed:', generatedContent);
-      
-      // Since Gemini Flash might not directly generate images via this API,
-      // we'll fall back to a different approach or use a different model
-      // For now, let's use OpenAI DALL-E as an alternative
-      const dalleResponse = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-image-1',
-          prompt: enhancedPrompt,
-          n: 1,
-          size: '1024x1024',
-          quality: 'high'
-        }),
-      });
-
-      if (!dalleResponse.ok) {
-        const errorData = await dalleResponse.json();
-        console.error('DALL-E API error:', errorData);
-        throw new Error(`DALL-E API error: ${errorData.error?.message || 'Unknown error'}`);
-      }
-
-      const dalleData = await dalleResponse.json();
-      imageUrl = dalleData.data[0].url;
-      console.log('DALL-E generation completed');
+      imageUrl = openRouterData.data[0].url;
+      console.log('OpenRouter/DALL-E 3 generation completed');
 
     } else {
       // Use Replicate with Flux as before
