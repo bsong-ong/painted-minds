@@ -103,15 +103,15 @@ serve(async (req) => {
     let imageUrl = null;
 
     if (useOpenRouter) {
-      // Use OpenRouter with DALL-E 3 for image generation
+      // Use OpenRouter with Gemini 2.5 Flash Image Preview for image generation
       const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
       if (!OPENROUTER_API_KEY) {
         throw new Error('OPENROUTER_API_KEY is not set');
       }
 
-      console.log('Generating image with OpenRouter/DALL-E 3');
+      console.log('Generating image with OpenRouter/Gemini 2.5 Flash Image Preview');
       
-      const openRouterResponse = await fetch('https://openrouter.ai/api/v1/images/generations', {
+      const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -120,11 +120,25 @@ serve(async (req) => {
           'X-Title': 'Painted Smiles Drawing Enhancement'
         },
         body: JSON.stringify({
-          model: 'openai/dall-e-3',
-          prompt: enhancedPrompt,
-          n: 1,
-          size: '1024x1024',
-          quality: 'hd'
+          model: 'google/gemini-2.5-flash-image-preview',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: `Generate an enhanced version of this drawing: ${enhancedPrompt}`
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: imageData
+                  }
+                }
+              ]
+            }
+          ],
+          max_tokens: 4096
         }),
       });
 
@@ -135,8 +149,16 @@ serve(async (req) => {
       }
 
       const openRouterData = await openRouterResponse.json();
-      imageUrl = openRouterData.data[0].url;
-      console.log('OpenRouter/DALL-E 3 generation completed');
+      const generatedContent = openRouterData.choices[0].message.content;
+      
+      // Extract image URL from the response if it contains one
+      const imageUrlMatch = generatedContent.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|webp)/i);
+      if (imageUrlMatch) {
+        imageUrl = imageUrlMatch[0];
+        console.log('Gemini 2.5 Flash Image Preview generation completed');
+      } else {
+        throw new Error('No image URL found in Gemini response');
+      }
 
     } else {
       // Use Replicate with Flux as before
