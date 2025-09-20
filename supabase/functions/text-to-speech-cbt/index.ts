@@ -45,11 +45,19 @@ serve(async (req) => {
       throw new Error(`Text-to-speech failed: ${error}`);
     }
 
-    // Convert audio buffer to base64
+    // Convert audio buffer to base64 in chunks to avoid stack overflow
     const arrayBuffer = await response.arrayBuffer();
-    const base64Audio = btoa(
-      String.fromCharCode(...new Uint8Array(arrayBuffer))
-    );
+    const bytes = new Uint8Array(arrayBuffer);
+    
+    // Process in chunks to avoid maximum call stack size exceeded
+    let binaryString = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+      binaryString += String.fromCharCode.apply(null, Array.from(chunk));
+    }
+    
+    const base64Audio = btoa(binaryString);
 
     console.log('TTS conversion successful');
 
