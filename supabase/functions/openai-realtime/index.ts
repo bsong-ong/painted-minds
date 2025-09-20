@@ -4,9 +4,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Upgrade': 'websocket',
-  'Connection': 'Upgrade'
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
 };
 
 serve(async (req) => {
@@ -28,23 +26,33 @@ serve(async (req) => {
     // Connect to OpenAI Realtime API
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
+      console.error('OpenAI API key not configured');
       socket.send(JSON.stringify({ error: 'OpenAI API key not configured' }));
       socket.close();
       return;
     }
 
+    console.log('Connecting to OpenAI Realtime API...');
     const openAIUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01`;
-    openAIWebSocket = new WebSocket(openAIUrl, [], {
-      headers: {
-        "Authorization": `Bearer ${openAIApiKey}`,
-        "OpenAI-Beta": "realtime=v1"
-      }
-    });
+    
+    try {
+      openAIWebSocket = new WebSocket(openAIUrl, [], {
+        headers: {
+          "Authorization": `Bearer ${openAIApiKey}`,
+          "OpenAI-Beta": "realtime=v1"
+        }
+      });
+    } catch (error) {
+      console.error('Failed to create WebSocket to OpenAI:', error);
+      socket.send(JSON.stringify({ error: 'Failed to connect to OpenAI' }));
+      socket.close();
+      return;
+    }
 
     openAIWebSocket.onopen = () => {
       console.log("Connected to OpenAI Realtime API");
       
-      // Send session configuration
+      // Send session configuration after OpenAI connection is established
       const sessionConfig = {
         event_id: `event_${Date.now()}`,
         type: "session.update",
@@ -68,7 +76,11 @@ serve(async (req) => {
         }
       };
       
+      console.log('Sending session config:', sessionConfig);
       openAIWebSocket!.send(JSON.stringify(sessionConfig));
+      
+      // Notify client that connection is ready
+      socket.send(JSON.stringify({ type: 'connection_ready' }));
     };
 
     openAIWebSocket.onmessage = (event) => {
@@ -78,7 +90,7 @@ serve(async (req) => {
 
     openAIWebSocket.onerror = (error) => {
       console.error("OpenAI WebSocket error:", error);
-      socket.send(JSON.stringify({ error: 'OpenAI connection error' }));
+      socket.send(JSON.stringify({ error: 'OpenAI connection error', details: error.toString() }));
     };
 
     openAIWebSocket.onclose = () => {

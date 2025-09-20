@@ -43,7 +43,10 @@ const CBTAssistant = () => {
         console.log('Connecting to OpenAI Realtime API...');
         setStatus('Connecting...');
         
-        await connectToOpenAI();
+        // Wait a moment for the edge function to be ready
+        setTimeout(() => {
+          connectToOpenAI();
+        }, 1000);
       } catch (error) {
         console.error('Error initializing client:', error);
         setError('Failed to initialize AI client. Please try again.');
@@ -69,94 +72,114 @@ const CBTAssistant = () => {
   }, []);
 
   const connectToOpenAI = async () => {
-    const wsUrl = `wss://jmhabxgjckihgptoyupm.supabase.co/functions/v1/openai-realtime`;
-    
-    wsRef.current = new WebSocket(wsUrl);
+    try {
+      const wsUrl = `wss://jmhabxgjckihgptoyupm.supabase.co/functions/v1/openai-realtime`;
+      console.log('Connecting to:', wsUrl);
+      
+      wsRef.current = new WebSocket(wsUrl);
+    } catch (error) {
+      console.error('Failed to create WebSocket:', error);
+      setError('Failed to create WebSocket connection');
+      setStatus('Error');
+      return;
+    }
     
     wsRef.current.onopen = () => {
-      console.log('Connected to OpenAI Realtime API');
-      setStatus('Connected');
+      console.log('Connected to edge function WebSocket');
+      setStatus('Connected to server');
       setError('');
     };
     
     wsRef.current.onmessage = async (event) => {
-      const data = JSON.parse(event.data);
-      console.log('Received OpenAI message:', data);
-      
-      if (data.error) {
-        setError(data.error);
-        setStatus('Error');
-        return;
-      }
-      
-      switch (data.type) {
-        case 'session.created':
-          console.log('Session created');
-          break;
-          
-        case 'session.updated':
-          console.log('Session updated');
-          break;
-          
-        case 'response.audio.delta':
-          // Handle audio response
-          if (audioContextRef.current && data.delta) {
-            const binaryString = atob(data.delta);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-              bytes[i] = binaryString.charCodeAt(i);
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Received message:', data);
+        
+        if (data.error) {
+          console.error('Server error:', data.error);
+          setError(`Server error: ${data.error}`);
+          setStatus('Error');
+          return;
+        }
+        
+        if (data.type === 'connection_ready') {
+          console.log('OpenAI connection ready');
+          setStatus('OpenAI Connected');
+          return;
+        }
+        
+        switch (data.type) {
+          case 'session.created':
+            console.log('Session created');
+            break;
+            
+          case 'session.updated':
+            console.log('Session updated');
+            break;
+            
+          case 'response.audio.delta':
+            // Handle audio response
+            if (audioContextRef.current && data.delta) {
+              const binaryString = atob(data.delta);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              await playAudioData(audioContextRef.current, bytes);
             }
-            await playAudioData(audioContextRef.current, bytes);
-          }
-          break;
-          
-        case 'response.audio_transcript.delta':
-          // Handle transcript delta for display
-          if (data.delta) {
-            currentTranscriptRef.current += data.delta;
-          }
-          break;
-          
-        case 'response.audio_transcript.done':
-          // Complete transcript received
-          if (currentTranscriptRef.current.trim()) {
-            const newMessage: Message = {
-              id: Date.now().toString(),
-              role: 'assistant',
-              content: currentTranscriptRef.current.trim(),
-              timestamp: new Date()
-            };
-            setMessages(prev => [...prev, newMessage]);
-            currentTranscriptRef.current = '';
-          }
-          break;
-          
-        case 'response.done':
-          console.log('Response complete');
-          break;
-          
-        case 'input_audio_buffer.speech_started':
-          console.log('Speech detected');
-          break;
-          
-        case 'input_audio_buffer.speech_stopped':
-          console.log('Speech ended');
-          break;
-          
-        default:
-          console.log('Unhandled message type:', data.type);
+            break;
+            
+          case 'response.audio_transcript.delta':
+            // Handle transcript delta for display
+            if (data.delta) {
+              currentTranscriptRef.current += data.delta;
+            }
+            break;
+            
+          case 'response.audio_transcript.done':
+            // Complete transcript received
+            if (currentTranscriptRef.current.trim()) {
+              const newMessage: Message = {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: currentTranscriptRef.current.trim(),
+                timestamp: new Date()
+              };
+              setMessages(prev => [...prev, newMessage]);
+              currentTranscriptRef.current = '';
+            }
+            break;
+            
+          case 'response.done':
+            console.log('Response complete');
+            break;
+            
+          case 'input_audio_buffer.speech_started':
+            console.log('Speech detected');
+            break;
+            
+          case 'input_audio_buffer.speech_stopped':
+            console.log('Speech ended');
+            break;
+            
+          default:
+            console.log('Unhandled message type:', data.type);
+        }
+      } catch (parseError) {
+        console.error('Failed to parse WebSocket message:', parseError);
+        return;
       }
     };
     
     wsRef.current.onerror = (error) => {
       console.error('WebSocket error:', error);
-      setError('Connection error occurred');
-      setStatus('Error');
+      setError('WebSocket connection error. Please check your internet connection and try again.');
+      setStatus('Connection Error');
     };
     
     wsRef.current.onclose = (event) => {
-      console.log('WebSocket closed:', event.reason);
-      setStatus('Disconnected');
+      console.log('WebSocket closed:', event.code, event.reason);
+      setStatus(`Disconnected (${event.code}): ${event.reason || 'Unknown reason'}`);
     };
   };
 
