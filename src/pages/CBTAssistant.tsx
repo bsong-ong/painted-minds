@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
-import { Mic, MicOff, RotateCcw, Send, Brain } from 'lucide-react';
+import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft } from 'lucide-react';
 import { VoiceActivityDetector, blobToBase64, playAudioFromBase64 } from '@/utils/voice-activity-detector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -18,6 +19,7 @@ interface Message {
 }
 
 const CBTAssistant = () => {
+  const navigate = useNavigate();
   const { language, t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -284,7 +286,14 @@ const CBTAssistant = () => {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-between mb-4">
-            <div></div> {/* Spacer */}
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/')} 
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {language === 'th' ? 'กลับ' : 'Back'}
+            </Button>
             <div className="flex items-center gap-3">
               <Brain className="h-8 w-8 text-primary" />
               <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
