@@ -8,42 +8,42 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Warm puppy-inspired color palette */
-    --background: 35 25% 97%;
-    --foreground: 25 15% 15%;
+    /* Pink-inspired color palette */
+    --background: 330 25% 97%;
+    --foreground: 330 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 25 15% 15%;
+    --card-foreground: 330 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 25 15% 15%;
+    --popover-foreground: 330 15% 15%;
 
-    /* Primary: Warm golden orange like puppy fur */
-    --primary: 25 85% 55%;
+    /* Primary: Beautiful pink */
+    --primary: 330 85% 65%;
     --primary-foreground: 0 0% 98%;
 
-    /* Secondary: Soft cream like puppy belly */
-    --secondary: 35 35% 92%;
-    --secondary-foreground: 25 15% 15%;
+    /* Secondary: Soft pink cream */
+    --secondary: 325 35% 92%;
+    --secondary-foreground: 330 15% 15%;
 
-    --muted: 35 25% 95%;
-    --muted-foreground: 25 10% 50%;
+    --muted: 325 25% 95%;
+    --muted-foreground: 330 10% 50%;
 
-    /* Accent: Warm peach like puppy nose */
-    --accent: 15 70% 85%;
-    --accent-foreground: 25 15% 15%;
+    /* Accent: Warm rose */
+    --accent: 340 70% 85%;
+    --accent-foreground: 330 15% 15%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 35 20% 88%;
-    --input: 35 20% 92%;
-    --ring: 25 85% 55%;
+    --border: 325 20% 88%;
+    --input: 325 20% 92%;
+    --ring: 330 85% 65%;
 
-    /* Custom gratitude colors - warm puppy tones */
-    --gratitude-success: 25 85% 55%;
+    /* Custom gratitude colors - pink tones */
+    --gratitude-success: 330 85% 65%;
     --gratitude-success-foreground: 0 0% 98%;
-    --gratitude-warm: 30 70% 45%;
+    --gratitude-warm: 340 70% 60%;
     --gratitude-warm-foreground: 0 0% 98%;
 
     --radius: 0.5rem;
@@ -66,41 +66,41 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Dark mode: Cozy puppy den colors */
-    --background: 25 20% 8%;
-    --foreground: 35 15% 90%;
+    /* Dark mode: Pink theme colors */
+    --background: 330 20% 8%;
+    --foreground: 325 15% 90%;
 
-    --card: 25 20% 10%;
-    --card-foreground: 35 15% 90%;
+    --card: 330 20% 10%;
+    --card-foreground: 325 15% 90%;
 
-    --popover: 25 20% 10%;
-    --popover-foreground: 35 15% 90%;
+    --popover: 330 20% 10%;
+    --popover-foreground: 325 15% 90%;
 
-    /* Primary: Soft golden glow like firelight on puppy fur */
-    --primary: 30 70% 60%;
-    --primary-foreground: 25 20% 8%;
+    /* Primary: Soft pink glow */
+    --primary: 330 70% 70%;
+    --primary-foreground: 330 20% 8%;
 
-    --secondary: 25 20% 15%;
-    --secondary-foreground: 35 15% 90%;
+    --secondary: 330 20% 15%;
+    --secondary-foreground: 325 15% 90%;
 
-    --muted: 25 20% 15%;
-    --muted-foreground: 35 10% 65%;
+    --muted: 330 20% 15%;
+    --muted-foreground: 325 10% 65%;
 
-    --accent: 25 20% 15%;
-    --accent-foreground: 35 15% 90%;
+    --accent: 330 20% 15%;
+    --accent-foreground: 325 15% 90%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 25 20% 18%;
-    --input: 25 20% 18%;
-    --ring: 30 70% 60%;
+    --border: 330 20% 18%;
+    --input: 330 20% 18%;
+    --ring: 330 70% 70%;
 
-    /* Custom gratitude colors dark mode - warm puppy tones */
-    --gratitude-success: 30 70% 60%;
-    --gratitude-success-foreground: 25 20% 8%;
-    --gratitude-warm: 25 60% 50%;
-    --gratitude-warm-foreground: 25 20% 8%;
+    /* Custom gratitude colors dark mode - pink tones */
+    --gratitude-success: 330 70% 70%;
+    --gratitude-success-foreground: 330 20% 8%;
+    --gratitude-warm: 340 60% 60%;
+    --gratitude-warm-foreground: 330 20% 8%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
