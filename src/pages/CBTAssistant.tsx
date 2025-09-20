@@ -6,6 +6,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { Mic, MicOff, RotateCcw, Send, Brain } from 'lucide-react';
 import { VoiceActivityDetector, blobToBase64, playAudioFromBase64 } from '@/utils/voice-activity-detector';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
@@ -16,6 +18,7 @@ interface Message {
 }
 
 const CBTAssistant = () => {
+  const { language, t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -30,16 +33,18 @@ const CBTAssistant = () => {
   const vadRef = useRef<VoiceActivityDetector | null>(null);
   const conversationHistory = useRef<Array<{role: string, content: string}>>([]);
 
-  // Initialize welcome message
+  // Initialize welcome message with language support
   useEffect(() => {
     const welcomeMessage: Message = {
       id: '1',
       role: 'assistant',
-      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: language === 'th' 
+        ? "สวัสดีค่ะ! ฉันเป็นผู้ช่วย CBT ของคุณ ฉันมาช่วยให้คุณได้สำรวจความคิดและความรู้สึกผ่านเทคนิค CBT ที่ได้รับการพิสูจน์แล้ว คุณสามารถพิมพ์หรือพูดกับฉันเกี่ยวกับสิ่งที่คุณคิด วันนี้คุณรู้สึกอย่างไรบ้างคะ?"
+        : "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
-  }, []);
+  }, [language]);
 
   const handleAudioRecording = async (audioBlob: Blob) => {
     setIsProcessing(true);
@@ -95,11 +100,12 @@ const CBTAssistant = () => {
     setStatus('Generating response...');
 
     try {
-      // Step 2: Generate CBT response using gpt-4.1
+      // Step 2: Generate CBT response using gpt-4.1 with language context
       const responseResult = await supabase.functions.invoke('generate-cbt-response', {
         body: { 
           message: text,
-          conversationHistory: conversationHistory.current
+          conversationHistory: conversationHistory.current,
+          language: language
         }
       });
 
@@ -135,7 +141,11 @@ const CBTAssistant = () => {
         setStatus('Converting to speech...');
         
         const ttsResult = await supabase.functions.invoke('text-to-speech-cbt', {
-          body: { text: assistantResponse, voice: 'alloy' }
+          body: { 
+            text: assistantResponse, 
+            voice: 'alloy',
+            language: language
+          }
         });
 
         if (ttsResult.error) {
@@ -175,7 +185,7 @@ const CBTAssistant = () => {
         handleAudioRecording,
         () => {
           setIsRecording(true);
-          setStatus('🔴 Speaking detected... Recording!');
+          setStatus(language === 'th' ? '🔴 ตรวจพบเสียงพูด... กำลังบันทึก!' : '🔴 Speaking detected... Recording!');
         },
         () => {
           setIsRecording(false);
@@ -190,11 +200,11 @@ const CBTAssistant = () => {
       vadRef.current.startListening();
       
       setIsListening(true);
-      setStatus('🎤 Listening for voice... Speak naturally!');
+      setStatus(language === 'th' ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!' : '🎤 Listening for voice... Speak naturally!');
       
       toast({
-        title: "Voice Mode Active",
-        description: "Speak naturally! I'll automatically detect when you start and stop talking.",
+        title: language === 'th' ? "เปิดโหมดเสียง" : "Voice Mode Active",
+        description: language === 'th' ? "พูดตามธรรมชาติ! ฉันจะตรวจจับอัตโนมัติเมื่อคุณเริ่มและหยุดพูด" : "Speak naturally! I'll automatically detect when you start and stop talking.",
       });
     } catch (err) {
       console.error('Error starting voice mode:', err);
@@ -239,15 +249,17 @@ const CBTAssistant = () => {
     setMessages([{
       id: '1',
       role: 'assistant',
-      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: language === 'th' 
+        ? "สวัสดีค่ะ! ฉันเป็นผู้ช่วย CBT ของคุณ ฉันมาช่วยให้คุณได้สำรวจความคิดและความรู้สึกผ่านเทคนิค CBT ที่ได้รับการพิสูจน์แล้ว คุณสามารถพิมพ์หรือพูดกับฉันเกี่ยวกับสิ่งที่คุณคิด วันนี้คุณรู้สึกอย่างไรบ้างคะ?"
+        : "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
       timestamp: new Date()
     }]);
     conversationHistory.current = [];
     setStatus('Ready');
     setError('');
     toast({
-      title: "Session Reset",
-      description: "New session started successfully."
+      title: language === 'th' ? "รีเซ็ตเซสชัน" : "Session Reset",
+      description: language === 'th' ? "เริ่มเซสชันใหม่เรียบร้อยแล้ว" : "New session started successfully."
     });
   };
 
@@ -271,12 +283,19 @@ const CBTAssistant = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Brain className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div></div> {/* Spacer */}
+            <div className="flex items-center gap-3">
+              <Brain className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
+            </div>
+            <LanguageSwitcher />
           </div>
           <p className="text-muted-foreground">
-            Your personal cognitive behavioral therapy assistant with chained AI processing
+            {language === 'th' 
+              ? 'ผู้ช่วย CBT ส่วนตัวของคุณด้วยการประมวลผล AI แบบต่อเชื่อม'
+              : 'Your personal cognitive behavioral therapy assistant with chained AI processing'
+            }
           </p>
         </div>
 
@@ -289,7 +308,7 @@ const CBTAssistant = () => {
             className="w-full"
           >
             <RotateCcw className="w-5 h-5 mr-2" />
-            Reset Session
+            {language === 'th' ? 'รีเซ็ตเซสชัน' : 'Reset Session'}
           </Button>
           
           <Button
@@ -302,12 +321,12 @@ const CBTAssistant = () => {
             {isListening ? (
               <>
                 <MicOff className="w-5 h-5 mr-2" />
-                Stop Voice Mode
+                {language === 'th' ? 'หยุดโหมดเสียง' : 'Stop Voice Mode'}
               </>
             ) : (
               <>
                 <Mic className="w-5 h-5 mr-2" />
-                Start Voice Mode
+                {language === 'th' ? 'เริ่มโหมดเสียง' : 'Start Voice Mode'}
               </>
             )}
           </Button>
