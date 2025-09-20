@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { Mic, MicOff, RotateCcw, Send, Brain } from 'lucide-react';
-import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
+import { VoiceActivityDetector, blobToBase64, playAudioFromBase64 } from '@/utils/voice-activity-detector';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
@@ -18,14 +18,16 @@ interface Message {
 const CBTAssistant = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [status, setStatus] = useState('Ready');
   const [error, setError] = useState('');
+  const [volumeLevel, setVolumeLevel] = useState(0);
   const { toast } = useToast();
   
-  // Audio recording setup
-  const audioRecorderRef = useRef<AudioRecorder | null>(null);
+  // Voice Activity Detector setup
+  const vadRef = useRef<VoiceActivityDetector | null>(null);
   const conversationHistory = useRef<Array<{role: string, content: string}>>([]);
 
   // Initialize welcome message
@@ -164,45 +166,74 @@ const CBTAssistant = () => {
     }
   };
 
-  const startRecording = async () => {
-    if (isRecording || isProcessing) return;
+  const startVoiceMode = async () => {
+    if (isListening || isProcessing) return;
 
     try {
       setError('');
-      audioRecorderRef.current = new AudioRecorder(handleAudioRecording);
-      await audioRecorderRef.current.start();
+      vadRef.current = new VoiceActivityDetector(
+        handleAudioRecording,
+        () => {
+          setIsRecording(true);
+          setStatus('🔴 Speaking detected... Recording!');
+        },
+        () => {
+          setIsRecording(false);
+          setStatus('🔄 Processing audio...');
+        },
+        (volume) => {
+          setVolumeLevel(volume);
+        }
+      );
       
-      setIsRecording(true);
-      setStatus('🔴 Recording... Speak now!');
+      await vadRef.current.initialize();
+      vadRef.current.startListening();
+      
+      setIsListening(true);
+      setStatus('🎤 Listening for voice... Speak naturally!');
       
       toast({
-        title: "Recording Started",
-        description: "Speak now! The AI will transcribe and respond.",
+        title: "Voice Mode Active",
+        description: "Speak naturally! I'll automatically detect when you start and stop talking.",
       });
     } catch (err) {
-      console.error('Error starting recording:', err);
+      console.error('Error starting voice mode:', err);
       setStatus('Ready');
       setError(`Error: ${(err as Error).message}`);
       toast({
         title: "Microphone Error",
-        description: "Failed to start recording. Please check your microphone permissions.",
+        description: "Failed to start voice mode. Please check your microphone permissions.",
         variant: "destructive"
       });
     }
   };
 
-  const stopRecording = () => {
-    if (!isRecording || !audioRecorderRef.current) return;
+  const stopVoiceMode = () => {
+    if (!isListening || !vadRef.current) return;
 
-    audioRecorderRef.current.stop();
+    vadRef.current.stopListening();
+    vadRef.current.dispose();
+    vadRef.current = null;
+    
+    setIsListening(false);
     setIsRecording(false);
-    setStatus('Processing audio...');
+    setVolumeLevel(0);
+    setStatus('Ready');
     
     toast({
-      title: "Recording Stopped",
-      description: "Processing your input..."
+      title: "Voice Mode Stopped",
+      description: "Voice detection has been disabled."
     });
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (vadRef.current) {
+        vadRef.current.dispose();
+      }
+    };
+  }, []);
 
   const resetSession = () => {
     setMessages([{
@@ -252,7 +283,7 @@ const CBTAssistant = () => {
         <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <Button
             onClick={resetSession}
-            disabled={isRecording}
+            disabled={isListening || isRecording}
             variant="outline"
             size="lg"
             className="w-full"
@@ -262,28 +293,47 @@ const CBTAssistant = () => {
           </Button>
           
           <Button
-            onClick={isRecording ? stopRecording : startRecording}
+            onClick={isListening ? stopVoiceMode : startVoiceMode}
             disabled={isProcessing}
-            variant={isRecording ? "destructive" : "default"}
+            variant={isListening ? "destructive" : "default"}
             size="lg"
             className="w-full"
           >
-            {isRecording ? (
+            {isListening ? (
               <>
                 <MicOff className="w-5 h-5 mr-2" />
-                Stop Recording
+                Stop Voice Mode
               </>
             ) : (
               <>
                 <Mic className="w-5 h-5 mr-2" />
-                Start Recording
+                Start Voice Mode
               </>
             )}
           </Button>
           
           <div className="p-4 bg-muted rounded-lg">
             <div className="text-sm font-medium text-muted-foreground mb-1">Status</div>
-            <div className="text-sm text-foreground">{error || status}</div>
+            <div className="text-sm text-foreground mb-2">{error || status}</div>
+            {isListening && (
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">Voice Activity</div>
+                <div className="w-full bg-background rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-150 ${
+                      volumeLevel > 0.02 ? 'bg-green-500' : 'bg-gray-300'
+                    }`}
+                    style={{ width: `${Math.min(volumeLevel * 500, 100)}%` }}
+                  />
+                </div>
+                {isRecording && (
+                  <div className="flex items-center gap-1 text-xs text-red-500">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    Recording...
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
