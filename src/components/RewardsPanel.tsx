@@ -40,6 +40,32 @@ const RewardsPanel = () => {
     }
   }, [user]);
 
+  const validateAndUpdateStreak = async (streakData: UserStreak) => {
+    if (!streakData.last_entry_date) return streakData;
+
+    const today = new Date();
+    const lastEntry = new Date(streakData.last_entry_date);
+    const daysDifference = Math.floor((today.getTime() - lastEntry.getTime()) / (1000 * 60 * 60 * 24));
+
+    // If more than 1 day has passed since last entry, reset current streak
+    if (daysDifference > 1) {
+      const updatedStreakData = {
+        ...streakData,
+        current_streak: 0
+      };
+
+      // Update in database
+      await supabase
+        .from('user_streaks')
+        .update({ current_streak: 0 })
+        .eq('user_id', user?.id);
+
+      return updatedStreakData;
+    }
+
+    return streakData;
+  };
+
   const fetchRewardsData = async () => {
     try {
       setLoading(true);
@@ -52,7 +78,9 @@ const RewardsPanel = () => {
         .single();
 
       if (streakData) {
-        setStreak(streakData);
+        // Validate and potentially reset streak if user hasn't journaled
+        const validatedStreak = await validateAndUpdateStreak(streakData);
+        setStreak(validatedStreak);
       }
 
       // Fetch points data
