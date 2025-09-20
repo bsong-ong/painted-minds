@@ -7,6 +7,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 
+// Import puppy images
+import puppyNeutral from '@/assets/puppy-neutral.png';
+import puppyHappy from '@/assets/puppy-happy.png';
+import puppyJoyful from '@/assets/puppy-joyful.png';
+import puppyExcited from '@/assets/puppy-excited.png';
+import puppyCelebration from '@/assets/puppy-celebration.png';
+
 interface UserStreak {
   current_streak: number;
   longest_streak: number;
@@ -91,6 +98,23 @@ const RewardsPanel = () => {
     return { name: t('newArtist'), icon: Flame };
   };
 
+  const getPuppyImage = (streakCount: number) => {
+    if (streakCount >= 30) return puppyCelebration; // Master level - celebration puppy
+    if (streakCount >= 14) return puppyExcited;     // 2+ weeks - excited puppy
+    if (streakCount >= 7) return puppyJoyful;       // 1 week - joyful puppy
+    if (streakCount >= 3) return puppyHappy;        // Getting started - happy puppy
+    return puppyNeutral;                            // Just starting - neutral puppy
+  };
+
+  const getPuppyMessage = (streakCount: number) => {
+    if (streakCount >= 30) return t('Your gratitude buddy is absolutely thrilled! You\'re a true gratitude master!');
+    if (streakCount >= 14) return t('Your gratitude buddy is jumping with excitement! Amazing consistency!');
+    if (streakCount >= 7) return t('Your gratitude buddy is so happy! You\'re building a wonderful habit!');
+    if (streakCount >= 3) return t('Your gratitude buddy is getting happier! Keep it up!');
+    if (streakCount >= 1) return t('Your gratitude buddy is excited to start this journey with you!');
+    return t('Meet your gratitude buddy! They\'ll get happier as you build your practice!');
+  };
+
   if (loading) {
     return (
       <Card>
@@ -110,6 +134,8 @@ const RewardsPanel = () => {
   const streakLevel = getStreakLevel(currentStreak);
   const entryMilestone = getEntryMilestone(totalEntries);
   const MilestoneIcon = entryMilestone.icon;
+  const puppyImage = getPuppyImage(currentStreak);
+  const puppyMessage = getPuppyMessage(currentStreak);
 
   return (
     <Card>
@@ -120,6 +146,19 @@ const RewardsPanel = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Gratitude Buddy */}
+        <div className="text-center space-y-3">
+          <div className="relative mx-auto w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-primary/10 to-secondary/10 p-2">
+            <img
+              src={puppyImage}
+              alt="Your gratitude buddy"
+              className="w-full h-full object-cover rounded-full animate-scale-in"
+            />
+          </div>
+          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+            {puppyMessage}
+          </p>
+        </div>
         {/* Current Streak */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">

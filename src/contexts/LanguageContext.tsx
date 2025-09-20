@@ -204,6 +204,14 @@ const translations = {
     buildingHabit: "You're building a beautiful habit! ✨",
     amazingConsistency: "Amazing consistency! You're inspiring! 🌟",
     gratitudeMasterMsg: "You're a true gratitude master! 🏆",
+    
+    // Puppy buddy messages
+    "Your gratitude buddy is absolutely thrilled! You're a true gratitude master!": "Your gratitude buddy is absolutely thrilled! You're a true gratitude master!",
+    "Your gratitude buddy is jumping with excitement! Amazing consistency!": "Your gratitude buddy is jumping with excitement! Amazing consistency!",
+    "Your gratitude buddy is so happy! You're building a wonderful habit!": "Your gratitude buddy is so happy! You're building a wonderful habit!",
+    "Your gratitude buddy is getting happier! Keep it up!": "Your gratitude buddy is getting happier! Keep it up!",
+    "Your gratitude buddy is excited to start this journey with you!": "Your gratitude buddy is excited to start this journey with you!",
+    "Meet your gratitude buddy! They'll get happier as you build your practice!": "Meet your gratitude buddy! They'll get happier as you build your practice!",
 
     // Drawing gallery
     myDrawings: 'My Drawings',
@@ -412,6 +420,14 @@ const translations = {
     buildingHabit: 'คุณกำลังสร้างนิสัยที่งดงาม! ✨',
     amazingConsistency: 'ความสม่ำเสมอที่น่าทึ่ง! คุณเป็นแรงบันดาลใจ! 🌟',
     gratitudeMasterMsg: 'คุณเป็นปรมาจารย์ความกตัญญูตัวจริง! 🏆',
+    
+    // Puppy buddy messages
+    "Your gratitude buddy is absolutely thrilled! You're a true gratitude master!": "เพื่อนความกตัญญูของคุณตื่นเต้นมาก! คุณเป็นปรมาจารย์ความกตัญญูตัวจริง!",
+    "Your gratitude buddy is jumping with excitement! Amazing consistency!": "เพื่อนความกตัญญูของคุณกระโดดด้วยความตื่นเต้น! ความสม่ำเสมอที่น่าทึ่ง!",
+    "Your gratitude buddy is so happy! You're building a wonderful habit!": "เพื่อนความกตัญญูของคุณมีความสุขมาก! คุณกำลังสร้างนิสัยที่ยอดเยียม!",
+    "Your gratitude buddy is getting happier! Keep it up!": "เพื่อนความกตัญญูของคุณมีความสุขขึ้น! สู้ต่อไป!",
+    "Your gratitude buddy is excited to start this journey with you!": "เพื่อนความกตัญญูของคุณตื่นเต้นที่จะเริ่มต้นการเดินทางนี้กับคุณ!",
+    "Meet your gratitude buddy! They'll get happier as you build your practice!": "พบกับเพื่อนความกตัญญูของคุณ! พวกเขาจะมีความสุขมากขึ่นเมื่อคุณสร้างการฝึกฝน!",
 
     // Drawing gallery
     myDrawings: 'งานวาดของฉัน',
