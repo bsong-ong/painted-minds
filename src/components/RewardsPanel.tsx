@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, Flame, Star, Target } from 'lucide-react';
+import { Trophy, Flame, Star, Target, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -143,6 +143,15 @@ const RewardsPanel = () => {
     return t('Meet your gratitude buddy! They\'ll get happier as you build your practice!');
   };
 
+  const getNextBuddyState = (streakCount: number) => {
+    if (streakCount >= 30) return null; // Already at max level
+    if (streakCount >= 14) return { target: 30, state: 'absolutely thrilled (celebration mode)' };
+    if (streakCount >= 7) return { target: 14, state: 'jumping with excitement' };
+    if (streakCount >= 3) return { target: 7, state: 'joyful and happy' };
+    if (streakCount >= 1) return { target: 3, state: 'getting happier' };
+    return { target: 1, state: 'excited to start' };
+  };
+
   if (loading) {
     return (
       <Card>
@@ -164,6 +173,7 @@ const RewardsPanel = () => {
   const MilestoneIcon = entryMilestone.icon;
   const puppyImage = getPuppyImage(currentStreak);
   const puppyMessage = getPuppyMessage(currentStreak);
+  const nextBuddyState = getNextBuddyState(currentStreak);
 
   return (
     <Card>
@@ -186,6 +196,24 @@ const RewardsPanel = () => {
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
             {puppyMessage}
           </p>
+          
+          {/* Buddy State Info */}
+          {nextBuddyState && (
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 max-w-xs mx-auto">
+              <div className="flex items-start gap-2">
+                <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-blue-700 dark:text-blue-300">
+                  <span className="font-medium">Next buddy state:</span>
+                  <br />
+                  Your buddy will be <span className="font-medium">{nextBuddyState.state}</span> when you reach a {nextBuddyState.target}-day streak!
+                  <br />
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">
+                    {nextBuddyState.target - currentStreak} more days to go!
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         {/* Current Streak */}
         <div className="space-y-2">
