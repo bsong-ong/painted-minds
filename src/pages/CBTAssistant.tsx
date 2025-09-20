@@ -201,6 +201,7 @@ const CBTAssistant = () => {
 
     try {
       await inputAudioContextRef.current.resume();
+      await outputAudioContextRef.current?.resume();
       setStatus('Requesting microphone access...');
 
       mediaStreamRef.current = await navigator.mediaDevices.getUserMedia({
