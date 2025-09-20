@@ -57,8 +57,12 @@ const CBTAssistant = () => {
         nextStartTimeRef.current = outputAudioContextRef.current.currentTime;
         
         console.log('Creating GoogleGenAI client...');
-        // Note: In production, this should come from a secure environment variable
-        const apiKey = process.env.GEMINI_API_KEY || 'your-gemini-api-key-here';
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey) {
+          setError('Gemini API key not found. Please add VITE_GEMINI_API_KEY to your environment.');
+          setStatus('Error: Missing API Key');
+          return;
+        }
         
         clientRef.current = new GoogleGenAI({
           apiKey: apiKey,
