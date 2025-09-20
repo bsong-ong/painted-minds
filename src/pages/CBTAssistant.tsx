@@ -5,8 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { Mic, MicOff, RotateCcw, Send, Brain } from 'lucide-react';
-import { GoogleGenAI, LiveServerMessage, Modality, Session } from '@google/genai';
-import { createBlob, decode, decodeAudioData } from '@/utils/audio';
+import { AudioRecorder, encodeAudioForAPI, playAudioData } from '@/utils/openai-audio';
 
 interface Message {
   id: string;
@@ -23,58 +22,31 @@ const CBTAssistant = () => {
   const [error, setError] = useState('');
   const { toast } = useToast();
   
-  // Gemini Live Audio setup
-  const clientRef = useRef<GoogleGenAI | null>(null);
-  const sessionRef = useRef<Session | null>(null);
-  const inputAudioContextRef = useRef<AudioContext | null>(null);
-  const outputAudioContextRef = useRef<AudioContext | null>(null);
-  const inputNodeRef = useRef<GainNode | null>(null);
-  const outputNodeRef = useRef<GainNode | null>(null);
-  const nextStartTimeRef = useRef(0);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const scriptProcessorNodeRef = useRef<ScriptProcessorNode | null>(null);
-  const sourcesRef = useRef(new Set<AudioBufferSourceNode>());
+  // OpenAI Realtime API setup
+  const wsRef = useRef<WebSocket | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioRecorderRef = useRef<AudioRecorder | null>(null);
+  const responseIdRef = useRef<string>('');
+  const currentTranscriptRef = useRef<string>('');
 
-  // Initialize Gemini client and audio contexts
+  // Initialize OpenAI Realtime API connection
   useEffect(() => {
     const initClient = async () => {
       try {
-        console.log('Initializing audio contexts...');
+        console.log('Initializing audio context...');
         
-        // Initialize audio contexts
-        inputAudioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
-          sampleRate: 16000
-        });
-        outputAudioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
-          sampleRate: 24000
+        // Initialize audio context
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
+          sampleRate: 24000,
         });
         
-        inputNodeRef.current = inputAudioContextRef.current.createGain();
-        outputNodeRef.current = outputAudioContextRef.current.createGain();
-        outputNodeRef.current.connect(outputAudioContextRef.current.destination);
+        console.log('Connecting to OpenAI Realtime API...');
+        setStatus('Connecting...');
         
-        nextStartTimeRef.current = outputAudioContextRef.current.currentTime;
-        
-        console.log('Creating GoogleGenAI client...');
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-        if (!apiKey) {
-          setError('Gemini API key not found. Please add VITE_GEMINI_API_KEY to your environment.');
-          setStatus('Error: Missing API Key');
-          return;
-        }
-        
-        clientRef.current = new GoogleGenAI({
-          apiKey: apiKey,
-        });
-        
-        console.log('Client created successfully');
-        setStatus('Ready');
-        
-        await initSession();
+        await connectToOpenAI();
       } catch (error) {
         console.error('Error initializing client:', error);
-        setError('Failed to initialize AI client. Please check your API key.');
+        setError('Failed to initialize AI client. Please try again.');
         setStatus('Error');
       }
     };
@@ -83,7 +55,7 @@ const CBTAssistant = () => {
     const welcomeMessage: Message = {
       id: '1',
       role: 'assistant',
-      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: "Hello! I'm your CBT assistant powered by OpenAI. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
@@ -92,156 +64,124 @@ const CBTAssistant = () => {
     
     return () => {
       // Cleanup
-      sessionRef.current?.close();
-      inputAudioContextRef.current?.close();
-      outputAudioContextRef.current?.close();
+      cleanup();
     };
   }, []);
 
-  const initSession = async () => {
-    if (!clientRef.current) return;
+  const connectToOpenAI = async () => {
+    const wsUrl = `wss://jmhabxgjckihgptoyupm.supabase.co/functions/v1/openai-realtime`;
     
-    const model = 'gemini-2.5-flash-preview-native-audio-dialog';
+    wsRef.current = new WebSocket(wsUrl);
     
-    try {
-      console.log('Initializing session...');
-      sessionRef.current = await clientRef.current.live.connect({
-        model: model,
-        callbacks: {
-          onopen: () => {
-            console.log('Session opened successfully');
-            setStatus('Connected');
-            setError('');
-          },
-          onmessage: async (message: LiveServerMessage) => {
-            console.log('Received message:', message);
-            const audio = message.serverContent?.modelTurn?.parts[0]?.inlineData;
-
-            if (audio) {
-              console.log('Processing audio response...');
-              if (!outputAudioContextRef.current) return;
-              
-              nextStartTimeRef.current = Math.max(
-                nextStartTimeRef.current,
-                outputAudioContextRef.current.currentTime,
-              );
-
-              try {
-                const audioBuffer = await decodeAudioData(
-                  decode(audio.data),
-                  outputAudioContextRef.current,
-                  24000,
-                  1,
-                );
-                const source = outputAudioContextRef.current.createBufferSource();
-                source.buffer = audioBuffer;
-                source.connect(outputNodeRef.current!);
-                source.addEventListener('ended', () => {
-                  sourcesRef.current.delete(source);
-                });
-
-                source.start(nextStartTimeRef.current);
-                nextStartTimeRef.current = nextStartTimeRef.current + audioBuffer.duration;
-                sourcesRef.current.add(source);
-              } catch (audioError) {
-                console.error('Error playing audio:', audioError);
-              }
+    wsRef.current.onopen = () => {
+      console.log('Connected to OpenAI Realtime API');
+      setStatus('Connected');
+      setError('');
+    };
+    
+    wsRef.current.onmessage = async (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Received OpenAI message:', data);
+      
+      if (data.error) {
+        setError(data.error);
+        setStatus('Error');
+        return;
+      }
+      
+      switch (data.type) {
+        case 'session.created':
+          console.log('Session created');
+          break;
+          
+        case 'session.updated':
+          console.log('Session updated');
+          break;
+          
+        case 'response.audio.delta':
+          // Handle audio response
+          if (audioContextRef.current && data.delta) {
+            const binaryString = atob(data.delta);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
             }
-
-            const interrupted = message.serverContent?.interrupted;
-            if (interrupted) {
-              for (const source of sourcesRef.current.values()) {
-                source.stop();
-                sourcesRef.current.delete(source);
-              }
-              nextStartTimeRef.current = outputAudioContextRef.current?.currentTime || 0;
-            }
-            
-            // Handle text content for display
-            const textContent = message.serverContent?.modelTurn?.parts.find(part => part.text)?.text;
-            if (textContent) {
-              const newMessage: Message = {
-                id: Date.now().toString(),
-                role: 'assistant',
-                content: textContent,
-                timestamp: new Date()
-              };
-              setMessages(prev => [...prev, newMessage]);
-            }
-          },
-          onerror: (e: ErrorEvent) => {
-            console.error('Session error:', e);
-            setError(e.message);
-            setStatus('Error');
-          },
-          onclose: (e: CloseEvent) => {
-            console.log('Session closed:', e.reason);
-            setStatus('Disconnected: ' + e.reason);
-          },
-        },
-        config: {
-          responseModalities: [Modality.AUDIO],
-          systemInstruction: "You are a compassionate and professional Cognitive Behavioral Therapy (CBT) assistant. Your role is to help users identify, examine, and restructure unhelpful thought patterns using evidence-based CBT techniques. Respond immediately as the user speaks—no need to wait for silence. Keep responses brief and supportive.",
-          speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } },
-            languageCode: 'en-US'
+            await playAudioData(audioContextRef.current, bytes);
           }
-        },
-      });
-      console.log('Session initialized successfully');
-    } catch (e) {
-      console.error('Error initializing session:', e);
-      setError('Failed to initialize session: ' + (e as Error).message);
+          break;
+          
+        case 'response.audio_transcript.delta':
+          // Handle transcript delta for display
+          if (data.delta) {
+            currentTranscriptRef.current += data.delta;
+          }
+          break;
+          
+        case 'response.audio_transcript.done':
+          // Complete transcript received
+          if (currentTranscriptRef.current.trim()) {
+            const newMessage: Message = {
+              id: Date.now().toString(),
+              role: 'assistant',
+              content: currentTranscriptRef.current.trim(),
+              timestamp: new Date()
+            };
+            setMessages(prev => [...prev, newMessage]);
+            currentTranscriptRef.current = '';
+          }
+          break;
+          
+        case 'response.done':
+          console.log('Response complete');
+          break;
+          
+        case 'input_audio_buffer.speech_started':
+          console.log('Speech detected');
+          break;
+          
+        case 'input_audio_buffer.speech_stopped':
+          console.log('Speech ended');
+          break;
+          
+        default:
+          console.log('Unhandled message type:', data.type);
+      }
+    };
+    
+    wsRef.current.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setError('Connection error occurred');
       setStatus('Error');
-    }
+    };
+    
+    wsRef.current.onclose = (event) => {
+      console.log('WebSocket closed:', event.reason);
+      setStatus('Disconnected');
+    };
   };
 
   const startRecording = async () => {
-    if (isRecording || !inputAudioContextRef.current) return;
+    if (isRecording || !audioContextRef.current || !wsRef.current) return;
 
     try {
-      await inputAudioContextRef.current.resume();
-      await outputAudioContextRef.current?.resume();
-      setStatus('Requesting microphone access...');
+      await audioContextRef.current.resume();
+      setStatus('Starting recording...');
 
-      mediaStreamRef.current = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: false,
+      audioRecorderRef.current = new AudioRecorder((audioData) => {
+        if (isRecording && wsRef.current?.readyState === WebSocket.OPEN) {
+          const audioBase64 = encodeAudioForAPI(audioData);
+          const audioMessage = {
+            type: 'input_audio_buffer.append',
+            audio: audioBase64
+          };
+          wsRef.current.send(JSON.stringify(audioMessage));
+        }
       });
 
-      setStatus('Microphone access granted. Starting capture...');
-
-      sourceNodeRef.current = inputAudioContextRef.current.createMediaStreamSource(
-        mediaStreamRef.current,
-      );
-      sourceNodeRef.current.connect(inputNodeRef.current!);
-
-      const bufferSize = 256;
-      scriptProcessorNodeRef.current = inputAudioContextRef.current.createScriptProcessor(
-        bufferSize,
-        1,
-        1,
-      );
-
-      scriptProcessorNodeRef.current.onaudioprocess = (audioProcessingEvent) => {
-        if (!isRecording || !sessionRef.current) return;
-
-        const inputBuffer = audioProcessingEvent.inputBuffer;
-        const pcmData = inputBuffer.getChannelData(0);
-
-        try {
-          const audioBlob = createBlob(pcmData);
-          sessionRef.current.sendRealtimeInput({ media: audioBlob as any });
-        } catch (error) {
-          console.error('Error sending audio chunk:', error);
-        }
-      };
-
-      sourceNodeRef.current.connect(scriptProcessorNodeRef.current);
-      scriptProcessorNodeRef.current.connect(inputAudioContextRef.current.destination);
-
+      await audioRecorderRef.current.start();
       setIsRecording(true);
       setStatus('🔴 Recording... Speak now!');
+      
       toast({
         title: "Recording Started",
         description: "Speak now! The AI will respond with both text and voice.",
@@ -260,22 +200,14 @@ const CBTAssistant = () => {
   };
 
   const stopRecording = () => {
-    if (!isRecording && !mediaStreamRef.current && !inputAudioContextRef.current) return;
+    if (!isRecording) return;
 
     setStatus('Stopping recording...');
     setIsRecording(false);
 
-    if (scriptProcessorNodeRef.current && sourceNodeRef.current && inputAudioContextRef.current) {
-      scriptProcessorNodeRef.current.disconnect();
-      sourceNodeRef.current.disconnect();
-    }
-
-    scriptProcessorNodeRef.current = null;
-    sourceNodeRef.current = null;
-
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
+    if (audioRecorderRef.current) {
+      audioRecorderRef.current.stop();
+      audioRecorderRef.current = null;
     }
 
     setStatus('Recording stopped. Click Start to begin again.');
@@ -286,14 +218,14 @@ const CBTAssistant = () => {
   };
 
   const resetSession = () => {
-    sessionRef.current?.close();
+    cleanup();
     setMessages([{
       id: '1',
       role: 'assistant',
-      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: "Hello! I'm your CBT assistant powered by OpenAI. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
       timestamp: new Date()
     }]);
-    initSession();
+    connectToOpenAI();
     setStatus('Session reset');
     setError('');
     toast({
@@ -303,7 +235,7 @@ const CBTAssistant = () => {
   };
 
   const sendMessage = async (text: string = inputText) => {
-    if (!text.trim() || !sessionRef.current) return;
+    if (!text.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -316,11 +248,23 @@ const CBTAssistant = () => {
     setInputText('');
 
     try {
-      // Send text message to Gemini
-      const textBlob = new Blob([text], { type: 'text/plain' });
-      await sessionRef.current.sendRealtimeInput({
-        media: textBlob as any
-      });
+      // Send text message to OpenAI
+      const event = {
+        type: 'conversation.item.create',
+        item: {
+          type: 'message',
+          role: 'user',
+          content: [
+            {
+              type: 'input_text',
+              text: text
+            }
+          ]
+        }
+      };
+      
+      wsRef.current.send(JSON.stringify(event));
+      wsRef.current.send(JSON.stringify({type: 'response.create'}));
       
       toast({
         title: "Message Sent",
@@ -336,6 +280,22 @@ const CBTAssistant = () => {
     }
   };
 
+  const cleanup = () => {
+    if (audioRecorderRef.current) {
+      audioRecorderRef.current.stop();
+      audioRecorderRef.current = null;
+    }
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    setIsRecording(false);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -345,7 +305,7 @@ const CBTAssistant = () => {
             <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
           </div>
           <p className="text-muted-foreground">
-            Your personal cognitive behavioral therapy assistant powered by Gemini AI
+            Your personal cognitive behavioral therapy assistant powered by OpenAI
           </p>
         </div>
 
@@ -363,7 +323,7 @@ const CBTAssistant = () => {
           
           <Button
             onClick={isRecording ? stopRecording : startRecording}
-            disabled={!sessionRef.current}
+            disabled={!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN}
             variant={isRecording ? "destructive" : "default"}
             size="lg"
             className="w-full"
@@ -440,7 +400,7 @@ const CBTAssistant = () => {
               <div className="flex items-center justify-end">
                 <Button
                   onClick={() => sendMessage()}
-                  disabled={!inputText.trim() || !sessionRef.current}
+                  disabled={!inputText.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN}
                   className="gap-2"
                 >
                   <Send className="h-4 w-4" />
