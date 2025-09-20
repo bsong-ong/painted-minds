@@ -86,14 +86,14 @@ const CBTAssistant = () => {
     
     wsRef.current.onopen = () => {
       console.log('Connected to edge function WebSocket');
-      setStatus('Connected to server');
+      setStatus('Connected to server, waiting for OpenAI...');
       setError('');
     };
     
     wsRef.current.onmessage = async (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('Received message:', data);
+        console.log('Received message type:', data.type);
         
         if (data.error) {
           console.error('Server error:', data.error);
@@ -102,9 +102,9 @@ const CBTAssistant = () => {
           return;
         }
         
-        if (data.type === 'connection_ready') {
-          console.log('OpenAI connection ready');
-          setStatus('OpenAI Connected');
+        if (data.type === 'openai_connected') {
+          console.log('OpenAI connection established');
+          setStatus('OpenAI Connected - Ready!');
           return;
         }
         
