@@ -6,5 +6,11 @@ verify_jwt = false
 [functions.generate-gratitude-hints]
 verify_jwt = false
 
-[functions.openai-realtime]
+[functions.transcribe-audio]
+verify_jwt = false
+
+[functions.generate-cbt-response]
+verify_jwt = false
+
+[functions.text-to-speech-cbt]
 verify_jwt = false

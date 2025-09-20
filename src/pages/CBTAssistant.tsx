@@ -5,7 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { Mic, MicOff, RotateCcw, Send, Brain } from 'lucide-react';
-import { AudioRecorder, encodeAudioForAPI, playAudioData } from '@/utils/openai-audio';
+import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -18,202 +19,170 @@ const CBTAssistant = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
-  const [status, setStatus] = useState('Initializing...');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [status, setStatus] = useState('Ready');
   const [error, setError] = useState('');
   const { toast } = useToast();
   
-  // OpenAI Realtime API setup
-  const wsRef = useRef<WebSocket | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  // Audio recording setup
   const audioRecorderRef = useRef<AudioRecorder | null>(null);
-  const responseIdRef = useRef<string>('');
-  const currentTranscriptRef = useRef<string>('');
+  const conversationHistory = useRef<Array<{role: string, content: string}>>([]);
 
-  // Initialize OpenAI Realtime API connection
+  // Initialize welcome message
   useEffect(() => {
-    const initClient = async () => {
-      try {
-        console.log('Initializing audio context...');
-        
-        // Initialize audio context
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
-          sampleRate: 24000,
-        });
-        
-        console.log('Connecting to OpenAI Realtime API...');
-        setStatus('Connecting...');
-        
-        // Wait a moment for the edge function to be ready
-        setTimeout(() => {
-          connectToOpenAI();
-        }, 1000);
-      } catch (error) {
-        console.error('Error initializing client:', error);
-        setError('Failed to initialize AI client. Please try again.');
-        setStatus('Error');
-      }
-    };
-    
-    // Add welcome message
     const welcomeMessage: Message = {
       id: '1',
       role: 'assistant',
-      content: "Hello! I'm your CBT assistant powered by OpenAI. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
-    
-    initClient();
-    
-    return () => {
-      // Cleanup
-      cleanup();
-    };
   }, []);
 
-  const connectToOpenAI = async () => {
+  const handleAudioRecording = async (audioBlob: Blob) => {
+    setIsProcessing(true);
+    setStatus('Transcribing audio...');
+
     try {
-      const wsUrl = `wss://jmhabxgjckihgptoyupm.functions.supabase.co/openai-realtime?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptaGFieGdqY2tpaGdwdG95dXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwOTkzNzMsImV4cCI6MjA2MTY3NTM3M30.uTUGHNGTciVF0Cs_SKi7I2aElzzXLkmHQKjXeitkTOg`;
-      console.log('Connecting to:', wsUrl);
+      // Step 1: Convert audio to base64 and transcribe
+      const base64Audio = await blobToBase64(audioBlob);
       
-      wsRef.current = new WebSocket(wsUrl);
-    } catch (error) {
-      console.error('Failed to create WebSocket:', error);
-      setError('Failed to create WebSocket connection');
-      setStatus('Error');
-      return;
-    }
-    
-    wsRef.current.onopen = () => {
-      console.log('Connected to edge function WebSocket');
-      setStatus('Connected to server, waiting for OpenAI...');
-      setError('');
-    };
-    
-    wsRef.current.onmessage = async (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('Received message type:', data.type);
-        
-        if (data.error) {
-          console.error('Server error:', data.error);
-          setError(`Server error: ${data.error}`);
-          setStatus('Error');
-          return;
-        }
-        
-        if (data.type === 'openai_connected') {
-          console.log('OpenAI connection established');
-          setStatus('OpenAI Connected - Ready!');
-          return;
-        }
-        
-        switch (data.type) {
-          case 'session.created':
-            console.log('Session created');
-            break;
-            
-          case 'session.updated':
-            console.log('Session updated');
-            break;
-            
-          case 'response.audio.delta':
-            // Handle audio response
-            if (audioContextRef.current && data.delta) {
-              const binaryString = atob(data.delta);
-              const bytes = new Uint8Array(binaryString.length);
-              for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-              }
-              await playAudioData(audioContextRef.current, bytes);
-            }
-            break;
-            
-          case 'response.audio_transcript.delta':
-            // Handle transcript delta for display
-            if (data.delta) {
-              currentTranscriptRef.current += data.delta;
-            }
-            break;
-            
-          case 'response.audio_transcript.done':
-            // Complete transcript received
-            if (currentTranscriptRef.current.trim()) {
-              const newMessage: Message = {
-                id: Date.now().toString(),
-                role: 'assistant',
-                content: currentTranscriptRef.current.trim(),
-                timestamp: new Date()
-              };
-              setMessages(prev => [...prev, newMessage]);
-              currentTranscriptRef.current = '';
-            }
-            break;
-            
-          case 'response.done':
-            console.log('Response complete');
-            break;
-            
-          case 'input_audio_buffer.speech_started':
-            console.log('Speech detected');
-            break;
-            
-          case 'input_audio_buffer.speech_stopped':
-            console.log('Speech ended');
-            break;
-            
-          default:
-            console.log('Unhandled message type:', data.type);
-        }
-      } catch (parseError) {
-        console.error('Failed to parse WebSocket message:', parseError);
-        return;
+      const transcriptionResult = await supabase.functions.invoke('transcribe-audio', {
+        body: { audio: base64Audio }
+      });
+
+      if (transcriptionResult.error) {
+        throw new Error(transcriptionResult.error.message);
       }
-    };
-    
-    wsRef.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setError('WebSocket connection error. Please check your internet connection and try again.');
-      setStatus('Connection Error');
-    };
-    
-    wsRef.current.onclose = (event) => {
-      console.log('WebSocket closed:', event.code, event.reason);
-      setStatus(`Disconnected (${event.code}): ${event.reason || 'Unknown reason'}`);
-    };
+
+      const transcribedText = transcriptionResult.data.text;
+      console.log('Transcribed text:', transcribedText);
+
+      if (!transcribedText?.trim()) {
+        throw new Error('No speech detected. Please try speaking more clearly.');
+      }
+
+      // Add user message to chat
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: transcribedText,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, userMessage]);
+
+      // Process the transcribed text
+      await processMessage(transcribedText, true);
+
+    } catch (error) {
+      console.error('Error processing audio:', error);
+      setError(error instanceof Error ? error.message : 'Failed to process audio');
+      toast({
+        title: "Audio Processing Error",
+        description: error instanceof Error ? error.message : 'Failed to process audio',
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+      setStatus('Ready');
+    }
   };
 
-  const startRecording = async () => {
-    if (isRecording || !audioContextRef.current || !wsRef.current) return;
+  const processMessage = async (text: string, isVoiceMessage = false) => {
+    setIsProcessing(true);
+    setStatus('Generating response...');
 
     try {
-      await audioContextRef.current.resume();
-      setStatus('Starting recording...');
-
-      audioRecorderRef.current = new AudioRecorder((audioData) => {
-        if (isRecording && wsRef.current?.readyState === WebSocket.OPEN) {
-          const audioBase64 = encodeAudioForAPI(audioData);
-          const audioMessage = {
-            type: 'input_audio_buffer.append',
-            audio: audioBase64
-          };
-          wsRef.current.send(JSON.stringify(audioMessage));
+      // Step 2: Generate CBT response using gpt-4.1
+      const responseResult = await supabase.functions.invoke('generate-cbt-response', {
+        body: { 
+          message: text,
+          conversationHistory: conversationHistory.current
         }
       });
 
+      if (responseResult.error) {
+        throw new Error(responseResult.error.message);
+      }
+
+      const assistantResponse = responseResult.data.response;
+      console.log('Generated response:', assistantResponse);
+
+      // Add assistant message to chat
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: assistantResponse,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // Update conversation history
+      conversationHistory.current.push(
+        { role: 'user', content: text },
+        { role: 'assistant', content: assistantResponse }
+      );
+
+      // Keep only last 10 exchanges to manage context length
+      if (conversationHistory.current.length > 20) {
+        conversationHistory.current = conversationHistory.current.slice(-20);
+      }
+
+      // Step 3: Convert response to speech if this was a voice message
+      if (isVoiceMessage) {
+        setStatus('Converting to speech...');
+        
+        const ttsResult = await supabase.functions.invoke('text-to-speech-cbt', {
+          body: { text: assistantResponse, voice: 'alloy' }
+        });
+
+        if (ttsResult.error) {
+          console.error('TTS Error:', ttsResult.error);
+          // Don't throw error for TTS failure, just log it
+        } else {
+          // Play the generated audio
+          await playAudioFromBase64(ttsResult.data.audioContent);
+        }
+      }
+
+      toast({
+        title: "Response Generated",
+        description: "CBT assistant has responded successfully."
+      });
+
+    } catch (error) {
+      console.error('Error processing message:', error);
+      setError(error instanceof Error ? error.message : 'Failed to process message');
+      toast({
+        title: "Processing Error",
+        description: error instanceof Error ? error.message : 'Failed to process message',
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+      setStatus('Ready');
+    }
+  };
+
+  const startRecording = async () => {
+    if (isRecording || isProcessing) return;
+
+    try {
+      setError('');
+      audioRecorderRef.current = new AudioRecorder(handleAudioRecording);
       await audioRecorderRef.current.start();
+      
       setIsRecording(true);
       setStatus('🔴 Recording... Speak now!');
       
       toast({
         title: "Recording Started",
-        description: "Speak now! The AI will respond with both text and voice.",
+        description: "Speak now! The AI will transcribe and respond.",
       });
     } catch (err) {
       console.error('Error starting recording:', err);
-      setStatus(`Error: ${(err as Error).message}`);
+      setStatus('Ready');
       setError(`Error: ${(err as Error).message}`);
-      stopRecording();
       toast({
         title: "Microphone Error",
         description: "Failed to start recording. Please check your microphone permissions.",
@@ -223,17 +192,12 @@ const CBTAssistant = () => {
   };
 
   const stopRecording = () => {
-    if (!isRecording) return;
+    if (!isRecording || !audioRecorderRef.current) return;
 
-    setStatus('Stopping recording...');
+    audioRecorderRef.current.stop();
     setIsRecording(false);
-
-    if (audioRecorderRef.current) {
-      audioRecorderRef.current.stop();
-      audioRecorderRef.current = null;
-    }
-
-    setStatus('Recording stopped. Click Start to begin again.');
+    setStatus('Processing audio...');
+    
     toast({
       title: "Recording Stopped",
       description: "Processing your input..."
@@ -241,15 +205,14 @@ const CBTAssistant = () => {
   };
 
   const resetSession = () => {
-    cleanup();
     setMessages([{
       id: '1',
       role: 'assistant',
-      content: "Hello! I'm your CBT assistant powered by OpenAI. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
       timestamp: new Date()
     }]);
-    connectToOpenAI();
-    setStatus('Session reset');
+    conversationHistory.current = [];
+    setStatus('Ready');
     setError('');
     toast({
       title: "Session Reset",
@@ -258,7 +221,7 @@ const CBTAssistant = () => {
   };
 
   const sendMessage = async (text: string = inputText) => {
-    if (!text.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+    if (!text.trim() || isProcessing) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -270,53 +233,7 @@ const CBTAssistant = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
 
-    try {
-      // Send text message to OpenAI
-      const event = {
-        type: 'conversation.item.create',
-        item: {
-          type: 'message',
-          role: 'user',
-          content: [
-            {
-              type: 'input_text',
-              text: text
-            }
-          ]
-        }
-      };
-      
-      wsRef.current.send(JSON.stringify(event));
-      wsRef.current.send(JSON.stringify({type: 'response.create'}));
-      
-      toast({
-        title: "Message Sent",
-        description: "Processing your message..."
-      });
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Send Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const cleanup = () => {
-    if (audioRecorderRef.current) {
-      audioRecorderRef.current.stop();
-      audioRecorderRef.current = null;
-    }
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-    setIsRecording(false);
+    await processMessage(text, false);
   };
 
   return (
@@ -328,7 +245,7 @@ const CBTAssistant = () => {
             <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
           </div>
           <p className="text-muted-foreground">
-            Your personal cognitive behavioral therapy assistant powered by OpenAI
+            Your personal cognitive behavioral therapy assistant with chained AI processing
           </p>
         </div>
 
@@ -346,7 +263,7 @@ const CBTAssistant = () => {
           
           <Button
             onClick={isRecording ? stopRecording : startRecording}
-            disabled={!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN}
+            disabled={isProcessing}
             variant={isRecording ? "destructive" : "default"}
             size="lg"
             className="w-full"
@@ -423,7 +340,7 @@ const CBTAssistant = () => {
               <div className="flex items-center justify-end">
                 <Button
                   onClick={() => sendMessage()}
-                  disabled={!inputText.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN}
+                  disabled={!inputText.trim() || isProcessing}
                   className="gap-2"
                 >
                   <Send className="h-4 w-4" />
