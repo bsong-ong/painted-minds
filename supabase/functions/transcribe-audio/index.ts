@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { audio } = await req.json();
+    const { audio, language = 'en' } = await req.json();
     
     if (!audio) {
       throw new Error('No audio data provided');
@@ -23,7 +23,7 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('Processing audio transcription with gpt-4o-transcribe...');
+    console.log(`Processing audio transcription with gpt-4o-transcribe for language: ${language}...`);
 
     // Convert base64 to blob for OpenAI API
     const binaryString = atob(audio);
@@ -37,6 +37,13 @@ serve(async (req) => {
     const audioBlob = new Blob([bytes], { type: 'audio/webm' });
     formData.append('file', audioBlob, 'audio.webm');
     formData.append('model', 'gpt-4o-transcribe');
+    
+    // Add language parameter to improve accuracy
+    if (language === 'th') {
+      formData.append('language', 'th');
+    } else {
+      formData.append('language', 'en');
+    }
 
     const transcriptionResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',

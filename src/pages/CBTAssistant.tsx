@@ -55,7 +55,7 @@ const CBTAssistant = () => {
       const base64Audio = await blobToBase64(audioBlob);
       
       const transcriptionResult = await supabase.functions.invoke('transcribe-audio', {
-        body: { audio: base64Audio }
+        body: { audio: base64Audio, language: language }
       });
 
       if (transcriptionResult.error) {
