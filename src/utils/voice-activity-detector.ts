@@ -10,12 +10,15 @@ export class VoiceActivityDetector {
   private silenceTimeout: NodeJS.Timeout | null = null;
   private isAudioPlaying = false;
   
-  // VAD parameters
-  private readonly SILENCE_THRESHOLD = 0.01; // Volume threshold for silence
-  private readonly SILENCE_DURATION = 1500; // Ms of silence before stopping
-  private readonly MIN_RECORDING_DURATION = 500; // Minimum recording time
+  // VAD parameters - More conservative settings
+  private readonly SILENCE_THRESHOLD = 0.05; // Higher threshold to avoid background noise
+  private readonly VOICE_THRESHOLD = 0.08; // Threshold for voice detection
+  private readonly SILENCE_DURATION = 2000; // Longer silence before stopping
+  private readonly MIN_RECORDING_DURATION = 1000; // Minimum recording time
+  private readonly NOISE_GATE_DURATION = 300; // Sustained voice required before recording
   
   private recordingStartTime = 0;
+  private voiceStartTime = 0;
   private onRecordingComplete: (audioBlob: Blob) => void;
   private onVoiceStart: () => void;
   private onVoiceEnd: () => void;
@@ -118,12 +121,22 @@ export class VoiceActivityDetector {
     
     this.onVolumeChange(normalizedVolume);
 
-    const isVoiceDetected = normalizedVolume > this.SILENCE_THRESHOLD;
+    const isVoiceDetected = normalizedVolume > this.VOICE_THRESHOLD;
+    const isSilent = normalizedVolume < this.SILENCE_THRESHOLD;
 
     if (isVoiceDetected && !this.isRecording) {
-      this.startRecording();
-    } else if (!isVoiceDetected && this.isRecording) {
+      // Start voice detection timer
+      if (this.voiceStartTime === 0) {
+        this.voiceStartTime = Date.now();
+      }
+      
+      // Only start recording after sustained voice for noise gate duration
+      if (Date.now() - this.voiceStartTime >= this.NOISE_GATE_DURATION) {
+        this.startRecording();
+      }
+    } else if (isSilent && this.isRecording) {
       // Voice stopped, start silence timer
+      this.voiceStartTime = 0; // Reset voice start time
       if (!this.silenceTimeout) {
         this.silenceTimeout = setTimeout(() => {
           const recordingDuration = Date.now() - this.recordingStartTime;
@@ -136,15 +149,19 @@ export class VoiceActivityDetector {
       // Voice resumed, cancel silence timer
       clearTimeout(this.silenceTimeout);
       this.silenceTimeout = null;
+    } else if (!isVoiceDetected && !this.isRecording) {
+      // Reset voice start time if not enough sustained voice
+      this.voiceStartTime = 0;
     }
   }
 
   private startRecording(): void {
     if (!this.mediaRecorder || this.isRecording) return;
 
-    console.log('Voice detected - starting recording');
+    console.log('Sustained voice detected - starting recording');
     this.isRecording = true;
     this.recordingStartTime = Date.now();
+    this.voiceStartTime = 0; // Reset since we're now recording
     this.recordedChunks = [];
     
     this.mediaRecorder.start();
@@ -154,8 +171,9 @@ export class VoiceActivityDetector {
   private stopRecording(): void {
     if (!this.mediaRecorder || !this.isRecording) return;
 
-    console.log('Stopping recording due to silence');
+    console.log('Stopping recording due to sustained silence');
     this.isRecording = false;
+    this.voiceStartTime = 0; // Reset voice detection
     
     this.mediaRecorder.stop();
     this.onVoiceEnd();
