@@ -154,8 +154,8 @@ const CBTAssistant = () => {
           console.error('TTS Error:', ttsResult.error);
           // Don't throw error for TTS failure, just log it
         } else {
-          // Play the generated audio
-          await playAudioFromBase64(ttsResult.data.audioContent);
+          // Play the generated audio and disable VAD during playback
+          await playAudioFromBase64(ttsResult.data.audioContent, vadRef.current);
         }
       }
 

@@ -8,6 +8,7 @@ export class VoiceActivityDetector {
   private isRecording = false;
   private vadCheckInterval: NodeJS.Timeout | null = null;
   private silenceTimeout: NodeJS.Timeout | null = null;
+  private isAudioPlaying = false;
   
   // VAD parameters
   private readonly SILENCE_THRESHOLD = 0.01; // Volume threshold for silence
@@ -105,7 +106,7 @@ export class VoiceActivityDetector {
   }
 
   private checkVoiceActivity(): void {
-    if (!this.analyser) return;
+    if (!this.analyser || this.isAudioPlaying) return;
 
     const bufferLength = this.analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
@@ -186,6 +187,14 @@ export class VoiceActivityDetector {
   get isActivelyRecording(): boolean {
     return this.isRecording;
   }
+
+  setAudioPlaybackState(isPlaying: boolean): void {
+    this.isAudioPlaying = isPlaying;
+    if (isPlaying && this.isRecording) {
+      // Stop current recording if audio starts playing
+      this.stopRecording();
+    }
+  }
 }
 
 // Helper function to convert blob to base64
@@ -206,8 +215,11 @@ export const blobToBase64 = (blob: Blob): Promise<string> => {
   });
 };
 
-// Helper function to play audio from base64
-export const playAudioFromBase64 = async (base64Audio: string): Promise<void> => {
+// Helper function to play audio from base64 with VAD control
+export const playAudioFromBase64 = async (
+  base64Audio: string, 
+  vadInstance?: VoiceActivityDetector
+): Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
       const audioBlob = new Blob(
@@ -218,18 +230,41 @@ export const playAudioFromBase64 = async (base64Audio: string): Promise<void> =>
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
       
+      // Disable VAD during audio playback
+      if (vadInstance) {
+        vadInstance.setAudioPlaybackState(true);
+      }
+      
       audio.onended = () => {
         URL.revokeObjectURL(audioUrl);
+        // Re-enable VAD after audio finishes
+        if (vadInstance) {
+          vadInstance.setAudioPlaybackState(false);
+        }
         resolve();
       };
       
       audio.onerror = () => {
         URL.revokeObjectURL(audioUrl);
+        // Re-enable VAD on error
+        if (vadInstance) {
+          vadInstance.setAudioPlaybackState(false);
+        }
         reject(new Error('Failed to play audio'));
       };
       
-      audio.play().catch(reject);
+      audio.play().catch((error) => {
+        // Re-enable VAD on play error
+        if (vadInstance) {
+          vadInstance.setAudioPlaybackState(false);
+        }
+        reject(error);
+      });
     } catch (error) {
+      // Re-enable VAD on catch error
+      if (vadInstance) {
+        vadInstance.setAudioPlaybackState(false);
+      }
       reject(error);
     }
   });
