@@ -9,17 +9,11 @@ export class VoiceActivityDetector {
   private vadCheckInterval: NodeJS.Timeout | null = null;
   private silenceTimeout: NodeJS.Timeout | null = null;
   
-  // VAD parameters (dynamic with calibration)
-  private readonly MIN_RECORDING_DURATION = 800; // Minimum recording time (ms)
+  // VAD parameters
+  private readonly SILENCE_THRESHOLD = 0.01; // Volume threshold for silence
   private readonly SILENCE_DURATION = 1500; // Ms of silence before stopping
-  private readonly MIN_VOICE_BEFORE_START = 250; // Require sustained voice before starting (ms)
-  private readonly CALIBRATION_SAMPLES = 25; // Number of frames to estimate ambient noise
-  private readonly START_THRESHOLD_FLOOR = 0.06; // Minimum start threshold
-  private readonly STOP_THRESHOLD_FLOOR = 0.035; // Minimum stop threshold
-
-  private baselineNoise = 0;
-  private calibrated = false;
-  private voiceStartCandidateAt: number | null = null;
+  private readonly MIN_RECORDING_DURATION = 500; // Minimum recording time
+  
   private recordingStartTime = 0;
   private onRecordingComplete: (audioBlob: Blob) => void;
   private onVoiceStart: () => void;
@@ -75,8 +69,7 @@ export class VoiceActivityDetector {
         this.onRecordingComplete(audioBlob);
       };
 
-      await this.calibrateNoise();
-      console.log('Voice Activity Detector initialized (baseline noise:', this.baselineNoise.toFixed(3) + ')');
+      console.log('Voice Activity Detector initialized');
     } catch (error) {
       console.error('Error initializing VAD:', error);
       throw error;
@@ -111,55 +104,25 @@ export class VoiceActivityDetector {
     console.log('Stopped voice activity detection');
   }
 
-  private getNormalizedVolume(): number {
-    if (!this.analyser) return 0;
-    const bufferLength = this.analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    this.analyser.getByteFrequencyData(dataArray);
-    const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
-    return average / 255;
-  }
-
-  private async calibrateNoise(): Promise<void> {
-    if (!this.analyser) return;
-    const samples: number[] = [];
-    for (let i = 0; i < this.CALIBRATION_SAMPLES; i++) {
-      samples.push(this.getNormalizedVolume());
-      await new Promise((r) => setTimeout(r, 20));
-    }
-    const avg = samples.reduce((a, b) => a + b, 0) / Math.max(samples.length, 1);
-    this.baselineNoise = Math.min(0.05, avg || 0);
-    this.calibrated = true;
-  }
-
   private checkVoiceActivity(): void {
     if (!this.analyser) return;
 
-    const volume = this.getNormalizedVolume();
-    this.onVolumeChange(volume);
+    const bufferLength = this.analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    this.analyser.getByteFrequencyData(dataArray);
 
-    const startThreshold = Math.max(this.START_THRESHOLD_FLOOR, this.baselineNoise * 3);
-    const stopThreshold = Math.max(this.STOP_THRESHOLD_FLOOR, this.baselineNoise * 1.8);
+    // Calculate average volume
+    const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+    const normalizedVolume = average / 255;
+    
+    this.onVolumeChange(normalizedVolume);
 
-    const now = Date.now();
+    const isVoiceDetected = normalizedVolume > this.SILENCE_THRESHOLD;
 
-    // Not currently recording: require sustained voice before starting
-    if (!this.isRecording) {
-      if (volume > startThreshold) {
-        if (this.voiceStartCandidateAt === null) {
-          this.voiceStartCandidateAt = now;
-        } else if (now - this.voiceStartCandidateAt >= this.MIN_VOICE_BEFORE_START) {
-          this.startRecording();
-          this.voiceStartCandidateAt = null;
-        }
-      } else {
-        this.voiceStartCandidateAt = null;
-      }
-      return;
-    }
-
-    // Already recording: stop after sustained silence (hysteresis)
-    if (volume < stopThreshold) {
+    if (isVoiceDetected && !this.isRecording) {
+      this.startRecording();
+    } else if (!isVoiceDetected && this.isRecording) {
+      // Voice stopped, start silence timer
       if (!this.silenceTimeout) {
         this.silenceTimeout = setTimeout(() => {
           const recordingDuration = Date.now() - this.recordingStartTime;
@@ -168,7 +131,8 @@ export class VoiceActivityDetector {
           }
         }, this.SILENCE_DURATION);
       }
-    } else if (this.silenceTimeout) {
+    } else if (isVoiceDetected && this.isRecording && this.silenceTimeout) {
+      // Voice resumed, cancel silence timer
       clearTimeout(this.silenceTimeout);
       this.silenceTimeout = null;
     }
