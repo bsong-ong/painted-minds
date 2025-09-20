@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { Mic, MicOff, Volume2, VolumeX, Send, Brain } from 'lucide-react';
+import { Mic, MicOff, RotateCcw, Send, Brain } from 'lucide-react';
+import { GoogleGenAI, LiveServerMessage, Modality, Session } from '@google/genai';
+import { createBlob, decode, decodeAudioData } from '@/utils/audio';
 
 interface Message {
   id: string;
@@ -18,15 +19,62 @@ const CBTAssistant = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [status, setStatus] = useState('Initializing...');
+  const [error, setError] = useState('');
   const { toast } = useToast();
   
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  // Gemini Live Audio setup
+  const clientRef = useRef<GoogleGenAI | null>(null);
+  const sessionRef = useRef<Session | null>(null);
+  const inputAudioContextRef = useRef<AudioContext | null>(null);
+  const outputAudioContextRef = useRef<AudioContext | null>(null);
+  const inputNodeRef = useRef<GainNode | null>(null);
+  const outputNodeRef = useRef<GainNode | null>(null);
+  const nextStartTimeRef = useRef(0);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const scriptProcessorNodeRef = useRef<ScriptProcessorNode | null>(null);
+  const sourcesRef = useRef(new Set<AudioBufferSourceNode>());
 
+  // Initialize Gemini client and audio contexts
   useEffect(() => {
+    const initClient = async () => {
+      try {
+        console.log('Initializing audio contexts...');
+        
+        // Initialize audio contexts
+        inputAudioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
+          sampleRate: 16000
+        });
+        outputAudioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
+          sampleRate: 24000
+        });
+        
+        inputNodeRef.current = inputAudioContextRef.current.createGain();
+        outputNodeRef.current = outputAudioContextRef.current.createGain();
+        outputNodeRef.current.connect(outputAudioContextRef.current.destination);
+        
+        nextStartTimeRef.current = outputAudioContextRef.current.currentTime;
+        
+        console.log('Creating GoogleGenAI client...');
+        // Note: In production, this should come from a secure environment variable
+        const apiKey = process.env.GEMINI_API_KEY || 'your-gemini-api-key-here';
+        
+        clientRef.current = new GoogleGenAI({
+          apiKey: apiKey,
+        });
+        
+        console.log('Client created successfully');
+        setStatus('Ready');
+        
+        await initSession();
+      } catch (error) {
+        console.error('Error initializing client:', error);
+        setError('Failed to initialize AI client. Please check your API key.');
+        setStatus('Error');
+      }
+    };
+    
     // Add welcome message
     const welcomeMessage: Message = {
       id: '1',
@@ -35,163 +83,251 @@ const CBTAssistant = () => {
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
+    
+    initClient();
+    
+    return () => {
+      // Cleanup
+      sessionRef.current?.close();
+      inputAudioContextRef.current?.close();
+      outputAudioContextRef.current?.close();
+    };
   }, []);
 
-  const startRecording = async () => {
+  const initSession = async () => {
+    if (!clientRef.current) return;
+    
+    const model = 'gemini-2.5-flash-preview-native-audio-dialog';
+    
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          sampleRate: 16000,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true
-        }
+      console.log('Initializing session...');
+      sessionRef.current = await clientRef.current.live.connect({
+        model: model,
+        callbacks: {
+          onopen: () => {
+            console.log('Session opened successfully');
+            setStatus('Connected');
+            setError('');
+          },
+          onmessage: async (message: LiveServerMessage) => {
+            console.log('Received message:', message);
+            const audio = message.serverContent?.modelTurn?.parts[0]?.inlineData;
+
+            if (audio) {
+              console.log('Processing audio response...');
+              if (!outputAudioContextRef.current) return;
+              
+              nextStartTimeRef.current = Math.max(
+                nextStartTimeRef.current,
+                outputAudioContextRef.current.currentTime,
+              );
+
+              try {
+                const audioBuffer = await decodeAudioData(
+                  decode(audio.data),
+                  outputAudioContextRef.current,
+                  24000,
+                  1,
+                );
+                const source = outputAudioContextRef.current.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(outputNodeRef.current!);
+                source.addEventListener('ended', () => {
+                  sourcesRef.current.delete(source);
+                });
+
+                source.start(nextStartTimeRef.current);
+                nextStartTimeRef.current = nextStartTimeRef.current + audioBuffer.duration;
+                sourcesRef.current.add(source);
+              } catch (audioError) {
+                console.error('Error playing audio:', audioError);
+              }
+            }
+
+            const interrupted = message.serverContent?.interrupted;
+            if (interrupted) {
+              for (const source of sourcesRef.current.values()) {
+                source.stop();
+                sourcesRef.current.delete(source);
+              }
+              nextStartTimeRef.current = 0;
+            }
+            
+            // Handle text content for display
+            const textContent = message.serverContent?.modelTurn?.parts.find(part => part.text)?.text;
+            if (textContent) {
+              const newMessage: Message = {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: textContent,
+                timestamp: new Date()
+              };
+              setMessages(prev => [...prev, newMessage]);
+            }
+          },
+          onerror: (e: ErrorEvent) => {
+            console.error('Session error:', e);
+            setError(e.message);
+            setStatus('Error');
+          },
+          onclose: (e: CloseEvent) => {
+            console.log('Session closed:', e.reason);
+            setStatus('Disconnected: ' + e.reason);
+          },
+        },
+        config: {
+          responseModalities: [Modality.AUDIO],
+          systemInstruction: "You are a compassionate and professional Cognitive Behavioral Therapy (CBT) assistant. Your role is to help users identify, examine, and restructure unhelpful thought patterns using evidence-based CBT techniques. Key CBT techniques to use: 1. Thought challenging: Help identify cognitive distortions (all-or-nothing thinking, catastrophizing, mind reading, etc.) 2. Behavioral activation: Suggest small, manageable activities 3. Mindfulness: Help users stay present and observe thoughts without judgment 4. Problem-solving: Break down overwhelming problems into manageable steps 5. Psychoeducation: Briefly explain the connection between thoughts, feelings, and behaviors. Guidelines: Be warm, empathetic, and non-judgmental. Ask thoughtful follow-up questions to help users explore their thoughts. Suggest practical coping strategies and homework assignments. Validate emotions while gently challenging unhelpful thought patterns. Keep responses conversational and accessible, not overly clinical. If someone expresses suicidal thoughts or severe mental health crisis, encourage them to seek immediate professional help. Remember: You're a supportive tool, not a replacement for professional therapy.",
+          speechConfig: {
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } },
+            languageCode: 'en-US'
+          },
+        },
       });
-      
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
+      console.log('Session initialized successfully');
+    } catch (e) {
+      console.error('Error initializing session:', e);
+      setError('Failed to initialize session: ' + (e as Error).message);
+      setStatus('Error');
+    }
+  };
 
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+  const startRecording = async () => {
+    if (isRecording || !inputAudioContextRef.current) return;
+
+    try {
+      await inputAudioContextRef.current.resume();
+      setStatus('Requesting microphone access...');
+
+      mediaStreamRef.current = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      });
+
+      setStatus('Microphone access granted. Starting capture...');
+
+      sourceNodeRef.current = inputAudioContextRef.current.createMediaStreamSource(
+        mediaStreamRef.current,
+      );
+      sourceNodeRef.current.connect(inputNodeRef.current!);
+
+      const bufferSize = 256;
+      scriptProcessorNodeRef.current = inputAudioContextRef.current.createScriptProcessor(
+        bufferSize,
+        1,
+        1,
+      );
+
+      scriptProcessorNodeRef.current.onaudioprocess = (audioProcessingEvent) => {
+        if (!isRecording || !sessionRef.current) return;
+
+        const inputBuffer = audioProcessingEvent.inputBuffer;
+        const pcmData = inputBuffer.getChannelData(0);
+
+        try {
+          const audioBlob = createBlob(pcmData);
+          sessionRef.current.sendRealtimeInput({ media: audioBlob as any });
+        } catch (error) {
+          console.error('Error sending audio chunk:', error);
+        }
       };
 
-      mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        await processAudio(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
+      sourceNodeRef.current.connect(scriptProcessorNodeRef.current);
+      scriptProcessorNodeRef.current.connect(inputAudioContextRef.current.destination);
 
-      mediaRecorderRef.current.start();
       setIsRecording(true);
-    } catch (error) {
+      setStatus('🔴 Recording... Speak now!');
+      toast({
+        title: "Recording Started",
+        description: "Speak now! The AI will respond with both text and voice.",
+      });
+    } catch (err) {
+      console.error('Error starting recording:', err);
+      setStatus(`Error: ${(err as Error).message}`);
+      setError(`Error: ${(err as Error).message}`);
+      stopRecording();
       toast({
         title: "Microphone Error",
-        description: "Unable to access microphone. Please check permissions.",
+        description: "Failed to start recording. Please check your microphone permissions.",
         variant: "destructive"
       });
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+    if (!isRecording && !mediaStreamRef.current && !inputAudioContextRef.current) return;
+
+    setStatus('Stopping recording...');
+    setIsRecording(false);
+
+    if (scriptProcessorNodeRef.current && sourceNodeRef.current && inputAudioContextRef.current) {
+      scriptProcessorNodeRef.current.disconnect();
+      sourceNodeRef.current.disconnect();
     }
+
+    scriptProcessorNodeRef.current = null;
+    sourceNodeRef.current = null;
+
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+
+    setStatus('Recording stopped. Click Start to begin again.');
+    toast({
+      title: "Recording Stopped",
+      description: "Processing your input..."
+    });
   };
 
-  const processAudio = async (audioBlob: Blob) => {
-    setIsProcessing(true);
-    try {
-      // Convert audio to base64
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-      // Send to speech-to-text
-      const { data, error } = await supabase.functions.invoke('voice-to-text', {
-        body: { audio: base64Audio }
-      });
-
-      if (error) throw error;
-
-      if (data.text) {
-        setInputText(data.text);
-        await sendMessage(data.text);
-      }
-    } catch (error) {
-      toast({
-        title: "Processing Error",
-        description: "Failed to process audio. Please try again.",
-        variant: "destructive"
-      });
-    }
-    setIsProcessing(false);
+  const resetSession = () => {
+    sessionRef.current?.close();
+    setMessages([{
+      id: '1',
+      role: 'assistant',
+      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      timestamp: new Date()
+    }]);
+    initSession();
+    setStatus('Session reset');
+    setError('');
+    toast({
+      title: "Session Reset",
+      description: "New session started successfully."
+    });
   };
 
   const sendMessage = async (text: string = inputText) => {
-    if (!text.trim()) return;
+    if (!text.trim() || !sessionRef.current) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: text.trim(),
+      content: text,
       timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
-    setIsProcessing(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('cbt-assistant', {
-        body: { 
-          message: text.trim(),
-          conversationHistory: messages
-        }
+      // Send text message to Gemini
+      const textBlob = new Blob([text], { type: 'text/plain' });
+      await sessionRef.current.sendRealtimeInput({
+        media: textBlob as any
       });
-
-      if (error) throw error;
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.response,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
       
-      // Convert response to speech
-      await playAudio(data.response);
-    } catch (error) {
       toast({
-        title: "Assistant Error",
-        description: "Failed to get response. Please try again.",
+        title: "Message Sent",
+        description: "Processing your message..."
+      });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Send Error",
+        description: "Failed to send message. Please try again.",
         variant: "destructive"
       });
-    }
-    setIsProcessing(false);
-  };
-
-  const playAudio = async (text: string) => {
-    try {
-      setIsSpeaking(true);
-      
-      const { data, error } = await supabase.functions.invoke('text-to-speech', {
-        body: { text, voice: 'alloy' }
-      });
-
-      if (error) throw error;
-
-      // Create audio from base64
-      const audioBlob = new Blob([
-        new Uint8Array(atob(data.audioContent).split('').map(c => c.charCodeAt(0)))
-      ], { type: 'audio/mpeg' });
-      
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      currentAudioRef.current = audio;
-      
-      audio.onended = () => {
-        setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      await audio.play();
-    } catch (error) {
-      setIsSpeaking(false);
-      toast({
-        title: "Audio Error",
-        description: "Failed to play audio response.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const stopAudio = () => {
-    if (currentAudioRef.current) {
-      currentAudioRef.current.pause();
-      currentAudioRef.current.currentTime = 0;
-      setIsSpeaking(false);
     }
   };
 
@@ -204,8 +340,46 @@ const CBTAssistant = () => {
             <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
           </div>
           <p className="text-muted-foreground">
-            Your personal cognitive behavioral therapy assistant for thought journaling and restructuring
+            Your personal cognitive behavioral therapy assistant powered by Gemini AI
           </p>
+        </div>
+
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Button
+            onClick={resetSession}
+            disabled={isRecording}
+            variant="outline"
+            size="lg"
+            className="w-full"
+          >
+            <RotateCcw className="w-5 h-5 mr-2" />
+            Reset Session
+          </Button>
+          
+          <Button
+            onClick={isRecording ? stopRecording : startRecording}
+            disabled={!sessionRef.current}
+            variant={isRecording ? "destructive" : "default"}
+            size="lg"
+            className="w-full"
+          >
+            {isRecording ? (
+              <>
+                <MicOff className="w-5 h-5 mr-2" />
+                Stop Recording
+              </>
+            ) : (
+              <>
+                <Mic className="w-5 h-5 mr-2" />
+                Start Recording
+              </>
+            )}
+          </Button>
+          
+          <div className="p-4 bg-muted rounded-lg">
+            <div className="text-sm font-medium text-muted-foreground mb-1">Status</div>
+            <div className="text-sm text-foreground">{error || status}</div>
+          </div>
         </div>
 
         <Card className="mb-6">
@@ -237,13 +411,6 @@ const CBTAssistant = () => {
                     </div>
                   </div>
                 ))}
-                {isProcessing && (
-                  <div className="flex justify-start">
-                    <div className="bg-muted text-muted-foreground rounded-lg px-4 py-2 max-w-[80%]">
-                      <p className="text-sm">Thinking...</p>
-                    </div>
-                  </div>
-                )}
               </div>
             </ScrollArea>
           </CardContent>
@@ -265,32 +432,10 @@ const CBTAssistant = () => {
                 }}
               />
               
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={isRecording ? "destructive" : "outline"}
-                    size="sm"
-                    onClick={isRecording ? stopRecording : startRecording}
-                    disabled={isProcessing}
-                  >
-                    {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                    {isRecording ? 'Stop Recording' : 'Voice Input'}
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={isSpeaking ? stopAudio : undefined}
-                    disabled={!isSpeaking}
-                  >
-                    {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                    {isSpeaking ? 'Stop Audio' : 'Audio Response'}
-                  </Button>
-                </div>
-
+              <div className="flex items-center justify-end">
                 <Button
                   onClick={() => sendMessage()}
-                  disabled={!inputText.trim() || isProcessing}
+                  disabled={!inputText.trim() || !sessionRef.current}
                   className="gap-2"
                 >
                   <Send className="h-4 w-4" />
