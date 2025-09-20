@@ -181,11 +181,11 @@ const CBTAssistant = () => {
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          systemInstruction: "You are a compassionate and professional Cognitive Behavioral Therapy (CBT) assistant. Your role is to help users identify, examine, and restructure unhelpful thought patterns using evidence-based CBT techniques. Respond immediately when users speak - don't wait for them to stop talking. Key CBT techniques to use: 1. Thought challenging: Help identify cognitive distortions 2. Behavioral activation: Suggest small activities 3. Mindfulness: Help users stay present 4. Problem-solving: Break down problems into steps 5. Psychoeducation: Explain thoughts-feelings-behaviors connection. Be warm, empathetic, and conversational. Keep responses brief and engaging. Validate emotions while gently challenging unhelpful thoughts.",
+          systemInstruction: "You are a compassionate and professional Cognitive Behavioral Therapy (CBT) assistant. Your role is to help users identify, examine, and restructure unhelpful thought patterns using evidence-based CBT techniques. Respond immediately as the user speaks—no need to wait for silence. Keep responses brief and supportive.",
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } },
             languageCode: 'en-US'
-          },
+          }
         },
       });
       console.log('Session initialized successfully');

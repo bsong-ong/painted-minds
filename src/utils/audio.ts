@@ -10,7 +10,7 @@ export const createBlob = (pcmData: Float32Array): Blob => {
     int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
   }
   
-  return new Blob([int16Array.buffer], { type: 'audio/pcm' }) as any;
+  return new Blob([int16Array.buffer], { type: 'audio/pcm;rate=16000' }) as any;
 };
 
 export const decode = (base64: string): ArrayBuffer => {
