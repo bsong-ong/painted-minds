@@ -8,43 +8,43 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Pink-inspired color palette */
-    --background: 330 25% 97%;
-    --foreground: 330 15% 15%;
+    /* Vibrant pink-inspired color palette */
+    --background: 315 30% 98%;
+    --foreground: 315 25% 10%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 330 15% 15%;
+    --card: 315 50% 99%;
+    --card-foreground: 315 25% 10%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 330 15% 15%;
+    --popover: 315 50% 99%;
+    --popover-foreground: 315 25% 10%;
 
-    /* Primary: Beautiful pink */
-    --primary: 330 85% 65%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary: Vibrant hot pink */
+    --primary: 320 100% 60%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Soft pink cream */
-    --secondary: 325 35% 92%;
-    --secondary-foreground: 330 15% 15%;
+    /* Secondary: Soft pink blush */
+    --secondary: 315 60% 90%;
+    --secondary-foreground: 315 25% 10%;
 
-    --muted: 325 25% 95%;
-    --muted-foreground: 330 10% 50%;
+    --muted: 315 40% 94%;
+    --muted-foreground: 315 20% 45%;
 
-    /* Accent: Warm rose */
-    --accent: 340 70% 85%;
-    --accent-foreground: 330 15% 15%;
+    /* Accent: Bright pink accent */
+    --accent: 310 80% 80%;
+    --accent-foreground: 315 25% 10%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 325 20% 88%;
-    --input: 325 20% 92%;
-    --ring: 330 85% 65%;
+    --border: 315 30% 85%;
+    --input: 315 40% 90%;
+    --ring: 320 100% 60%;
 
-    /* Custom gratitude colors - pink tones */
-    --gratitude-success: 330 85% 65%;
-    --gratitude-success-foreground: 0 0% 98%;
-    --gratitude-warm: 340 70% 60%;
-    --gratitude-warm-foreground: 0 0% 98%;
+    /* Custom gratitude colors - vibrant pink tones */
+    --gratitude-success: 320 100% 60%;
+    --gratitude-success-foreground: 0 0% 100%;
+    --gratitude-warm: 325 90% 65%;
+    --gratitude-warm-foreground: 0 0% 100%;
 
     --radius: 0.5rem;
 
@@ -66,41 +66,41 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Dark mode: Pink theme colors */
-    --background: 330 20% 8%;
-    --foreground: 325 15% 90%;
+    /* Dark mode: Vibrant pink theme */
+    --background: 315 25% 5%;
+    --foreground: 315 30% 92%;
 
-    --card: 330 20% 10%;
-    --card-foreground: 325 15% 90%;
+    --card: 315 30% 8%;
+    --card-foreground: 315 30% 92%;
 
-    --popover: 330 20% 10%;
-    --popover-foreground: 325 15% 90%;
+    --popover: 315 30% 8%;
+    --popover-foreground: 315 30% 92%;
 
-    /* Primary: Soft pink glow */
-    --primary: 330 70% 70%;
-    --primary-foreground: 330 20% 8%;
+    /* Primary: Bright pink glow */
+    --primary: 320 90% 75%;
+    --primary-foreground: 315 25% 5%;
 
-    --secondary: 330 20% 15%;
-    --secondary-foreground: 325 15% 90%;
+    --secondary: 315 25% 12%;
+    --secondary-foreground: 315 30% 92%;
 
-    --muted: 330 20% 15%;
-    --muted-foreground: 325 10% 65%;
+    --muted: 315 25% 12%;
+    --muted-foreground: 315 20% 70%;
 
-    --accent: 330 20% 15%;
-    --accent-foreground: 325 15% 90%;
+    --accent: 315 25% 12%;
+    --accent-foreground: 315 30% 92%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 330 20% 18%;
-    --input: 330 20% 18%;
-    --ring: 330 70% 70%;
+    --border: 315 25% 15%;
+    --input: 315 25% 15%;
+    --ring: 320 90% 75%;
 
-    /* Custom gratitude colors dark mode - pink tones */
-    --gratitude-success: 330 70% 70%;
-    --gratitude-success-foreground: 330 20% 8%;
-    --gratitude-warm: 340 60% 60%;
-    --gratitude-warm-foreground: 330 20% 8%;
+    /* Custom gratitude colors dark mode - vibrant pink tones */
+    --gratitude-success: 320 90% 75%;
+    --gratitude-success-foreground: 315 25% 5%;
+    --gratitude-warm: 325 80% 70%;
+    --gratitude-warm-foreground: 315 25% 5%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
