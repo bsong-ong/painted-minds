@@ -67,8 +67,13 @@ const CBTAssistant = () => {
       const transcribedText = transcriptionResult.data.text;
       console.log('Transcribed text:', transcribedText);
 
-      if (!transcribedText?.trim()) {
-        throw new Error('No speech detected. Please try speaking more clearly.');
+      // Ignore transcripts that are only punctuation or contain no letters/numbers
+      const hasMeaningfulChars = /[A-Za-z0-9\u0E00-\u0E7F]/.test(transcribedText || '');
+      if (!transcribedText?.trim() || !hasMeaningfulChars) {
+        throw new Error(language === 'th'
+          ? 'ไม่ได้ตรวจพบคำพูดที่ชัดเจน ลองพูดใหม่อีกครั้ง'
+          : 'No clear speech detected. Please try again.'
+        );
       }
 
       // Add user message to chat

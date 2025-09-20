@@ -60,10 +60,15 @@ serve(async (req) => {
     }
 
     const transcriptionResult = await transcriptionResponse.json();
-    console.log('Transcription result:', transcriptionResult.text);
+    const rawText = (transcriptionResult.text || '').trim();
+    console.log('Transcription result:', rawText);
+
+    // Filter out non-meaningful transcripts (e.g., just punctuation)
+    const hasMeaningfulChars = /[A-Za-z0-9\u0E00-\u0E7F]/.test(rawText);
+    const filteredText = hasMeaningfulChars ? rawText : '';
 
     return new Response(
-      JSON.stringify({ text: transcriptionResult.text }),
+      JSON.stringify({ text: filteredText }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
