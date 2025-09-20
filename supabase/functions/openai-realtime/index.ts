@@ -9,6 +9,7 @@ const corsHeaders = {
 
 serve(async (req) => {
   console.log('Edge function called, method:', req.method);
+  console.log('URL:', req.url);
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
