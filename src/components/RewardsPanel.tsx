@@ -126,21 +126,21 @@ const RewardsPanel = () => {
     return { name: t('newArtist'), icon: Flame };
   };
 
-  const getPuppyImage = (streakCount: number) => {
-    if (streakCount >= 30) return puppyCelebration; // Master level - celebration puppy
-    if (streakCount >= 14) return puppyExcited;     // 2+ weeks - excited puppy
-    if (streakCount >= 7) return puppyJoyful;       // 1 week - joyful puppy
-    if (streakCount >= 3) return puppyHappy;        // Getting started - happy puppy
-    return puppyNeutral;                            // Just starting - neutral puppy
+  const getPuppyImage = (totalEntries: number) => {
+    if (totalEntries >= 50) return puppyCelebration; // 50+ entries - celebration puppy
+    if (totalEntries >= 25) return puppyExcited;     // 25+ entries - excited puppy
+    if (totalEntries >= 10) return puppyJoyful;      // 10+ entries - joyful puppy
+    if (totalEntries >= 3) return puppyHappy;        // 3+ entries - happy puppy
+    return puppyNeutral;                             // Just starting - neutral puppy
   };
 
-  const getPuppyMessage = (streakCount: number) => {
-    if (streakCount >= 30) return t('Your gratitude buddy is absolutely thrilled! You\'re a true gratitude master!');
-    if (streakCount >= 14) return t('Your gratitude buddy is jumping with excitement! Amazing consistency!');
-    if (streakCount >= 7) return t('Your gratitude buddy is so happy! You\'re building a wonderful habit!');
-    if (streakCount >= 3) return t('Your gratitude buddy is getting happier! Keep it up!');
-    if (streakCount >= 1) return t('Your gratitude buddy is excited to start this journey with you!');
-    return t('Meet your gratitude buddy! They\'ll get happier as you build your practice!');
+  const getPuppyMessage = (totalEntries: number) => {
+    if (totalEntries >= 50) return t('Your gratitude buddy is absolutely thrilled! You\'re a dedicated artist!');
+    if (totalEntries >= 25) return t('Your gratitude buddy is jumping with excitement! Amazing progress!');
+    if (totalEntries >= 10) return t('Your gratitude buddy is so happy! You\'re building something beautiful!');
+    if (totalEntries >= 3) return t('Your gratitude buddy is getting happier! Keep creating!');
+    if (totalEntries >= 1) return t('Your gratitude buddy is excited to start this journey with you!');
+    return t('Meet your gratitude buddy! They\'ll get happier as you create more entries!');
   };
 
   if (loading) {
@@ -162,8 +162,8 @@ const RewardsPanel = () => {
   const streakLevel = getStreakLevel(currentStreak);
   const entryMilestone = getEntryMilestone(totalEntries);
   const MilestoneIcon = entryMilestone.icon;
-  const puppyImage = getPuppyImage(currentStreak);
-  const puppyMessage = getPuppyMessage(currentStreak);
+  const puppyImage = getPuppyImage(totalEntries);
+  const puppyMessage = getPuppyMessage(totalEntries);
 
   return (
     <Card>
