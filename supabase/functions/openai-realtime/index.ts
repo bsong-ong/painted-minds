@@ -51,43 +51,46 @@ serve(async (req) => {
 
     openAIWebSocket.onopen = () => {
       console.log("Connected to OpenAI Realtime API");
-      
-      // Send session configuration after OpenAI connection is established
-      const sessionConfig = {
-        event_id: `event_${Date.now()}`,
-        type: "session.update",
-        session: {
-          modalities: ["text", "audio"],
-          instructions: "You are a compassionate and professional Cognitive Behavioral Therapy (CBT) assistant. Your role is to help users identify, examine, and restructure unhelpful thought patterns using evidence-based CBT techniques. Keep responses brief and supportive, around 1-2 sentences.",
-          voice: "alloy",
-          input_audio_format: "pcm16",
-          output_audio_format: "pcm16",
-          input_audio_transcription: {
-            model: "whisper-1"
-          },
-          turn_detection: {
-            type: "server_vad",
-            threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 1000
-          },
-          temperature: 0.8,
-          max_response_output_tokens: 4096
-        }
-      };
-      
-      console.log('Sending session config:', sessionConfig);
-      openAIWebSocket!.send(JSON.stringify(sessionConfig));
-      
-      // Notify client that connection is ready
-      socket.send(JSON.stringify({ type: 'connection_ready' }));
+      // Wait for session.created before sending session.update
     };
 
     openAIWebSocket.onmessage = (event) => {
-      // Forward OpenAI messages to client
-      socket.send(event.data);
-    };
+      try {
+        const msg = JSON.parse(event.data as string);
+        console.log('OpenAI message:', msg.type);
+        
+        if (msg.type === 'session.created') {
+          const sessionConfig = {
+            event_id: `event_${Date.now()}`,
+            type: "session.update",
+            session: {
+              modalities: ["text", "audio"],
+              instructions: "You are a compassionate and professional Cognitive Behavioral Therapy (CBT) assistant. Your role is to help users identify, examine, and restructure unhelpful thought patterns using evidence-based CBT techniques. Keep responses brief and supportive, around 1-2 sentences.",
+              voice: "alloy",
+              input_audio_format: "pcm16",
+              output_audio_format: "pcm16",
+              input_audio_transcription: { model: "whisper-1" },
+              turn_detection: {
+                type: "server_vad",
+                threshold: 0.5,
+                prefix_padding_ms: 300,
+                silence_duration_ms: 1000
+              },
+              temperature: 0.8,
+              max_response_output_tokens: 4096
+            }
+          };
+          console.log('Sending session.update');
+          openAIWebSocket!.send(JSON.stringify(sessionConfig));
+        }
 
+        // Forward message to client
+        socket.send(typeof event.data === 'string' ? event.data : JSON.stringify(msg));
+      } catch (e) {
+        console.error('Failed to parse OpenAI message; forwarding raw', e);
+        socket.send(event.data);
+      }
+    };
     openAIWebSocket.onerror = (error) => {
       console.error("OpenAI WebSocket error:", error);
       socket.send(JSON.stringify({ error: 'OpenAI connection error', details: error.toString() }));

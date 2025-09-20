@@ -73,7 +73,7 @@ const CBTAssistant = () => {
 
   const connectToOpenAI = async () => {
     try {
-      const wsUrl = `wss://jmhabxgjckihgptoyupm.supabase.co/functions/v1/openai-realtime`;
+      const wsUrl = `wss://jmhabxgjckihgptoyupm.functions.supabase.co/functions/v1/openai-realtime`;
       console.log('Connecting to:', wsUrl);
       
       wsRef.current = new WebSocket(wsUrl);
