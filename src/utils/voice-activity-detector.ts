@@ -300,3 +300,4 @@ export const playAudioFromBase64 = async (base64Audio: string): Promise<void> =>
     }
   });
 };
+
