@@ -16,7 +16,7 @@ export class VoiceActivityDetector {
   private readonly BASE_THRESHOLD = 0.005;   // absolute floor for quiet rooms
   private readonly NOISE_FLOOR_ALPHA = 0.05; // EMA speed for noise floor
   private readonly START_HYST_MULT = 1.6;    // start threshold multiplier
-  private readonly STOP_HYST_MULT = 1.35;    // stop threshold multiplier
+  private readonly STOP_HYST_MULT  = 1.35;   // stop threshold multiplier
 
   private noiseFloor = 0.003;
   private voiceWindowStart: number | null = null;
@@ -121,22 +121,33 @@ export class VoiceActivityDetector {
     this.paused = true;
   }
 
+  // Self-healing resume that also restarts context/track/interval if needed
   async resume(): Promise<void> {
     this.paused = false;
+    await this.ensureAlive();
+  }
 
-    // AudioContext may have been suspended by the browser during playback
+  // Exposed self-heal (used by the app after TTS)
+  async ensureAlive(): Promise<void> {
+    // If AudioContext missing or closed, rebuild everything
+    if (!this.audioContext || this.audioContext.state === 'closed') {
+      await this.initialize();
+    }
+
+    // Resume suspended context (common after media playback)
     if (this.audioContext && this.audioContext.state !== 'running') {
       try { await this.audioContext.resume(); } catch { /* ignore */ }
     }
 
-    // Mic track may have been disabled by the platform
-    if (this.mediaStream) {
-      this.mediaStream.getAudioTracks().forEach(t => {
-        if (!t.enabled) t.enabled = true;
-      });
+    // If the mic track ended/disabled, re-init or enable it
+    const track = this.mediaStream?.getAudioTracks()[0];
+    if (!track || track.readyState === 'ended') {
+      await this.initialize();
+    } else if (!track.enabled) {
+      track.enabled = true;
     }
 
-    // Make sure our polling loop is active
+    // Ensure we are polling
     this.ensureIntervalRunning();
   }
 
