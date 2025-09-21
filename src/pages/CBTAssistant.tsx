@@ -160,15 +160,18 @@ const CBTAssistant = () => {
         } finally {
           await new Promise((r) => setTimeout(r, 200)); // let echo die down
           if (wasListening && vadRef.current) {
+            // self-heal & re-arm the VAD
+            await vadRef.current.ensureAlive();
             await vadRef.current.resume();
-            // Failsafe: if interval somehow cleared, restart listening
+
             if (!(vadRef.current as any).vadCheckInterval) {
               vadRef.current.startListening();
             }
-            const health = vadRef.current.health();
-            console.log('VAD health after resume:', health);
 
-            if (health.ctxState !== 'running') {
+            const health = vadRef.current.health?.();
+            console.log('VAD health after ensureAlive:', health);
+
+            if (health?.ctxState !== 'running') {
               setNeedsMicResume(true);
               setStatus(
                 language === 'th'
@@ -208,6 +211,7 @@ const CBTAssistant = () => {
 
   const resumeMic = async () => {
     try {
+      await vadRef.current?.ensureAlive();
       await vadRef.current?.resume();
       if (vadRef.current && !(vadRef.current as any).vadCheckInterval) {
         vadRef.current.startListening();
@@ -224,6 +228,7 @@ const CBTAssistant = () => {
     }
   };
 
+  // Auto-resume on next user gesture if the browser requires it
   useEffect(() => {
     if (!needsMicResume) return;
     const onGesture = async () => {
@@ -255,6 +260,7 @@ const CBTAssistant = () => {
           setStatus('🔄 Processing audio...');
         },
         (volume) => {
+          // Show 0 when paused so the bar drops instead of freezing mid-green
           const isPaused = vadRef.current && (vadRef.current as any).paused;
           setVolumeLevel(isPaused ? 0 : volume);
         }
@@ -262,7 +268,8 @@ const CBTAssistant = () => {
 
       await vadRef.current.initialize();
       vadRef.current.startListening();
-      await vadRef.current.resume(); // ensure active
+      await vadRef.current.ensureAlive();
+      await vadRef.current.resume();
 
       setIsListening(true);
       setStatus(language === 'th' ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!' : '🎤 Listening for voice... Speak naturally!');
