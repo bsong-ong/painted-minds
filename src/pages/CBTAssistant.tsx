@@ -97,11 +97,6 @@ const CBTAssistant = () => {
     } catch (error) {
       console.error('Error processing audio:', error);
       setError(error instanceof Error ? error.message : 'Failed to process audio');
-      toast({
-        title: "Audio Processing Error",
-        description: error instanceof Error ? error.message : 'Failed to process audio',
-        variant: "destructive"
-      });
     } finally {
       setIsProcessing(false);
       setStatus('Ready');
@@ -165,19 +160,9 @@ const CBTAssistant = () => {
         }
       }
 
-      toast({
-        title: "Response Generated",
-        description: "CBT assistant has responded successfully."
-      });
-
     } catch (error) {
       console.error('Error processing message:', error);
       setError(error instanceof Error ? error.message : 'Failed to process message');
-      toast({
-        title: "Processing Error",
-        description: error instanceof Error ? error.message : 'Failed to process message',
-        variant: "destructive"
-      });
     } finally {
       setIsProcessing(false);
       setStatus('Ready');
@@ -195,19 +180,10 @@ const CBTAssistant = () => {
       setIsRecording(true);
       setStatus('🔴 Recording... Speak now!');
       
-      toast({
-        title: "Recording Started",
-        description: "Speak now! The AI will transcribe and respond.",
-      });
     } catch (err) {
       console.error('Error starting recording:', err);
       setStatus('Ready');
       setError(`Error: ${(err as Error).message}`);
-      toast({
-        title: "Microphone Error",
-        description: "Failed to start recording. Please check your microphone permissions.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -217,11 +193,6 @@ const CBTAssistant = () => {
     audioRecorderRef.current.stop();
     setIsRecording(false);
     setStatus('Processing audio...');
-    
-    toast({
-      title: "Recording Stopped",
-      description: "Processing your input..."
-    });
   };
 
   const resetSession = () => {
@@ -235,10 +206,6 @@ const CBTAssistant = () => {
     conversationHistory.current = [];
     setStatus(t('ready') || 'Ready');
     setError('');
-    toast({
-      title: t('sessionReset') || "Session Reset",
-      description: t('newSessionStarted') || "New session started successfully."
-    });
   };
 
   const sendMessage = async (text: string = inputText) => {
