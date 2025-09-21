@@ -20,7 +20,7 @@ interface Message {
 
 const CBTAssistant = () => {
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -29,27 +29,21 @@ const CBTAssistant = () => {
   const [status, setStatus] = useState('Ready');
   const [error, setError] = useState('');
   const [volumeLevel, setVolumeLevel] = useState(0);
-  const [needsMicResume, setNeedsMicResume] = useState(false);
   const { toast } = useToast();
-
+  
+  // Voice Activity Detector setup
   const vadRef = useRef<VoiceActivityDetector | null>(null);
-  const conversationHistory = useRef<Array<{ role: string; content: string }>>([]);
+  const conversationHistory = useRef<Array<{role: string, content: string}>>([]);
 
-  const isLowContent = (s: string | undefined | null) => {
-    const t = (s ?? '').trim();
-    if (t.length < 2) return true;
-    return /^[\p{P}\p{Z}\p{C}]+$/u.test(t);
-  };
-
+  // Initialize welcome message with language support
   useEffect(() => {
     const welcomeMessage: Message = {
       id: '1',
       role: 'assistant',
-      content:
-        language === 'th'
-          ? 'สวัสดีค่ะ! ฉันเป็นผู้ช่วย CBT ของคุณ ฉันมาช่วยให้คุณได้สำรวจความคิดและความรู้สึกผ่านเทคนิค CBT ที่ได้รับการพิสูจน์แล้ว คุณสามารถพิมพ์หรือพูดกับฉันเกี่ยวกับสิ่งที่คุณคิด วันนี้คุณรู้สึกอย่างไรบ้างคะ?'
-          : "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
-      timestamp: new Date(),
+      content: language === 'th' 
+        ? "สวัสดีค่ะ! ฉันเป็นผู้ช่วย CBT ของคุณ ฉันมาช่วยให้คุณได้สำรวจความคิดและความรู้สึกผ่านเทคนิค CBT ที่ได้รับการพิสูจน์แล้ว คุณสามารถพิมพ์หรือพูดกับฉันเกี่ยวกับสิ่งที่คุณคิด วันนี้คุณรู้สึกอย่างไรบ้างคะ?"
+        : "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      timestamp: new Date()
     };
     setMessages([welcomeMessage]);
   }, [language]);
@@ -59,41 +53,43 @@ const CBTAssistant = () => {
     setStatus('Transcribing audio...');
 
     try {
+      // Step 1: Convert audio to base64 and transcribe
       const base64Audio = await blobToBase64(audioBlob);
-
+      
       const transcriptionResult = await supabase.functions.invoke('transcribe-audio', {
-        body: { audio: base64Audio, language },
-        headers: { Accept: 'application/json' },
+        body: { audio: base64Audio, language: language }
       });
 
       if (transcriptionResult.error) {
-        throw new Error(transcriptionResult.error.message || 'Transcription failed');
+        throw new Error(transcriptionResult.error.message);
       }
 
-      const transcribedText = transcriptionResult.data?.text as string | undefined;
+      const transcribedText = transcriptionResult.data.text;
       console.log('Transcribed text:', transcribedText);
 
-      if (isLowContent(transcribedText)) {
-        throw new Error('No meaningful speech detected. Please try again.');
+      if (!transcribedText?.trim()) {
+        throw new Error('No speech detected. Please try speaking more clearly.');
       }
 
+      // Add user message to chat
       const userMessage: Message = {
         id: Date.now().toString(),
         role: 'user',
-        content: transcribedText!,
-        timestamp: new Date(),
+        content: transcribedText,
+        timestamp: new Date()
       };
-      setMessages((prev) => [...prev, userMessage]);
+      setMessages(prev => [...prev, userMessage]);
 
-      await processMessage(transcribedText!, true);
-    } catch (err) {
-      console.error('Error processing audio:', err);
-      const msg = err instanceof Error ? err.message : 'Failed to process audio';
-      setError(msg);
+      // Process the transcribed text
+      await processMessage(transcribedText, true);
+
+    } catch (error) {
+      console.error('Error processing audio:', error);
+      setError(error instanceof Error ? error.message : 'Failed to process audio');
       toast({
-        title: 'Audio Processing Error',
-        description: msg,
-        variant: 'destructive',
+        title: "Audio Processing Error",
+        description: error instanceof Error ? error.message : 'Failed to process audio',
+        variant: "destructive"
       });
     } finally {
       setIsProcessing(false);
@@ -106,143 +102,81 @@ const CBTAssistant = () => {
     setStatus('Generating response...');
 
     try {
+      // Step 2: Generate CBT response using gpt-4.1 with language context
       const responseResult = await supabase.functions.invoke('generate-cbt-response', {
-        body: {
+        body: { 
           message: text,
           conversationHistory: conversationHistory.current,
-          language,
-        },
-        headers: { Accept: 'application/json' },
+          language: language
+        }
       });
 
       if (responseResult.error) {
-        throw new Error(responseResult.error.message || 'Generation failed');
+        throw new Error(responseResult.error.message);
       }
 
-      const assistantResponse = responseResult.data.response as string;
+      const assistantResponse = responseResult.data.response;
       console.log('Generated response:', assistantResponse);
 
+      // Add assistant message to chat
       const assistantMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
         content: assistantResponse,
-        timestamp: new Date(),
+        timestamp: new Date()
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
 
+      // Update conversation history
       conversationHistory.current.push(
         { role: 'user', content: text },
         { role: 'assistant', content: assistantResponse }
       );
+
+      // Keep only last 10 exchanges to manage context length
       if (conversationHistory.current.length > 20) {
         conversationHistory.current = conversationHistory.current.slice(-20);
       }
 
+      // Step 3: Convert response to speech if this was a voice message
       if (isVoiceMessage) {
         setStatus('Converting to speech...');
-        const wasListening = isListening;
-
-        try {
-          vadRef.current?.pause();
-
-          const ttsResult = await supabase.functions.invoke('text-to-speech-cbt', {
-            body: { text: assistantResponse, voice: 'alloy', language },
-            headers: { Accept: 'application/json' },
-          });
-
-          if (ttsResult.error) {
-            console.error('TTS Error:', ttsResult.error);
-          } else if (ttsResult.data?.audioContent) {
-            await playAudioFromBase64(ttsResult.data.audioContent);
+        
+        const ttsResult = await supabase.functions.invoke('text-to-speech-cbt', {
+          body: { 
+            text: assistantResponse, 
+            voice: 'alloy',
+            language: language
           }
-        } catch (ttsErr) {
-          console.error('TTS playback error:', ttsErr);
-        } finally {
-          await new Promise((r) => setTimeout(r, 200)); // let echo die down
-          if (wasListening && vadRef.current) {
-            // self-heal & re-arm the VAD
-            await vadRef.current.ensureAlive();
-            await vadRef.current.resume();
+        });
 
-            if (!(vadRef.current as any).vadCheckInterval) {
-              vadRef.current.startListening();
-            }
-
-            const health = vadRef.current.health?.();
-            console.log('VAD health after ensureAlive:', health);
-
-            if (health?.ctxState !== 'running') {
-              setNeedsMicResume(true);
-              setStatus(
-                language === 'th'
-                  ? 'แตะ “Resume Mic” เพื่อเริ่มฟังอีกครั้ง'
-                  : 'Tap “Resume Mic” to continue listening'
-              );
-            } else {
-              setNeedsMicResume(false);
-              setStatus(
-                language === 'th'
-                  ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!'
-                  : '🎤 Listening for voice... Speak naturally!'
-              );
-            }
-          }
+        if (ttsResult.error) {
+          console.error('TTS Error:', ttsResult.error);
+          // Don't throw error for TTS failure, just log it
+        } else {
+          // Play the generated audio
+          await playAudioFromBase64(ttsResult.data.audioContent);
         }
       }
 
       toast({
-        title: 'Response Generated',
-        description: 'CBT assistant has responded successfully.',
+        title: "Response Generated",
+        description: "CBT assistant has responded successfully."
       });
-    } catch (err) {
-      console.error('Error processing message:', err);
-      const msg = err instanceof Error ? err.message : 'Failed to process message';
-      setError(msg);
+
+    } catch (error) {
+      console.error('Error processing message:', error);
+      setError(error instanceof Error ? error.message : 'Failed to process message');
       toast({
-        title: 'Processing Error',
-        description: msg,
-        variant: 'destructive',
+        title: "Processing Error",
+        description: error instanceof Error ? error.message : 'Failed to process message',
+        variant: "destructive"
       });
     } finally {
       setIsProcessing(false);
-      if (!isVoiceMessage) setStatus('Ready');
+      setStatus('Ready');
     }
   };
-
-  const resumeMic = async () => {
-    try {
-      await vadRef.current?.ensureAlive();
-      await vadRef.current?.resume();
-      if (vadRef.current && !(vadRef.current as any).vadCheckInterval) {
-        vadRef.current.startListening();
-      }
-      console.log('Resume Mic clicked; health:', vadRef.current?.health());
-      setNeedsMicResume(false);
-      setStatus(
-        language === 'th'
-          ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!'
-          : '🎤 Listening for voice... Speak naturally!'
-      );
-    } catch (e) {
-      console.error('Resume mic failed:', e);
-    }
-  };
-
-  // Auto-resume on next user gesture if the browser requires it
-  useEffect(() => {
-    if (!needsMicResume) return;
-    const onGesture = async () => {
-      await resumeMic();
-      window.removeEventListener('click', onGesture);
-      window.removeEventListener('keydown', onGesture);
-    };
-    window.addEventListener('click', onGesture, { once: true });
-    window.addEventListener('keydown', onGesture, { once: true });
-    return () => {
-      window.removeEventListener('click', onGesture);
-      window.removeEventListener('keydown', onGesture);
-    };
-  }, [needsMicResume]);
 
   const startVoiceMode = async () => {
     if (isListening || isProcessing) return;
@@ -260,35 +194,28 @@ const CBTAssistant = () => {
           setStatus('🔄 Processing audio...');
         },
         (volume) => {
-          // Show 0 when paused so the bar drops instead of freezing mid-green
-          const isPaused = vadRef.current && (vadRef.current as any).paused;
-          setVolumeLevel(isPaused ? 0 : volume);
+          setVolumeLevel(volume);
         }
       );
-
+      
       await vadRef.current.initialize();
       vadRef.current.startListening();
-      await vadRef.current.ensureAlive();
-      await vadRef.current.resume();
-
+      
       setIsListening(true);
       setStatus(language === 'th' ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!' : '🎤 Listening for voice... Speak naturally!');
-
+      
       toast({
-        title: language === 'th' ? 'เปิดโหมดเสียง' : 'Voice Mode Active',
-        description:
-          language === 'th'
-            ? 'พูดตามธรรมชาติ! ฉันจะตรวจจับอัตโนมัติเมื่อคุณเริ่มและหยุดพูด'
-            : "Speak naturally! I'll automatically detect when you start and stop talking.",
+        title: language === 'th' ? "เปิดโหมดเสียง" : "Voice Mode Active",
+        description: language === 'th' ? "พูดตามธรรมชาติ! ฉันจะตรวจจับอัตโนมัติเมื่อคุณเริ่มและหยุดพูด" : "Speak naturally! I'll automatically detect when you start and stop talking.",
       });
     } catch (err) {
       console.error('Error starting voice mode:', err);
       setStatus('Ready');
       setError(`Error: ${(err as Error).message}`);
       toast({
-        title: 'Microphone Error',
-        description: 'Failed to start voice mode. Please check your microphone permissions.',
-        variant: 'destructive',
+        title: "Microphone Error",
+        description: "Failed to start voice mode. Please check your microphone permissions.",
+        variant: "destructive"
       });
     }
   };
@@ -297,44 +224,44 @@ const CBTAssistant = () => {
     if (!isListening || !vadRef.current) return;
 
     vadRef.current.stopListening();
-    vadRef.current.dispose(); // only dispose when user explicitly stops
+    vadRef.current.dispose();
     vadRef.current = null;
-
+    
     setIsListening(false);
     setIsRecording(false);
     setVolumeLevel(0);
     setStatus('Ready');
-
+    
     toast({
-      title: 'Voice Mode Stopped',
-      description: 'Voice detection has been disabled.',
+      title: "Voice Mode Stopped",
+      description: "Voice detection has been disabled."
     });
   };
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (vadRef.current) vadRef.current.dispose();
+      if (vadRef.current) {
+        vadRef.current.dispose();
+      }
     };
   }, []);
 
   const resetSession = () => {
-    setMessages([
-      {
-        id: '1',
-        role: 'assistant',
-        content:
-          language === 'th'
-            ? 'สวัสดีค่ะ! ฉันเป็นผู้ช่วย CBT ของคุณ ฉันมาช่วยให้คุณได้สำรวจความคิดและความรู้สึกผ่านเทคนิค CBT ที่ได้รับการพิสูจน์แล้ว คุณสามารถพิมพ์หรือพูดกับฉันเกี่ยวกับสิ่งที่คุณคิด วันนี้คุณรู้สึกอย่างไรบ้างคะ?'
-            : "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
-        timestamp: new Date(),
-      },
-    ]);
+    setMessages([{
+      id: '1',
+      role: 'assistant',
+      content: language === 'th' 
+        ? "สวัสดีค่ะ! ฉันเป็นผู้ช่วย CBT ของคุณ ฉันมาช่วยให้คุณได้สำรวจความคิดและความรู้สึกผ่านเทคนิค CBT ที่ได้รับการพิสูจน์แล้ว คุณสามารถพิมพ์หรือพูดกับฉันเกี่ยวกับสิ่งที่คุณคิด วันนี้คุณรู้สึกอย่างไรบ้างคะ?"
+        : "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      timestamp: new Date()
+    }]);
     conversationHistory.current = [];
     setStatus('Ready');
     setError('');
     toast({
-      title: language === 'th' ? 'รีเซ็ตเซสชัน' : 'Session Reset',
-      description: language === 'th' ? 'เริ่มเซสชันใหม่เรียบร้อยแล้ว' : 'New session started successfully.',
+      title: language === 'th' ? "รีเซ็ตเซสชัน" : "Session Reset",
+      description: language === 'th' ? "เริ่มเซสชันใหม่เรียบร้อยแล้ว" : "New session started successfully."
     });
   };
 
@@ -345,10 +272,10 @@ const CBTAssistant = () => {
       id: Date.now().toString(),
       role: 'user',
       content: text,
-      timestamp: new Date(),
+      timestamp: new Date()
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputText('');
 
     await processMessage(text, false);
@@ -359,7 +286,11 @@ const CBTAssistant = () => {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-between mb-4">
-            <Button variant="outline" onClick={() => navigate('/')} className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/')} 
+              className="flex items-center gap-2"
+            >
               <ArrowLeft className="h-4 w-4" />
               {language === 'th' ? 'กลับ' : 'Back'}
             </Button>
@@ -370,22 +301,29 @@ const CBTAssistant = () => {
             <LanguageSwitcher />
           </div>
           <p className="text-muted-foreground">
-            {language === 'th'
+            {language === 'th' 
               ? 'ผู้ช่วย CBT ส่วนตัวของคุณด้วยการประมวลผล AI แบบต่อเชื่อม'
-              : 'Your personal cognitive behavioral therapy assistant with chained AI processing'}
+              : 'Your personal cognitive behavioral therapy assistant with chained AI processing'
+            }
           </p>
         </div>
 
         <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button onClick={resetSession} disabled={isListening || isRecording} variant="outline" size="lg" className="w-full">
+          <Button
+            onClick={resetSession}
+            disabled={isListening || isRecording}
+            variant="outline"
+            size="lg"
+            className="w-full"
+          >
             <RotateCcw className="w-5 h-5 mr-2" />
             {language === 'th' ? 'รีเซ็ตเซสชัน' : 'Reset Session'}
           </Button>
-
+          
           <Button
             onClick={isListening ? stopVoiceMode : startVoiceMode}
             disabled={isProcessing}
-            variant={isListening ? 'destructive' : 'default'}
+            variant={isListening ? "destructive" : "default"}
             size="lg"
             className="w-full"
           >
@@ -401,28 +339,23 @@ const CBTAssistant = () => {
               </>
             )}
           </Button>
-
+          
           <div className="p-4 bg-muted rounded-lg">
             <div className="text-sm font-medium text-muted-foreground mb-1">Status</div>
             <div className="text-sm text-foreground mb-2">{error || status}</div>
-
-            {needsMicResume && (
-              <Button size="sm" onClick={resumeMic} className="mb-2">
-                {language === 'th' ? 'Resume Mic' : 'Resume Mic'}
-              </Button>
-            )}
-
             {isListening && (
               <div className="space-y-2">
                 <div className="text-xs text-muted-foreground">Voice Activity</div>
                 <div className="w-full bg-background rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full transition-all duration-150 ${volumeLevel > 0.02 ? 'bg-green-500' : 'bg-gray-300'}`}
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-150 ${
+                      volumeLevel > 0.02 ? 'bg-green-500' : 'bg-gray-300'
+                    }`}
                     style={{ width: `${Math.min(volumeLevel * 500, 100)}%` }}
                   />
                 </div>
                 {isRecording && (
-                  <div className="flex items-center gap-1 text-xs text-red-500 mt-1">
+                  <div className="flex items-center gap-1 text-xs text-red-500">
                     <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                     Recording...
                   </div>
@@ -435,20 +368,29 @@ const CBTAssistant = () => {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Conversation</CardTitle>
-            <CardDescription>Share your thoughts and let’s work through them together using CBT techniques</CardDescription>
+            <CardDescription>
+              Share your thoughts and let's work through them together using CBT techniques
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-96 w-full pr-4">
               <div className="space-y-4">
                 {messages.map((message) => (
-                  <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    key={message.id}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
                     <div
                       className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                        message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       <p className="text-sm">{message.content}</p>
-                      <span className="text-xs opacity-70 mt-1 block">{message.timestamp.toLocaleTimeString()}</span>
+                      <span className="text-xs opacity-70 mt-1 block">
+                        {message.timestamp.toLocaleTimeString()}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -472,8 +414,13 @@ const CBTAssistant = () => {
                   }
                 }}
               />
+              
               <div className="flex items-center justify-end">
-                <Button onClick={() => sendMessage()} disabled={!inputText.trim() || isProcessing} className="gap-2">
+                <Button
+                  onClick={() => sendMessage()}
+                  disabled={!inputText.trim() || isProcessing}
+                  className="gap-2"
+                >
                   <Send className="h-4 w-4" />
                   Send
                 </Button>

@@ -1,102 +1,80 @@
-// supabase/functions/transcribe-audio/index.ts
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Vary": "Origin",
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req) => {
-  // CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: cors });
-  }
-
-  // Only allow POST
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed" }),
-      { status: 405, headers: { ...cors, "Content-Type": "application/json" } },
-    );
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { audio, language = "en" } = await req.json();
-
-    if (!audio || typeof audio !== "string") {
-      return new Response(
-        JSON.stringify({ error: "No audio data provided" }),
-        { status: 400, headers: { ...cors, "Content-Type": "application/json" } },
-      );
+    const { audio, language = 'en' } = await req.json();
+    
+    if (!audio) {
+      throw new Error('No audio data provided');
     }
 
-    const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
-      return new Response(
-        JSON.stringify({ error: "OpenAI API key not configured" }),
-        { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
-      );
+      throw new Error('OpenAI API key not configured');
     }
 
-    console.log(`Processing audio transcription for language: ${language} ...`);
+    console.log(`Processing audio transcription with gpt-4o-transcribe for language: ${language}...`);
 
-    // Base64 -> Uint8Array (supports large payloads)
-    const binary = atob(audio);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    // Convert base64 to blob for OpenAI API
+    const binaryString = atob(audio);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
 
-    // Build multipart form
-    const form = new FormData();
-    const mime = "audio/webm"; // your recorder yields webm/opus
-    const audioBlob = new Blob([bytes], { type: mime });
-    form.append("file", audioBlob, "audio.webm");
+    // Create form data for transcription
+    const formData = new FormData();
+    const audioBlob = new Blob([bytes], { type: 'audio/webm' });
+    formData.append('file', audioBlob, 'audio.webm');
+    formData.append('model', 'gpt-4o-transcribe');
+    
+    // Add language parameter to improve accuracy
+    if (language === 'th') {
+      formData.append('language', 'th');
+    } else {
+      formData.append('language', 'en');
+    }
 
-    // Choose model (keep your original model name)
-    form.append("model", "gpt-4o-transcribe");
-
-    // Help the model with language hint
-    form.append("language", language === "th" ? "th" : "en");
-
-    const resp = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${openAIApiKey}` },
-      body: form,
+    const transcriptionResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+      },
+      body: formData,
     });
 
-    if (!resp.ok) {
-      const errTxt = await resp.text();
-      console.error("Transcription API error:", errTxt);
-      return new Response(
-        JSON.stringify({ error: `Transcription failed: ${errTxt}` }),
-        { status: resp.status, headers: { ...cors, "Content-Type": "application/json" } },
-      );
+    if (!transcriptionResponse.ok) {
+      const error = await transcriptionResponse.text();
+      console.error('Transcription API error:', error);
+      throw new Error(`Transcription failed: ${error}`);
     }
 
-    const data = await resp.json();
-    const text: string = (data?.text ?? "").trim();
-    console.log("Transcription result:", text);
-
-    // Optional: reject low-content to prevent "." from reaching the client
-    if (text.length < 2 || /^[\p{P}\p{Z}\p{C}]+$/u.test(text)) {
-      return new Response(
-        JSON.stringify({ error: "No meaningful speech detected", text }),
-        { status: 422, headers: { ...cors, "Content-Type": "application/json" } },
-      );
-    }
+    const transcriptionResult = await transcriptionResponse.json();
+    console.log('Transcription result:', transcriptionResult.text);
 
     return new Response(
-      JSON.stringify({ text }),
-      { status: 200, headers: { ...cors, "Content-Type": "application/json" } },
+      JSON.stringify({ text: transcriptionResult.text }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (e) {
-    console.error("Error in transcription function:", e);
+  } catch (error) {
+    console.error('Error in transcription function:', error);
     return new Response(
-      JSON.stringify({ error: String(e?.message ?? e) }),
-      { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     );
   }
 });
