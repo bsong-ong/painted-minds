@@ -29,6 +29,7 @@ const CBTAssistant = () => {
   const [status, setStatus] = useState('Ready');
   const [error, setError] = useState('');
   const [volumeLevel, setVolumeLevel] = useState(0);
+  const [needsMicResume, setNeedsMicResume] = useState(false);
   const { toast } = useToast();
 
   const vadRef = useRef<VoiceActivityDetector | null>(null);
@@ -40,7 +41,6 @@ const CBTAssistant = () => {
     return /^[\p{P}\p{Z}\p{C}]+$/u.test(t);
   };
 
-  // Welcome message
   useEffect(() => {
     const welcomeMessage: Message = {
       id: '1',
@@ -165,12 +165,24 @@ const CBTAssistant = () => {
             if (!(vadRef.current as any).vadCheckInterval) {
               vadRef.current.startListening();
             }
-            console.log('VAD health after resume:', vadRef.current.health());
-            setStatus(
-              language === 'th'
-                ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!'
-                : '🎤 Listening for voice... Speak naturally!'
-            );
+            const health = vadRef.current.health();
+            console.log('VAD health after resume:', health);
+
+            if (health.ctxState !== 'running') {
+              setNeedsMicResume(true);
+              setStatus(
+                language === 'th'
+                  ? 'แตะ “Resume Mic” เพื่อเริ่มฟังอีกครั้ง'
+                  : 'Tap “Resume Mic” to continue listening'
+              );
+            } else {
+              setNeedsMicResume(false);
+              setStatus(
+                language === 'th'
+                  ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!'
+                  : '🎤 Listening for voice... Speak naturally!'
+              );
+            }
           }
         }
       }
@@ -194,6 +206,39 @@ const CBTAssistant = () => {
     }
   };
 
+  const resumeMic = async () => {
+    try {
+      await vadRef.current?.resume();
+      if (vadRef.current && !(vadRef.current as any).vadCheckInterval) {
+        vadRef.current.startListening();
+      }
+      console.log('Resume Mic clicked; health:', vadRef.current?.health());
+      setNeedsMicResume(false);
+      setStatus(
+        language === 'th'
+          ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!'
+          : '🎤 Listening for voice... Speak naturally!'
+      );
+    } catch (e) {
+      console.error('Resume mic failed:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (!needsMicResume) return;
+    const onGesture = async () => {
+      await resumeMic();
+      window.removeEventListener('click', onGesture);
+      window.removeEventListener('keydown', onGesture);
+    };
+    window.addEventListener('click', onGesture, { once: true });
+    window.addEventListener('keydown', onGesture, { once: true });
+    return () => {
+      window.removeEventListener('click', onGesture);
+      window.removeEventListener('keydown', onGesture);
+    };
+  }, [needsMicResume]);
+
   const startVoiceMode = async () => {
     if (isListening || isProcessing) return;
 
@@ -210,7 +255,6 @@ const CBTAssistant = () => {
           setStatus('🔄 Processing audio...');
         },
         (volume) => {
-          // Show 0 when paused so the bar visually drops instead of freezing
           const isPaused = vadRef.current && (vadRef.current as any).paused;
           setVolumeLevel(isPaused ? 0 : volume);
         }
@@ -354,6 +398,13 @@ const CBTAssistant = () => {
           <div className="p-4 bg-muted rounded-lg">
             <div className="text-sm font-medium text-muted-foreground mb-1">Status</div>
             <div className="text-sm text-foreground mb-2">{error || status}</div>
+
+            {needsMicResume && (
+              <Button size="sm" onClick={resumeMic} className="mb-2">
+                {language === 'th' ? 'Resume Mic' : 'Resume Mic'}
+              </Button>
+            )}
+
             {isListening && (
               <div className="space-y-2">
                 <div className="text-xs text-muted-foreground">Voice Activity</div>
@@ -364,7 +415,7 @@ const CBTAssistant = () => {
                   />
                 </div>
                 {isRecording && (
-                  <div className="flex items-center gap-1 text-xs text-red-500">
+                  <div className="flex items-center gap-1 text-xs text-red-500 mt-1">
                     <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                     Recording...
                   </div>
