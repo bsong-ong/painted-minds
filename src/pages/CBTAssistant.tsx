@@ -40,6 +40,7 @@ const CBTAssistant = () => {
     return /^[\p{P}\p{Z}\p{C}]+$/u.test(t);
   };
 
+  // Welcome message
   useEffect(() => {
     const welcomeMessage: Message = {
       id: '1',
@@ -159,7 +160,12 @@ const CBTAssistant = () => {
         } finally {
           await new Promise((r) => setTimeout(r, 200)); // let echo die down
           if (wasListening && vadRef.current) {
-            vadRef.current.resume();
+            await vadRef.current.resume();
+            // Failsafe: if interval somehow cleared, restart listening
+            if (!(vadRef.current as any).vadCheckInterval) {
+              vadRef.current.startListening();
+            }
+            console.log('VAD health after resume:', vadRef.current.health());
             setStatus(
               language === 'th'
                 ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!'
@@ -204,13 +210,15 @@ const CBTAssistant = () => {
           setStatus('🔄 Processing audio...');
         },
         (volume) => {
-          setVolumeLevel(volume);
+          // Show 0 when paused so the bar visually drops instead of freezing
+          const isPaused = vadRef.current && (vadRef.current as any).paused;
+          setVolumeLevel(isPaused ? 0 : volume);
         }
       );
 
       await vadRef.current.initialize();
       vadRef.current.startListening();
-      vadRef.current.resume(); // ensure active
+      await vadRef.current.resume(); // ensure active
 
       setIsListening(true);
       setStatus(language === 'th' ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!' : '🎤 Listening for voice... Speak naturally!');
@@ -254,9 +262,7 @@ const CBTAssistant = () => {
 
   useEffect(() => {
     return () => {
-      if (vadRef.current) {
-        vadRef.current.dispose();
-      }
+      if (vadRef.current) vadRef.current.dispose();
     };
   }, []);
 
