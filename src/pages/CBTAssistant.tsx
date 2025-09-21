@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface Message {
   id: string;
@@ -260,7 +261,7 @@ const CBTAssistant = () => {
     <div className={isStandalonePage ? "min-h-screen bg-background" : "w-full"}>
       <div className={isStandalonePage ? "container mx-auto px-4 py-8 max-w-4xl" : "max-w-4xl mx-auto"}>
         {isStandalonePage && (
-          <div className="mb-6 flex items-center gap-4">
+          <div className="mb-6 flex items-center justify-between">
             <Button
               variant="outline"
               size="sm"
@@ -270,6 +271,7 @@ const CBTAssistant = () => {
               <ArrowLeft className="h-4 w-4" />
               {t('backToHome') || 'Back to Home'}
             </Button>
+            <LanguageSwitcher />
           </div>
         )}
         
