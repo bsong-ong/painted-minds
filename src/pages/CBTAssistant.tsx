@@ -1,14 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
-import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft } from 'lucide-react';
-import { VoiceActivityDetector, blobToBase64, playAudioFromBase64 } from '@/utils/voice-activity-detector';
-import { useLanguage } from '@/contexts/LanguageContext';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { Mic, MicOff, RotateCcw, Send, Brain } from 'lucide-react';
+import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
@@ -19,34 +16,28 @@ interface Message {
 }
 
 const CBTAssistant = () => {
-  const navigate = useNavigate();
-  const { language, t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
-  const [isListening, setIsListening] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [status, setStatus] = useState('Ready');
   const [error, setError] = useState('');
-  const [volumeLevel, setVolumeLevel] = useState(0);
   const { toast } = useToast();
   
-  // Voice Activity Detector setup
-  const vadRef = useRef<VoiceActivityDetector | null>(null);
+  // Audio recording setup
+  const audioRecorderRef = useRef<AudioRecorder | null>(null);
   const conversationHistory = useRef<Array<{role: string, content: string}>>([]);
 
-  // Initialize welcome message with language support
+  // Initialize welcome message
   useEffect(() => {
     const welcomeMessage: Message = {
       id: '1',
       role: 'assistant',
-      content: language === 'th' 
-        ? "สวัสดีค่ะ! ฉันเป็นผู้ช่วย CBT ของคุณ ฉันมาช่วยให้คุณได้สำรวจความคิดและความรู้สึกผ่านเทคนิค CBT ที่ได้รับการพิสูจน์แล้ว คุณสามารถพิมพ์หรือพูดกับฉันเกี่ยวกับสิ่งที่คุณคิด วันนี้คุณรู้สึกอย่างไรบ้างคะ?"
-        : "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
-  }, [language]);
+  }, []);
 
   const handleAudioRecording = async (audioBlob: Blob) => {
     setIsProcessing(true);
@@ -57,7 +48,7 @@ const CBTAssistant = () => {
       const base64Audio = await blobToBase64(audioBlob);
       
       const transcriptionResult = await supabase.functions.invoke('transcribe-audio', {
-        body: { audio: base64Audio, language: language }
+        body: { audio: base64Audio }
       });
 
       if (transcriptionResult.error) {
@@ -102,12 +93,11 @@ const CBTAssistant = () => {
     setStatus('Generating response...');
 
     try {
-      // Step 2: Generate CBT response using gpt-4.1 with language context
+      // Step 2: Generate CBT response using gpt-4.1
       const responseResult = await supabase.functions.invoke('generate-cbt-response', {
         body: { 
           message: text,
-          conversationHistory: conversationHistory.current,
-          language: language
+          conversationHistory: conversationHistory.current
         }
       });
 
@@ -143,11 +133,7 @@ const CBTAssistant = () => {
         setStatus('Converting to speech...');
         
         const ttsResult = await supabase.functions.invoke('text-to-speech-cbt', {
-          body: { 
-            text: assistantResponse, 
-            voice: 'alloy',
-            language: language
-          }
+          body: { text: assistantResponse, voice: 'alloy' }
         });
 
         if (ttsResult.error) {
@@ -178,90 +164,59 @@ const CBTAssistant = () => {
     }
   };
 
-  const startVoiceMode = async () => {
-    if (isListening || isProcessing) return;
+  const startRecording = async () => {
+    if (isRecording || isProcessing) return;
 
     try {
       setError('');
-      vadRef.current = new VoiceActivityDetector(
-        handleAudioRecording,
-        () => {
-          setIsRecording(true);
-          setStatus(language === 'th' ? '🔴 ตรวจพบเสียงพูด... กำลังบันทึก!' : '🔴 Speaking detected... Recording!');
-        },
-        () => {
-          setIsRecording(false);
-          setStatus('🔄 Processing audio...');
-        },
-        (volume) => {
-          setVolumeLevel(volume);
-        }
-      );
+      audioRecorderRef.current = new AudioRecorder(handleAudioRecording);
+      await audioRecorderRef.current.start();
       
-      await vadRef.current.initialize();
-      vadRef.current.startListening();
-      
-      setIsListening(true);
-      setStatus(language === 'th' ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!' : '🎤 Listening for voice... Speak naturally!');
+      setIsRecording(true);
+      setStatus('🔴 Recording... Speak now!');
       
       toast({
-        title: language === 'th' ? "เปิดโหมดเสียง" : "Voice Mode Active",
-        description: language === 'th' ? "พูดตามธรรมชาติ! ฉันจะตรวจจับอัตโนมัติเมื่อคุณเริ่มและหยุดพูด" : "Speak naturally! I'll automatically detect when you start and stop talking.",
+        title: "Recording Started",
+        description: "Speak now! The AI will transcribe and respond.",
       });
     } catch (err) {
-      console.error('Error starting voice mode:', err);
+      console.error('Error starting recording:', err);
       setStatus('Ready');
       setError(`Error: ${(err as Error).message}`);
       toast({
         title: "Microphone Error",
-        description: "Failed to start voice mode. Please check your microphone permissions.",
+        description: "Failed to start recording. Please check your microphone permissions.",
         variant: "destructive"
       });
     }
   };
 
-  const stopVoiceMode = () => {
-    if (!isListening || !vadRef.current) return;
+  const stopRecording = () => {
+    if (!isRecording || !audioRecorderRef.current) return;
 
-    vadRef.current.stopListening();
-    vadRef.current.dispose();
-    vadRef.current = null;
-    
-    setIsListening(false);
+    audioRecorderRef.current.stop();
     setIsRecording(false);
-    setVolumeLevel(0);
-    setStatus('Ready');
+    setStatus('Processing audio...');
     
     toast({
-      title: "Voice Mode Stopped",
-      description: "Voice detection has been disabled."
+      title: "Recording Stopped",
+      description: "Processing your input..."
     });
   };
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (vadRef.current) {
-        vadRef.current.dispose();
-      }
-    };
-  }, []);
 
   const resetSession = () => {
     setMessages([{
       id: '1',
       role: 'assistant',
-      content: language === 'th' 
-        ? "สวัสดีค่ะ! ฉันเป็นผู้ช่วย CBT ของคุณ ฉันมาช่วยให้คุณได้สำรวจความคิดและความรู้สึกผ่านเทคนิค CBT ที่ได้รับการพิสูจน์แล้ว คุณสามารถพิมพ์หรือพูดกับฉันเกี่ยวกับสิ่งที่คุณคิด วันนี้คุณรู้สึกอย่างไรบ้างคะ?"
-        : "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
       timestamp: new Date()
     }]);
     conversationHistory.current = [];
     setStatus('Ready');
     setError('');
     toast({
-      title: language === 'th' ? "รีเซ็ตเซสชัน" : "Session Reset",
-      description: language === 'th' ? "เริ่มเซสชันใหม่เรียบร้อยแล้ว" : "New session started successfully."
+      title: "Session Reset",
+      description: "New session started successfully."
     });
   };
 
@@ -285,83 +240,50 @@ const CBTAssistant = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8 text-center">
-          <div className="flex items-center justify-between mb-4">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/')} 
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {language === 'th' ? 'กลับ' : 'Back'}
-            </Button>
-            <div className="flex items-center gap-3">
-              <Brain className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
-            </div>
-            <LanguageSwitcher />
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Brain className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
           </div>
           <p className="text-muted-foreground">
-            {language === 'th' 
-              ? 'ผู้ช่วย CBT ส่วนตัวของคุณด้วยการประมวลผล AI แบบต่อเชื่อม'
-              : 'Your personal cognitive behavioral therapy assistant with chained AI processing'
-            }
+            Your personal cognitive behavioral therapy assistant with chained AI processing
           </p>
         </div>
 
         <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <Button
             onClick={resetSession}
-            disabled={isListening || isRecording}
+            disabled={isRecording}
             variant="outline"
             size="lg"
             className="w-full"
           >
             <RotateCcw className="w-5 h-5 mr-2" />
-            {language === 'th' ? 'รีเซ็ตเซสชัน' : 'Reset Session'}
+            Reset Session
           </Button>
           
           <Button
-            onClick={isListening ? stopVoiceMode : startVoiceMode}
+            onClick={isRecording ? stopRecording : startRecording}
             disabled={isProcessing}
-            variant={isListening ? "destructive" : "default"}
+            variant={isRecording ? "destructive" : "default"}
             size="lg"
             className="w-full"
           >
-            {isListening ? (
+            {isRecording ? (
               <>
                 <MicOff className="w-5 h-5 mr-2" />
-                {language === 'th' ? 'หยุดโหมดเสียง' : 'Stop Voice Mode'}
+                Stop Recording
               </>
             ) : (
               <>
                 <Mic className="w-5 h-5 mr-2" />
-                {language === 'th' ? 'เริ่มโหมดเสียง' : 'Start Voice Mode'}
+                Start Recording
               </>
             )}
           </Button>
           
           <div className="p-4 bg-muted rounded-lg">
             <div className="text-sm font-medium text-muted-foreground mb-1">Status</div>
-            <div className="text-sm text-foreground mb-2">{error || status}</div>
-            {isListening && (
-              <div className="space-y-2">
-                <div className="text-xs text-muted-foreground">Voice Activity</div>
-                <div className="w-full bg-background rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-150 ${
-                      volumeLevel > 0.02 ? 'bg-green-500' : 'bg-gray-300'
-                    }`}
-                    style={{ width: `${Math.min(volumeLevel * 500, 100)}%` }}
-                  />
-                </div>
-                {isRecording && (
-                  <div className="flex items-center gap-1 text-xs text-red-500">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    Recording...
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="text-sm text-foreground">{error || status}</div>
           </div>
         </div>
 

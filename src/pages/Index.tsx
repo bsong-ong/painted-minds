@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { LogOut, Heart, BookOpen, PenTool, Globe, Settings, MessageSquare } from 'lucide-react';
+import { LogOut, Heart, BookOpen, PenTool, Globe, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
@@ -86,11 +85,6 @@ const Index = () => {
                 <span className="ml-2 hidden sm:inline">{t('publicGallery')}</span>
                 <span className="ml-2 sm:hidden">Gallery</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/cbt-assistant')} className="flex-shrink-0">
-                <MessageSquare className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">CBT Assistant</span>
-                <span className="ml-2 sm:hidden">CBT</span>
-              </Button>
               <LanguageSwitcher />
               <Button variant="outline" size="sm" onClick={handleSignOut} className="flex-shrink-0">
                 <LogOut className="h-4 w-4" />
@@ -105,55 +99,21 @@ const Index = () => {
       <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full overflow-hidden">
         <div className="grid lg:grid-cols-4 gap-4 sm:gap-8 w-full">
           <div className="lg:col-span-3 w-full min-w-0 space-y-4">
-            <Tabs defaultValue="gratitude" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="gratitude" className="flex items-center gap-2">
-                  <Heart className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t('gratitudeJournal')}</span>
-                  <span className="sm:hidden">Gratitude</span>
-                </TabsTrigger>
-                <TabsTrigger value="cbt" className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  <span className="hidden sm:inline">CBT Assistant</span>
-                  <span className="sm:hidden">CBT</span>
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="gratitude" className="mt-4">
-                {/* Start Gratitude Entry Card */}
-                <Card className="h-fit w-full bg-gradient-to-r from-primary/10 to-gratitude-warm/10 border-primary/20">
-                  <CardHeader className="px-3 sm:px-6">
-                    <CardTitle className="text-lg sm:text-xl text-center bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">{t('startYourDailyGratitude')}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6 text-center">
-                    <p className="text-muted-foreground mb-6">
-                      {t('takeAMomentToReflect')}
-                    </p>
-                    <Button onClick={handleStartGratitudeEntry} size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-gratitude-warm hover:from-primary/90 hover:to-gratitude-warm/90">
-                      <PenTool className="h-4 w-4 mr-2" />
-                      {t('startGratitudeEntry')}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="cbt" className="mt-4">
-                <Card className="h-fit w-full bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20 border-blue-200/50 dark:border-blue-800/50">
-                  <CardHeader className="px-3 sm:px-6">
-                    <CardTitle className="text-lg sm:text-xl text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">CBT Assistant</CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6 text-center">
-                    <p className="text-muted-foreground mb-6">
-                      Talk with your personal CBT assistant for guidance and support
-                    </p>
-                    <Button onClick={() => navigate('/cbt-assistant')} size="lg" className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white">
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Start CBT Session
-                    </Button>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+            {/* Start Gratitude Entry Card */}
+            <Card className="h-fit w-full bg-gradient-to-r from-primary/10 to-gratitude-warm/10 border-primary/20">
+              <CardHeader className="px-3 sm:px-6">
+                <CardTitle className="text-lg sm:text-xl text-center bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">{t('startYourDailyGratitude')}</CardTitle>
+              </CardHeader>
+              <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6 text-center">
+                <p className="text-muted-foreground mb-6">
+                  {t('takeAMomentToReflect')}
+                </p>
+                <Button onClick={handleStartGratitudeEntry} size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-gratitude-warm hover:from-primary/90 hover:to-gratitude-warm/90">
+                  <PenTool className="h-4 w-4 mr-2" />
+                  {t('startGratitudeEntry')}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
           
           <div className="lg:col-span-1 w-full min-w-0">
