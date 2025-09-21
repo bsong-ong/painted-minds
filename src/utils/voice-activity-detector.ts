@@ -11,12 +11,12 @@ export class VoiceActivityDetector {
 
   // VAD tuning
   private readonly MIN_VOICE_MS = 200;       // voiced ms window (stability gate)
-  private readonly MIN_SILENCE_MS = 900;     // hang time before stopping (was 600)
+  private readonly MIN_SILENCE_MS = 900;     // hang time before stopping
   private readonly GRACE_ON_STOP_MS = 300;   // buffer to avoid premature stop
   private readonly BASE_THRESHOLD = 0.005;   // absolute floor for quiet rooms
   private readonly NOISE_FLOOR_ALPHA = 0.05; // EMA speed for noise floor
-  private readonly START_HYST_MULT = 1.6;    // start threshold multiplier (was 1.8)
-  private readonly STOP_HYST_MULT = 1.35;    // stop threshold multiplier (was 1.3)
+  private readonly START_HYST_MULT = 1.6;    // start threshold multiplier
+  private readonly STOP_HYST_MULT = 1.35;    // stop threshold multiplier
 
   private noiseFloor = 0.003;
   private voiceWindowStart: number | null = null;
@@ -70,7 +70,7 @@ export class VoiceActivityDetector {
 
       this.mediaRecorder = new MediaRecorder(this.mediaStream, {
         mimeType: 'audio/webm;codecs=opus',
-        audioBitsPerSecond: 96000, // higher bitrate to capture consonants clearly
+        audioBitsPerSecond: 96000,
       });
 
       this.mediaRecorder.ondataavailable = (event) => {
@@ -90,12 +90,16 @@ export class VoiceActivityDetector {
     }
   }
 
+  private ensureIntervalRunning() {
+    if (!this.vadCheckInterval && this.analyser) {
+      this.vadCheckInterval = setInterval(() => this.checkVoiceActivity(), 25);
+    }
+  }
+
   startListening(): void {
     if (!this.analyser || this.vadCheckInterval) return;
     console.log('Starting voice activity detection...');
-    this.vadCheckInterval = setInterval(() => {
-      this.checkVoiceActivity();
-    }, 25); // faster polling (~40 fps) to avoid chopping leading phonemes
+    this.vadCheckInterval = setInterval(() => this.checkVoiceActivity(), 25);
   }
 
   stopListening(): void {
@@ -113,8 +117,42 @@ export class VoiceActivityDetector {
     console.log('Stopped voice activity detection');
   }
 
-  pause(): void { this.paused = true; }
-  resume(): void { this.paused = false; }
+  pause(): void {
+    this.paused = true;
+  }
+
+  async resume(): Promise<void> {
+    this.paused = false;
+
+    // AudioContext may have been suspended by the browser during playback
+    if (this.audioContext && this.audioContext.state !== 'running') {
+      try { await this.audioContext.resume(); } catch { /* ignore */ }
+    }
+
+    // Mic track may have been disabled by the platform
+    if (this.mediaStream) {
+      this.mediaStream.getAudioTracks().forEach(t => {
+        if (!t.enabled) t.enabled = true;
+      });
+    }
+
+    // Make sure our polling loop is active
+    this.ensureIntervalRunning();
+  }
+
+  health(): Record<string, unknown> {
+    const ctx = this.audioContext;
+    const track = this.mediaStream?.getAudioTracks()[0];
+    return {
+      paused: this.paused,
+      hasAnalyser: !!this.analyser,
+      hasInterval: !!this.vadCheckInterval,
+      ctxState: ctx?.state,
+      trackReadyState: track?.readyState,
+      trackEnabled: track?.enabled,
+      isRecording: this.isRecording,
+    };
+  }
 
   private checkVoiceActivity(): void {
     if (!this.analyser || this.paused) return;
@@ -144,11 +182,11 @@ export class VoiceActivityDetector {
     const now = performance.now();
 
     if (!this.isRecording) {
-      // Start recording immediately on threshold-cross to avoid losing leading words
+      // Start immediately on threshold-cross to avoid losing leading words
       if (rms > startThresh) {
         if (this.voiceWindowStart == null) this.voiceWindowStart = now;
-        if (!this.isRecording) this.startRecording(); // start RIGHT NOW
-        // we'll validate voiced stability on stop
+        if (!this.isRecording) this.startRecording();
+        // We'll validate stability on stop
       } else {
         this.voiceWindowStart = null;
       }
@@ -185,7 +223,7 @@ export class VoiceActivityDetector {
 
     const durMs = Date.now() - this.recordingStartTime;
 
-    // Validate: recording must be long enough AND voiced window stabilized
+    // Validate: must be long enough AND voiced window stabilized
     const voicedStable =
       this.voiceWindowStart === null ||
       (performance.now() - (this.voiceWindowStart ?? performance.now())) >= this.MIN_VOICE_MS;
@@ -228,7 +266,7 @@ export class VoiceActivityDetector {
   }
 }
 
-// ---- Helpers (unchanged) ----
+// ---- Helpers ----
 export const blobToBase64 = (blob: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
