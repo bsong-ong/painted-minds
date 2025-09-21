@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { text, voice = 'nova' } = await req.json(); // Use nova (female voice) as default
+    const { text, voice = 'alloy' } = await req.json();
     
     if (!text) {
       throw new Error('No text provided');
@@ -23,7 +23,7 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log(`Converting text to speech with ${voice} voice...`);
+    console.log('Converting text to speech with gpt-4o-mini-tts...');
 
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',

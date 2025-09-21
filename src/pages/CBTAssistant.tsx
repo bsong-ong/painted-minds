@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
@@ -153,7 +152,7 @@ const CBTAssistant = () => {
         setStatus('Converting to speech...');
         
         const ttsResult = await supabase.functions.invoke('text-to-speech-cbt', {
-          body: { text: assistantResponse, voice: 'nova' }
+          body: { text: assistantResponse, voice: 'alloy' }
         });
 
         if (ttsResult.error) {
@@ -261,7 +260,7 @@ const CBTAssistant = () => {
     <div className={isStandalonePage ? "min-h-screen bg-background" : "w-full"}>
       <div className={isStandalonePage ? "container mx-auto px-4 py-8 max-w-4xl" : "max-w-4xl mx-auto"}>
         {isStandalonePage && (
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex items-center gap-4">
             <Button
               variant="outline"
               size="sm"
@@ -271,7 +270,6 @@ const CBTAssistant = () => {
               <ArrowLeft className="h-4 w-4" />
               {t('backToHome') || 'Back to Home'}
             </Button>
-            <LanguageSwitcher />
           </div>
         )}
         
