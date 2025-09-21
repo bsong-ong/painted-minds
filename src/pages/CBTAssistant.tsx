@@ -31,19 +31,15 @@ const CBTAssistant = () => {
   const [volumeLevel, setVolumeLevel] = useState(0);
   const { toast } = useToast();
 
-  // Voice Activity Detector
   const vadRef = useRef<VoiceActivityDetector | null>(null);
   const conversationHistory = useRef<Array<{ role: string; content: string }>>([]);
 
-  // Low-content guard (blocks ".", lone punctuation/whitespace, 1-char)
   const isLowContent = (s: string | undefined | null) => {
     const t = (s ?? '').trim();
     if (t.length < 2) return true;
-    // punctuation/space/control-only
     return /^[\p{P}\p{Z}\p{C}]+$/u.test(t);
   };
 
-  // Welcome message (language-aware)
   useEffect(() => {
     const welcomeMessage: Message = {
       id: '1',
@@ -62,10 +58,8 @@ const CBTAssistant = () => {
     setStatus('Transcribing audio...');
 
     try {
-      // 1) Blob → base64
       const base64Audio = await blobToBase64(audioBlob);
 
-      // 2) STT via Supabase Edge Function
       const transcriptionResult = await supabase.functions.invoke('transcribe-audio', {
         body: { audio: base64Audio, language },
         headers: { Accept: 'application/json' },
@@ -78,12 +72,10 @@ const CBTAssistant = () => {
       const transcribedText = transcriptionResult.data?.text as string | undefined;
       console.log('Transcribed text:', transcribedText);
 
-      // 3) Block low-content / meaningless turns
       if (isLowContent(transcribedText)) {
         throw new Error('No meaningful speech detected. Please try again.');
       }
 
-      // 4) Add user message to chat
       const userMessage: Message = {
         id: Date.now().toString(),
         role: 'user',
@@ -92,7 +84,6 @@ const CBTAssistant = () => {
       };
       setMessages((prev) => [...prev, userMessage]);
 
-      // 5) Process via LLM and (since voice) TTS
       await processMessage(transcribedText!, true);
     } catch (err) {
       console.error('Error processing audio:', err);
@@ -114,7 +105,6 @@ const CBTAssistant = () => {
     setStatus('Generating response...');
 
     try {
-      // 1) LLM response
       const responseResult = await supabase.functions.invoke('generate-cbt-response', {
         body: {
           message: text,
@@ -131,7 +121,6 @@ const CBTAssistant = () => {
       const assistantResponse = responseResult.data.response as string;
       console.log('Generated response:', assistantResponse);
 
-      // 2) Add assistant message
       const assistantMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
@@ -140,7 +129,6 @@ const CBTAssistant = () => {
       };
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // 3) Update convo history (trim to last 10 exchanges)
       conversationHistory.current.push(
         { role: 'user', content: text },
         { role: 'assistant', content: assistantResponse }
@@ -149,13 +137,12 @@ const CBTAssistant = () => {
         conversationHistory.current = conversationHistory.current.slice(-20);
       }
 
-      // 4) If this came from voice, run TTS and play—muting the VAD during playback
       if (isVoiceMessage) {
         setStatus('Converting to speech...');
-
         const wasListening = isListening;
+
         try {
-          vadRef.current?.pause(); // prevent echo-triggered turns
+          vadRef.current?.pause();
 
           const ttsResult = await supabase.functions.invoke('text-to-speech-cbt', {
             body: { text: assistantResponse, voice: 'alloy', language },
@@ -170,9 +157,15 @@ const CBTAssistant = () => {
         } catch (ttsErr) {
           console.error('TTS playback error:', ttsErr);
         } finally {
-          // small grace to let residual speaker output die
-          await new Promise((r) => setTimeout(r, 200));
-          if (wasListening) vadRef.current?.resume();
+          await new Promise((r) => setTimeout(r, 200)); // let echo die down
+          if (wasListening && vadRef.current) {
+            vadRef.current.resume();
+            setStatus(
+              language === 'th'
+                ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!'
+                : '🎤 Listening for voice... Speak naturally!'
+            );
+          }
         }
       }
 
@@ -191,7 +184,7 @@ const CBTAssistant = () => {
       });
     } finally {
       setIsProcessing(false);
-      setStatus('Ready');
+      if (!isVoiceMessage) setStatus('Ready');
     }
   };
 
@@ -217,7 +210,7 @@ const CBTAssistant = () => {
 
       await vadRef.current.initialize();
       vadRef.current.startListening();
-      vadRef.current.resume(); // ensure not paused
+      vadRef.current.resume(); // ensure active
 
       setIsListening(true);
       setStatus(language === 'th' ? '🎤 กำลังฟังเสียง... พูดตามธรรมชาติ!' : '🎤 Listening for voice... Speak naturally!');
@@ -245,7 +238,7 @@ const CBTAssistant = () => {
     if (!isListening || !vadRef.current) return;
 
     vadRef.current.stopListening();
-    vadRef.current.dispose();
+    vadRef.current.dispose(); // only dispose when user explicitly stops
     vadRef.current = null;
 
     setIsListening(false);
@@ -259,7 +252,6 @@ const CBTAssistant = () => {
     });
   };
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (vadRef.current) {
@@ -416,7 +408,6 @@ const CBTAssistant = () => {
                   }
                 }}
               />
-
               <div className="flex items-center justify-end">
                 <Button onClick={() => sendMessage()} disabled={!inputText.trim() || isProcessing} className="gap-2">
                   <Send className="h-4 w-4" />
