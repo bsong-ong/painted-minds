@@ -2,78 +2,99 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Acc// supabase/functions/text-to-speech-cbt/index.ts
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Vary": "Origin",
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+  // Preflight
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: cors });
+  }
+
+  // Only POST is allowed
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed" }),
+      { status: 405, headers: { ...cors, "Content-Type": "application/json" } },
+    );
   }
 
   try {
-    const { text, voice = 'alloy' } = await req.json();
-    
-    if (!text) {
-      throw new Error('No text provided');
+    const { text, voice = "alloy" } = await req.json();
+
+    if (!text || typeof text !== "string") {
+      return new Response(
+        JSON.stringify({ error: "No text provided" }),
+        { status: 400, headers: { ...cors, "Content-Type": "application/json" } },
+      );
     }
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
     if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+      return new Response(
+        JSON.stringify({ error: "OpenAI API key not configured" }),
+        { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
+      );
     }
 
-    console.log('Converting text to speech with gpt-4o-mini-tts...');
+    console.log("Converting text to speech with gpt-4o-mini-tts...");
 
-    const response = await fetch('https://api.openai.com/v1/audio/speech', {
-      method: 'POST',
+    const resp = await fetch("https://api.openai.com/v1/audio/speech", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
+        "Authorization": `Bearer ${openAIApiKey}`,
+        "Content-Type": "application/json",
+        // Not strictly required, but harmless:
+        "Accept": "audio/mpeg",
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini-tts',
+        model: "gpt-4o-mini-tts",
         input: text,
-        voice: voice,
-        response_format: 'mp3',
+        voice,
+        response_format: "mp3",
       }),
     });
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('TTS API error:', error);
-      throw new Error(`Text-to-speech failed: ${error}`);
+    if (!resp.ok) {
+      const errTxt = await resp.text();
+      console.error("TTS API error:", errTxt);
+      return new Response(
+        JSON.stringify({ error: `Text-to-speech failed: ${errTxt}` }),
+        { status: resp.status, headers: { ...cors, "Content-Type": "application/json" } },
+      );
     }
 
-    // Convert audio buffer to base64 in chunks to avoid stack overflow
-    const arrayBuffer = await response.arrayBuffer();
+    const arrayBuffer = await resp.arrayBuffer();
     const bytes = new Uint8Array(arrayBuffer);
-    
-    // Process in chunks to avoid maximum call stack size exceeded
-    let binaryString = '';
+
+    // Chunked base64 encode to avoid call stack issues
+    let binary = "";
     const chunkSize = 8192;
     for (let i = 0; i < bytes.length; i += chunkSize) {
       const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
-      binaryString += String.fromCharCode.apply(null, Array.from(chunk));
+      // Convert to binary string
+      binary += String.fromCharCode(...chunk);
     }
-    
-    const base64Audio = btoa(binaryString);
+    const base64Audio = btoa(binary);
 
-    console.log('TTS conversion successful');
-
+    console.log("TTS conversion successful");
     return new Response(
       JSON.stringify({ audioContent: base64Audio }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...cors, "Content-Type": "application/json" } },
     );
-
-  } catch (error) {
-    console.error('Error in TTS function:', error);
+  } catch (e) {
+    console.error("Error in TTS function:", e);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: String(e?.message ?? e) }),
+      { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
     );
   }
 });
