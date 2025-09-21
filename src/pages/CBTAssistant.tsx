@@ -237,55 +237,14 @@ const CBTAssistant = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Brain className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
-          </div>
+    <div className="w-full">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6 text-center">
           <p className="text-muted-foreground">
             Your personal cognitive behavioral therapy assistant with chained AI processing
           </p>
         </div>
 
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button
-            onClick={resetSession}
-            disabled={isRecording}
-            variant="outline"
-            size="lg"
-            className="w-full"
-          >
-            <RotateCcw className="w-5 h-5 mr-2" />
-            Reset Session
-          </Button>
-          
-          <Button
-            onClick={isRecording ? stopRecording : startRecording}
-            disabled={isProcessing}
-            variant={isRecording ? "destructive" : "default"}
-            size="lg"
-            className="w-full"
-          >
-            {isRecording ? (
-              <>
-                <MicOff className="w-5 h-5 mr-2" />
-                Stop Recording
-              </>
-            ) : (
-              <>
-                <Mic className="w-5 h-5 mr-2" />
-                Start Recording
-              </>
-            )}
-          </Button>
-          
-          <div className="p-4 bg-muted rounded-lg">
-            <div className="text-sm font-medium text-muted-foreground mb-1">Status</div>
-            <div className="text-sm text-foreground">{error || status}</div>
-          </div>
-        </div>
 
         <Card className="mb-6">
           <CardHeader>
@@ -321,35 +280,77 @@ const CBTAssistant = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col gap-4">
-              <Textarea
-                placeholder="Type your thoughts here or use voice recording..."
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                className="min-h-[100px]"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-              />
-              
-              <div className="flex items-center justify-end">
-                <Button
-                  onClick={() => sendMessage()}
-                  disabled={!inputText.trim() || isProcessing}
-                  className="gap-2"
-                >
-                  <Send className="h-4 w-4" />
-                  Send
-                </Button>
-              </div>
+        <div className="space-y-4">
+          {/* Control Panel */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button
+              onClick={resetSession}
+              disabled={isRecording}
+              variant="outline"
+              size="lg"
+              className="w-full"
+            >
+              <RotateCcw className="w-5 h-5 mr-2" />
+              Reset Session
+            </Button>
+            
+            <Button
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isProcessing}
+              variant={isRecording ? "destructive" : "default"}
+              size="lg"
+              className="w-full"
+            >
+              {isRecording ? (
+                <>
+                  <MicOff className="w-5 h-5 mr-2" />
+                  Stop Recording
+                </>
+              ) : (
+                <>
+                  <Mic className="w-5 h-5 mr-2" />
+                  Start Recording
+                </>
+              )}
+            </Button>
+            
+            <div className="p-4 bg-muted rounded-lg">
+              <div className="text-sm font-medium text-muted-foreground mb-1">Status</div>
+              <div className="text-sm text-foreground">{error || status}</div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Text Input */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col gap-4">
+                <Textarea
+                  placeholder="Type your thoughts here or use voice recording..."
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  className="min-h-[100px]"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                />
+                
+                <div className="flex items-center justify-end">
+                  <Button
+                    onClick={() => sendMessage()}
+                    disabled={!inputText.trim() || isProcessing}
+                    className="gap-2"
+                  >
+                    <Send className="h-4 w-4" />
+                    Send
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
