@@ -1,3 +1,4 @@
+// ---- VoiceActivityDetector.ts ----
 export class VoiceActivityDetector {
   private audioContext: AudioContext | null = null;
   private mediaStream: MediaStream | null = null;
@@ -8,14 +9,14 @@ export class VoiceActivityDetector {
   private vadCheckInterval: NodeJS.Timeout | null = null;
   private silenceTimeout: NodeJS.Timeout | null = null;
 
-  // Improved VAD parameters
-  private readonly MIN_VOICE_MS = 200;       // ms required before starting
-  private readonly MIN_SILENCE_MS = 600;     // ms required before stopping
-  private readonly GRACE_ON_STOP_MS = 250;   // buffer to avoid premature stop
-  private readonly BASE_THRESHOLD = 0.005;   // absolute floor for very quiet env
-  private readonly NOISE_FLOOR_ALPHA = 0.05; // EMA update speed
-  private readonly START_HYST_MULT = 1.8;    // start threshold multiplier
-  private readonly STOP_HYST_MULT = 1.3;     // stop threshold multiplier
+  // VAD tuning
+  private readonly MIN_VOICE_MS = 200;       // voiced ms window (stability gate)
+  private readonly MIN_SILENCE_MS = 900;     // hang time before stopping (was 600)
+  private readonly GRACE_ON_STOP_MS = 300;   // buffer to avoid premature stop
+  private readonly BASE_THRESHOLD = 0.005;   // absolute floor for quiet rooms
+  private readonly NOISE_FLOOR_ALPHA = 0.05; // EMA speed for noise floor
+  private readonly START_HYST_MULT = 1.6;    // start threshold multiplier (was 1.8)
+  private readonly STOP_HYST_MULT = 1.35;    // stop threshold multiplier (was 1.3)
 
   private noiseFloor = 0.003;
   private voiceWindowStart: number | null = null;
@@ -47,7 +48,7 @@ export class VoiceActivityDetector {
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: false   // turn AGC off
+          autoGainControl: false, // AGC off to avoid lifting room noise
         }
       });
 
@@ -55,7 +56,7 @@ export class VoiceActivityDetector {
 
       const source = this.audioContext.createMediaStreamSource(this.mediaStream);
 
-      // Optional high-pass filter to remove rumble
+      // High-pass filter to remove low-frequency rumble
       const highpass = this.audioContext.createBiquadFilter();
       highpass.type = 'highpass';
       highpass.frequency.value = 120;
@@ -68,13 +69,12 @@ export class VoiceActivityDetector {
       highpass.connect(this.analyser);
 
       this.mediaRecorder = new MediaRecorder(this.mediaStream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: 96000, // higher bitrate to capture consonants clearly
       });
 
       this.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          this.recordedChunks.push(event.data);
-        }
+        if (event.data.size > 0) this.recordedChunks.push(event.data);
       };
 
       this.mediaRecorder.onstop = () => {
@@ -95,7 +95,7 @@ export class VoiceActivityDetector {
     console.log('Starting voice activity detection...');
     this.vadCheckInterval = setInterval(() => {
       this.checkVoiceActivity();
-    }, 100);
+    }, 25); // faster polling (~40 fps) to avoid chopping leading phonemes
   }
 
   stopListening(): void {
@@ -113,13 +113,8 @@ export class VoiceActivityDetector {
     console.log('Stopped voice activity detection');
   }
 
-  pause(): void {
-    this.paused = true;
-  }
-
-  resume(): void {
-    this.paused = false;
-  }
+  pause(): void { this.paused = true; }
+  resume(): void { this.paused = false; }
 
   private checkVoiceActivity(): void {
     if (!this.analyser || this.paused) return;
@@ -129,12 +124,10 @@ export class VoiceActivityDetector {
 
     // RMS energy
     let sum = 0;
-    for (let i = 0; i < buf.length; i++) {
-      sum += buf[i] * buf[i];
-    }
+    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
     const rms = Math.sqrt(sum / buf.length);
 
-    // Update noise floor only when not recording
+    // Update noise floor only when not actively recording
     if (!this.isRecording) {
       this.noiseFloor =
         (1 - this.NOISE_FLOOR_ALPHA) * this.noiseFloor +
@@ -143,24 +136,24 @@ export class VoiceActivityDetector {
 
     const floor = Math.max(this.noiseFloor, this.BASE_THRESHOLD);
     const startThresh = floor * this.START_HYST_MULT;
-    const stopThresh = floor * this.STOP_HYST_MULT;
+    const stopThresh  = floor * this.STOP_HYST_MULT;
 
+    // UI meter (normalize by start threshold)
     this.onVolumeChange(Math.min(rms / (startThresh || 1e-6), 1));
 
     const now = performance.now();
 
     if (!this.isRecording) {
+      // Start recording immediately on threshold-cross to avoid losing leading words
       if (rms > startThresh) {
         if (this.voiceWindowStart == null) this.voiceWindowStart = now;
-        const voicedMs = now - this.voiceWindowStart;
-        if (voicedMs >= this.MIN_VOICE_MS) {
-          this.startRecording();
-          this.voiceWindowStart = null;
-        }
+        if (!this.isRecording) this.startRecording(); // start RIGHT NOW
+        // we'll validate voiced stability on stop
       } else {
         this.voiceWindowStart = null;
       }
     } else {
+      // Candidate stop when below stop threshold
       if (rms < stopThresh) {
         if (!this.silenceTimeout) {
           this.silenceTimeout = setTimeout(() => {
@@ -168,6 +161,7 @@ export class VoiceActivityDetector {
           }, this.MIN_SILENCE_MS);
         }
       } else {
+        // Voice resumed; cancel pending stop
         if (this.silenceTimeout) {
           clearTimeout(this.silenceTimeout);
           this.silenceTimeout = null;
@@ -178,7 +172,7 @@ export class VoiceActivityDetector {
 
   private startRecording(): void {
     if (!this.mediaRecorder || this.isRecording) return;
-    console.log('Voice detected - starting recording');
+    console.log('Voice detected – starting recording');
     this.isRecording = true;
     this.recordingStartTime = Date.now();
     this.recordedChunks = [];
@@ -189,36 +183,38 @@ export class VoiceActivityDetector {
   private stopRecording(): void {
     if (!this.mediaRecorder || !this.isRecording) return;
 
-    const dur = Date.now() - this.recordingStartTime;
-    if (dur < 800) {   // discard very short clips
-      console.log('Discarded short recording');
+    const durMs = Date.now() - this.recordingStartTime;
+
+    // Validate: recording must be long enough AND voiced window stabilized
+    const voicedStable =
+      this.voiceWindowStart === null ||
+      (performance.now() - (this.voiceWindowStart ?? performance.now())) >= this.MIN_VOICE_MS;
+
+    if (durMs < 800 || !voicedStable) {
+      console.log('Discarded short/unstable recording');
       this.isRecording = false;
       this.recordedChunks = [];
-      this.onVoiceEnd();
-      if (this.silenceTimeout) {
-        clearTimeout(this.silenceTimeout);
-        this.silenceTimeout = null;
-      }
+      this.onVoiceEnd?.();
+      if (this.silenceTimeout) { clearTimeout(this.silenceTimeout); this.silenceTimeout = null; }
+      this.voiceWindowStart = null;
       return;
     }
 
     console.log('Stopping recording due to silence');
     this.isRecording = false;
     this.mediaRecorder.stop();
-    this.onVoiceEnd();
+    this.onVoiceEnd?.();
 
     if (this.silenceTimeout) {
       clearTimeout(this.silenceTimeout);
       this.silenceTimeout = null;
     }
+    this.voiceWindowStart = null;
   }
 
   dispose(): void {
     this.stopListening();
-    if (this.audioContext) {
-      this.audioContext.close();
-      this.audioContext = null;
-    }
+    if (this.audioContext) { this.audioContext.close(); this.audioContext = null; }
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = null;
@@ -232,7 +228,7 @@ export class VoiceActivityDetector {
   }
 }
 
-// --- Helpers unchanged ---
+// ---- Helpers (unchanged) ----
 export const blobToBase64 = (blob: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -258,14 +254,8 @@ export const playAudioFromBase64 = async (base64Audio: string): Promise<void> =>
       );
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
-      audio.onended = () => {
-        URL.revokeObjectURL(audioUrl);
-        resolve();
-      };
-      audio.onerror = () => {
-        URL.revokeObjectURL(audioUrl);
-        reject(new Error('Failed to play audio'));
-      };
+      audio.onended = () => { URL.revokeObjectURL(audioUrl); resolve(); };
+      audio.onerror = () => { URL.revokeObjectURL(audioUrl); reject(new Error('Failed to play audio')); };
       audio.play().catch(reject);
     } catch (error) {
       reject(error);
