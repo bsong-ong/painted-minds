@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
-import { Mic, MicOff, RotateCcw, Send, Brain } from 'lucide-react';
+import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -16,6 +17,8 @@ interface Message {
 }
 
 const CBTAssistant = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -27,6 +30,9 @@ const CBTAssistant = () => {
   // Audio recording setup
   const audioRecorderRef = useRef<AudioRecorder | null>(null);
   const conversationHistory = useRef<Array<{role: string, content: string}>>([]);
+
+  // Check if this is a standalone page (not embedded in tabs)
+  const isStandalonePage = location.pathname === '/cbt-assistant';
 
   // Initialize welcome message
   useEffect(() => {
@@ -237,9 +243,29 @@ const CBTAssistant = () => {
   };
 
   return (
-    <div className="w-full">
-      <div className="max-w-4xl mx-auto">
+    <div className={isStandalonePage ? "min-h-screen bg-background" : "w-full"}>
+      <div className={isStandalonePage ? "container mx-auto px-4 py-8 max-w-4xl" : "max-w-4xl mx-auto"}>
+        {isStandalonePage && (
+          <div className="mb-6 flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Button>
+          </div>
+        )}
+        
         <div className="mb-6 text-center">
+          {isStandalonePage && (
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Brain className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
+            </div>
+          )}
           <p className="text-muted-foreground">
             Your personal cognitive behavioral therapy assistant with chained AI processing
           </p>
