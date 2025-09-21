@@ -222,10 +222,27 @@ const translations = {
     enhancedBadge: 'Enhanced',
     publicBadge: 'Public',
     stars: 'stars',
-    loadingDrawings: 'Loading your drawings...',
-    failedToLoadDrawings: 'Failed to load drawings',
-    drawingDeleted: 'Drawing deleted successfully',
-    failedToDeleteDrawing: 'Failed to delete drawing'
+     loadingDrawings: 'Loading your drawings...',
+     failedToLoadDrawings: 'Failed to load drawings',
+     drawingDeleted: 'Drawing deleted successfully',
+     failedToDeleteDrawing: 'Failed to delete drawing',
+
+     // CBT Assistant
+     cbtAssistant: 'CBT Assistant',
+     cbtDescription: 'Your personal cognitive behavioral therapy assistant with chained AI processing',
+     cbtWelcomeMessage: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+     conversation: 'Conversation',
+     shareThoughts: 'Share your thoughts and let\'s work through them together using CBT techniques',
+     resetSession: 'Reset Session',
+     startRecording: 'Start Recording',
+     stopRecording: 'Stop Recording',
+     status: 'Status',
+     ready: 'Ready',
+     typeThoughtsPlaceholder: 'Type your thoughts here or use voice recording...',
+     send: 'Send',
+     sessionReset: 'Session Reset',
+     newSessionStarted: 'New session started successfully.',
+     backToHome: 'Back to Home'
   },
   th: {
     // Common
@@ -438,10 +455,27 @@ const translations = {
     enhancedBadge: 'ปรับปรุงแล้ว',
     publicBadge: 'สาธารณะ',
     stars: 'ดาว',
-    loadingDrawings: 'กำลังโหลดงานวาดของคุณ...',
-    failedToLoadDrawings: 'โหลดงานวาดไม่สำเร็จ',
-    drawingDeleted: 'ลบงานวาดสำเร็จ',
-    failedToDeleteDrawing: 'ลบงานวาดไม่สำเร็จ'
+     loadingDrawings: 'กำลังโหลดงานวาดของคุณ...',
+     failedToLoadDrawings: 'โหลดงานวาดไม่สำเร็จ',
+     drawingDeleted: 'ลบงานวาดสำเร็จ',
+     failedToDeleteDrawing: 'ลบงานวาดไม่สำเร็จ',
+
+     // CBT Assistant
+     cbtAssistant: 'ผู้ช่วย CBT',
+     cbtDescription: 'ผู้ช่วยบำบัดความคิดและพฤติกรรมส่วนตัวของคุณ พร้อมการประมวลผล AI แบบต่อเนื่อง',
+     cbtWelcomeMessage: 'สวัสดีครับ/ค่ะ! ฉันคือผู้ช่วย CBT ของคุณ ฉันจะช่วยให้คุณสำรวจความคิดและความรู้สึกผ่านเทคนิคบำบัดความคิดและพฤติกรรมที่มีหลักฐานทางวิทยาศาสตร์ คุณสามารถพิมพ์หรือพูดกับฉันเกี่ยวกับสิ่งที่อยู่ในใจได้ วันนี้คุณรู้สึกอย่างไร?',
+     conversation: 'การสนทนา',
+     shareThoughts: 'แบ่งปันความคิดของคุณและลองแก้ไขปัญหาด้วยกันโดยใช้เทคนิค CBT',
+     resetSession: 'รีเซ็ตเซสชัน',
+     startRecording: 'เริ่มบันทึกเสียง',
+     stopRecording: 'หยุดบันทึกเสียง',
+     status: 'สถานะ',
+     ready: 'พร้อม',
+     typeThoughtsPlaceholder: 'พิมพ์ความคิดของคุณที่นี่หรือใช้การบันทึกเสียง...',
+     send: 'ส่ง',
+     sessionReset: 'รีเซ็ตเซสชัน',
+     newSessionStarted: 'เริ่มเซสชันใหม่สำเร็จแล้ว',
+     backToHome: 'กลับไปหน้าหลัก'
   }
 };
 

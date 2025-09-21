@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +20,7 @@ interface Message {
 const CBTAssistant = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -30,20 +32,31 @@ const CBTAssistant = () => {
   // Audio recording setup
   const audioRecorderRef = useRef<AudioRecorder | null>(null);
   const conversationHistory = useRef<Array<{role: string, content: string}>>([]);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Check if this is a standalone page (not embedded in tabs)
   const isStandalonePage = location.pathname === '/cbt-assistant';
+
+  // Auto scroll to bottom when messages change
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+  }, [messages]);
 
   // Initialize welcome message
   useEffect(() => {
     const welcomeMessage: Message = {
       id: '1',
       role: 'assistant',
-      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: t('cbtWelcomeMessage') || "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
-  }, []);
+  }, [t]);
 
   const handleAudioRecording = async (audioBlob: Blob) => {
     setIsProcessing(true);
@@ -211,18 +224,19 @@ const CBTAssistant = () => {
   };
 
   const resetSession = () => {
-    setMessages([{
+    const welcomeMessage: Message = {
       id: '1',
       role: 'assistant',
-      content: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: t('cbtWelcomeMessage') || "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
       timestamp: new Date()
-    }]);
+    };
+    setMessages([welcomeMessage]);
     conversationHistory.current = [];
-    setStatus('Ready');
+    setStatus(t('ready') || 'Ready');
     setError('');
     toast({
-      title: "Session Reset",
-      description: "New session started successfully."
+      title: t('sessionReset') || "Session Reset",
+      description: t('newSessionStarted') || "New session started successfully."
     });
   };
 
@@ -254,7 +268,7 @@ const CBTAssistant = () => {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Home
+              {t('backToHome') || 'Back to Home'}
             </Button>
           </div>
         )}
@@ -263,24 +277,24 @@ const CBTAssistant = () => {
           {isStandalonePage && (
             <div className="flex items-center justify-center gap-3 mb-4">
               <Brain className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">CBT Assistant</h1>
+              <h1 className="text-3xl font-bold text-foreground">{t('cbtAssistant') || 'CBT Assistant'}</h1>
             </div>
           )}
           <p className="text-muted-foreground">
-            Your personal cognitive behavioral therapy assistant with chained AI processing
+            {t('cbtDescription') || 'Your personal cognitive behavioral therapy assistant with chained AI processing'}
           </p>
         </div>
 
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Conversation</CardTitle>
+            <CardTitle>{t('conversation') || 'Conversation'}</CardTitle>
             <CardDescription>
-              Share your thoughts and let's work through them together using CBT techniques
+              {t('shareThoughts') || 'Share your thoughts and let\'s work through them together using CBT techniques'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-96 w-full pr-4">
+            <ScrollArea className="h-96 w-full pr-4" ref={scrollAreaRef}>
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
@@ -317,7 +331,7 @@ const CBTAssistant = () => {
               className="w-full"
             >
               <RotateCcw className="w-5 h-5 mr-2" />
-              Reset Session
+              {t('resetSession') || 'Reset Session'}
             </Button>
             
             <Button
@@ -330,18 +344,18 @@ const CBTAssistant = () => {
               {isRecording ? (
                 <>
                   <MicOff className="w-5 h-5 mr-2" />
-                  Stop Recording
+                  {t('stopRecording') || 'Stop Recording'}
                 </>
               ) : (
                 <>
                   <Mic className="w-5 h-5 mr-2" />
-                  Start Recording
+                  {t('startRecording') || 'Start Recording'}
                 </>
               )}
             </Button>
             
             <div className="p-4 bg-muted rounded-lg">
-              <div className="text-sm font-medium text-muted-foreground mb-1">Status</div>
+              <div className="text-sm font-medium text-muted-foreground mb-1">{t('status') || 'Status'}</div>
               <div className="text-sm text-foreground">{error || status}</div>
             </div>
           </div>
@@ -351,7 +365,7 @@ const CBTAssistant = () => {
             <CardContent className="pt-6">
               <div className="flex flex-col gap-4">
                 <Textarea
-                  placeholder="Type your thoughts here or use voice recording..."
+                  placeholder={t('typeThoughtsPlaceholder') || 'Type your thoughts here or use voice recording...'}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   className="min-h-[100px]"
@@ -370,7 +384,7 @@ const CBTAssistant = () => {
                     className="gap-2"
                   >
                     <Send className="h-4 w-4" />
-                    Send
+                    {t('send') || 'Send'}
                   </Button>
                 </div>
               </div>
