@@ -105,7 +105,7 @@ Keep responses conversational, warm, and under 100 words.`;
       body: JSON.stringify({
         model: 'tts-1',
         input: responseText,
-        voice: 'nova',
+        voice: 'echo',
         response_format: 'mp3',
       }),
     });
