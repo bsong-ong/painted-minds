@@ -61,8 +61,8 @@ Keep responses conversational, warm, and under 100 words.`;
     const messages = [
       { role: 'system', content: systemPrompt },
       ...(conversationHistory || []).slice(-8).map((msg: any) => ({
-        role: msg.isUser ? 'user' : 'assistant',
-        content: msg.text
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content
       })),
       { role: 'user', content: userMessage }
     ];
