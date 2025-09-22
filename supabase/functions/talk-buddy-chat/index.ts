@@ -103,7 +103,7 @@ Keep responses conversational, warm, and under 100 words.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'tts-1',
+        model: 'gpt-4o-mini-tts',
         input: responseText,
         voice: 'echo',
         response_format: 'mp3',
