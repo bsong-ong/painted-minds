@@ -22,7 +22,7 @@ interface Message {
 
 const TalkBuddy = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -49,18 +49,23 @@ const TalkBuddy = () => {
 
   // Initialize welcome message and load user topics
   useEffect(() => {
-    if (user) {
+    if (!loading && user) {
       initializeConversation();
     }
-  }, [user, englishTutorMode, t]);
+  }, [user, loading, englishTutorMode, t]);
 
   const initializeConversation = async () => {
+    if (!user?.id) {
+      console.log('User not available, skipping conversation initialization');
+      return;
+    }
+
     try {
       // Get user's gratitude topics from journal
       const { data: drawings } = await supabase
         .from('drawings')
         .select('gratitude_prompt, user_description')
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id)
         .not('gratitude_prompt', 'is', null)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -146,6 +151,11 @@ const TalkBuddy = () => {
   };
 
   const processMessage = async (text: string, isVoiceMessage = false) => {
+    if (!user?.id) {
+      setError('User not authenticated');
+      return;
+    }
+
     setIsProcessing(true);
     setStatus('Generating response...');
 
@@ -154,7 +164,7 @@ const TalkBuddy = () => {
       const { data: drawings } = await supabase
         .from('drawings')
         .select('gratitude_prompt, user_description')
-        .eq('user_id', user!.id)
+        .eq('user_id', user.id)
         .not('gratitude_prompt', 'is', null)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -247,7 +257,7 @@ const TalkBuddy = () => {
   };
 
   const sendMessage = async (text: string = inputText) => {
-    if (!text.trim() || isProcessing) return;
+    if (!text.trim() || isProcessing || !user?.id) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -261,6 +271,29 @@ const TalkBuddy = () => {
 
     await processMessage(text, false);
   };
+
+  // Show loading state while user is being authenticated
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to auth if no user
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">Please sign in to use Talk Buddy</p>
+          <Button onClick={() => navigate('/auth')}>Sign In</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
