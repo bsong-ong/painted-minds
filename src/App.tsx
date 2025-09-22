@@ -14,6 +14,7 @@ import TextEntry from "./pages/TextEntry";
 import Drawing from "./pages/Drawing";
 import Gallery from "./pages/Gallery";
 import CBTAssistant from "./pages/CBTAssistant";
+import TalkBuddy from "./pages/TalkBuddy";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/drawing" element={<Drawing />} />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/cbt-assistant" element={<CBTAssistant />} />
+              <Route path="/talk-buddy" element={<TalkBuddy />} />
               <Route path="/admin" element={<AdminDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

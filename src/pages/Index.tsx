@@ -89,8 +89,13 @@ const Index = () => {
               </Button>
               <Button variant="outline" size="sm" onClick={() => navigate('/cbt-assistant')} className="flex-shrink-0">
                 <Brain className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">CBT Assistant</span>
+                <span className="ml-2 hidden sm:inline">Thought Buddy</span>
                 <span className="ml-2 sm:hidden">CBT</span>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/talk-buddy')} className="flex-shrink-0">
+                <Heart className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Talk Buddy</span>
+                <span className="ml-2 sm:hidden">Talk</span>
               </Button>
               <LanguageSwitcher />
               <Button variant="outline" size="sm" onClick={handleSignOut} className="flex-shrink-0">
