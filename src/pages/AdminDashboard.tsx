@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Settings, Users, Share2, BookOpen } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ArrowLeft, Settings, Users, Share2, BookOpen, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useToast } from '@/hooks/use-toast';
@@ -30,6 +32,16 @@ const AdminDashboard = () => {
     enable_username_login: false,
   });
   const [loading, setLoading] = useState(true);
+  
+  // User creation state
+  const [createUserDialog, setCreateUserDialog] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    email: '',
+    password: '',
+    username: '',
+    display_name: ''
+  });
+  const [creatingUser, setCreatingUser] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -105,6 +117,56 @@ const AdminDashboard = () => {
         description: 'Failed to update setting',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingUser(true);
+
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        throw new Error('No active session');
+      }
+
+      const response = await fetch('https://jmhabxgjckihgptoyupm.supabase.co/functions/v1/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.session.access_token}`,
+        },
+        body: JSON.stringify(newUserData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create user');
+      }
+
+      toast({
+        title: 'Success',
+        description: `User ${newUserData.email} created successfully`,
+      });
+
+      // Reset form and close dialog
+      setNewUserData({
+        email: '',
+        password: '',
+        username: '',
+        display_name: ''
+      });
+      setCreateUserDialog(false);
+    } catch (error: any) {
+      console.error('Error creating user:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create user',
+        variant: 'destructive',
+      });
+    } finally {
+      setCreatingUser(false);
     }
   };
 
@@ -264,7 +326,87 @@ const AdminDashboard = () => {
                 User Management
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-base font-medium">Create New User</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Create new user accounts with admin privileges
+                  </p>
+                </div>
+                <Dialog open={createUserDialog} onOpenChange={setCreateUserDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Create User
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <form onSubmit={handleCreateUser}>
+                      <DialogHeader>
+                        <DialogTitle>Create New User</DialogTitle>
+                        <DialogDescription>
+                          Create a new user account. The user will be automatically confirmed.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email *</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="user@example.com"
+                            value={newUserData.email}
+                            onChange={(e) => setNewUserData(prev => ({ ...prev, email: e.target.value }))}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="password">Password *</Label>
+                          <Input
+                            id="password"
+                            type="password"
+                            placeholder="Enter password"
+                            value={newUserData.password}
+                            onChange={(e) => setNewUserData(prev => ({ ...prev, password: e.target.value }))}
+                            required
+                            minLength={6}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="username">Username</Label>
+                          <Input
+                            id="username"
+                            type="text"
+                            placeholder="username (optional)"
+                            value={newUserData.username}
+                            onChange={(e) => setNewUserData(prev => ({ ...prev, username: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="display_name">Display Name</Label>
+                          <Input
+                            id="display_name"
+                            type="text"
+                            placeholder="Display name (optional)"
+                            value={newUserData.display_name}
+                            onChange={(e) => setNewUserData(prev => ({ ...prev, display_name: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setCreateUserDialog(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" disabled={creatingUser}>
+                          {creatingUser ? 'Creating...' : 'Create User'}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label className="text-base font-medium">Admin-Only Registration</Label>
