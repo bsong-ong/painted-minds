@@ -84,6 +84,22 @@ const handler = async (req: Request): Promise<Response> => {
       throw createError;
     }
 
+    // Create profile record
+    if (newUser.user?.id) {
+      const { error: profileError } = await supabaseServiceRole
+        .from('profiles')
+        .insert({
+          id: newUser.user.id,
+          email: newUser.user.email,
+          username: username,
+          display_name: display_name
+        });
+
+      if (profileError) {
+        console.error("Error creating user profile:", profileError);
+      }
+    }
+
     // Create user permissions record
     const { error: permissionsError } = await supabaseServiceRole
       .from('user_permissions')

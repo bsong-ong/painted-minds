@@ -11,9 +11,9 @@ interface UserPermissions {
 export const useUserPermissions = () => {
   const { user } = useAuth();
   const [permissions, setPermissions] = useState<UserPermissions>({
-    gratitude_journaling_enabled: true,
-    talk_buddy_enabled: true,
-    thought_buddy_enabled: true,
+    gratitude_journaling_enabled: false,
+    talk_buddy_enabled: false,
+    thought_buddy_enabled: false,
   });
   const [loading, setLoading] = useState(true);
 
@@ -33,11 +33,11 @@ export const useUserPermissions = () => {
 
         if (error) {
           console.error('Error fetching user permissions:', error);
-          // If no permissions record exists, default to all enabled
+          // If no permissions record exists, default to all disabled for security
           setPermissions({
-            gratitude_journaling_enabled: true,
-            talk_buddy_enabled: true,
-            thought_buddy_enabled: true,
+            gratitude_journaling_enabled: false,
+            talk_buddy_enabled: false,
+            thought_buddy_enabled: false,
           });
         } else if (data) {
           setPermissions({
