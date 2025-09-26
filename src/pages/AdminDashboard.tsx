@@ -27,7 +27,6 @@ const AdminDashboard = () => {
     enable_cgm_functionality: true,
     enable_ai_insights: true,
     use_openrouter_for_images: false,
-    enable_username_login: false,
   });
   const [loading, setLoading] = useState(true);
 
@@ -68,7 +67,6 @@ const AdminDashboard = () => {
           enable_cgm_functionality: data.enable_cgm_functionality,
           enable_ai_insights: data.enable_ai_insights,
           use_openrouter_for_images: data.use_openrouter_for_images || false,
-          enable_username_login: data.enable_username_login || false,
         });
       }
     } catch (error) {
@@ -228,31 +226,18 @@ const AdminDashboard = () => {
                  />
                </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label className="text-base font-medium">Use OpenRouter for Image Generation</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Use OpenRouter/Gemini Flash instead of Replicate for AI image enhancement
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.use_openrouter_for_images}
-                    onCheckedChange={(checked) => updateSetting('use_openrouter_for_images', checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label className="text-base font-medium">Username Login</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Allow users to sign in with username instead of email
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.enable_username_login}
-                    onCheckedChange={(checked) => updateSetting('enable_username_login', checked)}
-                  />
-                </div>
+               <div className="flex items-center justify-between">
+                 <div className="space-y-1">
+                   <Label className="text-base font-medium">Use OpenRouter for Image Generation</Label>
+                   <p className="text-sm text-muted-foreground">
+                     Use OpenRouter/Gemini Flash instead of Replicate for AI image enhancement
+                   </p>
+                 </div>
+                 <Switch
+                   checked={settings.use_openrouter_for_images}
+                   onCheckedChange={(checked) => updateSetting('use_openrouter_for_images', checked)}
+                 />
+               </div>
             </CardContent>
           </Card>
 
