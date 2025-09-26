@@ -8,15 +8,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useAdminSettings } from '@/hooks/useAdminSettings';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { settings } = useAdminSettings();
 
   useEffect(() => {
     if (user) {
@@ -28,7 +32,32 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signIn(email, password);
+    let loginEmail = email;
+    
+    // If username login is enabled and we have a username, get the email
+    if (settings.enable_username_login && username) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', username)
+          .single();
+        
+        if (error || !data) {
+          toast.error('Username not found');
+          setLoading(false);
+          return;
+        }
+        
+        loginEmail = data.email;
+      } catch (error) {
+        toast.error('Error looking up username');
+        setLoading(false);
+        return;
+      }
+    }
+    
+    const { error } = await signIn(loginEmail, password);
     
     if (error) {
       toast.error(error.message);
@@ -75,17 +104,31 @@ const Auth = () => {
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">{t('email')}</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder={t('emailPlaceholder')}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
+                {settings.enable_username_login ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-username">Username</Label>
+                    <Input
+                      id="signin-username"
+                      type="text"
+                      placeholder="Enter your username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email">{t('email')}</Label>
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      placeholder={t('emailPlaceholder')}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">{t('password')}</Label>
                   <Input

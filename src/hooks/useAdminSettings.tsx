@@ -5,6 +5,7 @@ interface AdminSettings {
   art_sharing_enabled: boolean;
   story_creation_enabled: boolean;
   use_openrouter_for_images: boolean;
+  enable_username_login: boolean;
 }
 
 export const useAdminSettings = () => {
@@ -12,6 +13,7 @@ export const useAdminSettings = () => {
     art_sharing_enabled: true,
     story_creation_enabled: true,
     use_openrouter_for_images: false,
+    enable_username_login: false,
   });
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +22,7 @@ export const useAdminSettings = () => {
       try {
         const { data, error } = await supabase
           .from('admin_settings')
-          .select('art_sharing_enabled, story_creation_enabled, use_openrouter_for_images')
+          .select('art_sharing_enabled, story_creation_enabled, use_openrouter_for_images, enable_username_login')
           .single();
 
         if (error) throw error;
@@ -30,6 +32,7 @@ export const useAdminSettings = () => {
             art_sharing_enabled: data.art_sharing_enabled,
             story_creation_enabled: data.story_creation_enabled,
             use_openrouter_for_images: data.use_openrouter_for_images || false,
+            enable_username_login: data.enable_username_login || false,
           });
         }
       } catch (error) {
