@@ -24,6 +24,7 @@ export type Database = {
           enable_cgm_functionality: boolean
           enable_few_shot_prompting: boolean
           enable_username_login: boolean | null
+          enable_weight_tracking: boolean
           id: string
           language_switcher_enabled: boolean | null
           show_nutritional_ranges: boolean | null
@@ -39,6 +40,7 @@ export type Database = {
           enable_cgm_functionality?: boolean
           enable_few_shot_prompting?: boolean
           enable_username_login?: boolean | null
+          enable_weight_tracking?: boolean
           id?: string
           language_switcher_enabled?: boolean | null
           show_nutritional_ranges?: boolean | null
@@ -54,6 +56,7 @@ export type Database = {
           enable_cgm_functionality?: boolean
           enable_few_shot_prompting?: boolean
           enable_username_login?: boolean | null
+          enable_weight_tracking?: boolean
           id?: string
           language_switcher_enabled?: boolean | null
           show_nutritional_ranges?: boolean | null
@@ -594,6 +597,75 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_insights: {
+        Row: {
+          analysis_type: string
+          created_at: string
+          data_summary: Json
+          date_range_end: string
+          date_range_start: string
+          id: string
+          insights_content: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_type?: string
+          created_at?: string
+          data_summary?: Json
+          date_range_end: string
+          date_range_start: string
+          id?: string
+          insights_content: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_type?: string
+          created_at?: string
+          data_summary?: Json
+          date_range_end?: string
+          date_range_start?: string
+          id?: string
+          insights_content?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_permissions: {
+        Row: {
+          created_at: string
+          gratitude_journaling_enabled: boolean
+          id: string
+          talk_buddy_enabled: boolean
+          thought_buddy_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          gratitude_journaling_enabled?: boolean
+          id?: string
+          talk_buddy_enabled?: boolean
+          thought_buddy_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          gratitude_journaling_enabled?: boolean
+          id?: string
+          talk_buddy_enabled?: boolean
+          thought_buddy_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_photos: {
         Row: {
           address: string | null
@@ -679,23 +751,35 @@ export type Database = {
       }
       user_preferences: {
         Row: {
+          cgm_device_name: string | null
+          cgm_reference_image_url: string | null
+          cgm_roi_coordinates: Json | null
           created_at: string
           daily_calorie_limit: number | null
           id: string
+          timezone_offset: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          cgm_device_name?: string | null
+          cgm_reference_image_url?: string | null
+          cgm_roi_coordinates?: Json | null
           created_at?: string
           daily_calorie_limit?: number | null
           id?: string
+          timezone_offset?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          cgm_device_name?: string | null
+          cgm_reference_image_url?: string | null
+          cgm_roi_coordinates?: Json | null
           created_at?: string
           daily_calorie_limit?: number | null
           id?: string
+          timezone_offset?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -791,6 +875,36 @@ export type Database = {
         }
         Relationships: []
       }
+      weight_entries: {
+        Row: {
+          created_at: string
+          entry_date: string
+          id: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+          weight_kg: number
+        }
+        Insert: {
+          created_at?: string
+          entry_date?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+          weight_kg: number
+        }
+        Update: {
+          created_at?: string
+          entry_date?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+          weight_kg?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -800,12 +914,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      get_email_by_username: {
+        Args: { lookup_username: string }
+        Returns: string
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
       is_subadmin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      username_exists: {
+        Args: { lookup_username: string }
         Returns: boolean
       }
     }

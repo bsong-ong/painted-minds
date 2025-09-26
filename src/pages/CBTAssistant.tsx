@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { FeatureGate } from '@/components/FeatureGate';
 import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
@@ -225,7 +226,8 @@ const CBTAssistant = () => {
   };
 
   return (
-    <div className={isStandalonePage ? "min-h-screen bg-background" : "w-full"}>
+    <FeatureGate feature="thought_buddy">
+      <div className={isStandalonePage ? "min-h-screen bg-background" : "w-full"}>
       <div className={isStandalonePage ? "container mx-auto px-4 py-8 max-w-4xl" : "max-w-4xl mx-auto"}>
         {isStandalonePage && (
           <div className="mb-6 flex items-center justify-between">
@@ -361,7 +363,8 @@ const CBTAssistant = () => {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </FeatureGate>
   );
 };
 

@@ -12,6 +12,9 @@ interface CreateUserRequest {
   password: string;
   username?: string;
   display_name?: string;
+  gratitude_journaling_enabled?: boolean;
+  talk_buddy_enabled?: boolean;
+  thought_buddy_enabled?: boolean;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -51,7 +54,15 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Access denied: Admin privileges required");
     }
 
-    const { email, password, username, display_name }: CreateUserRequest = await req.json();
+    const { 
+      email, 
+      password, 
+      username, 
+      display_name,
+      gratitude_journaling_enabled = true,
+      talk_buddy_enabled = true,
+      thought_buddy_enabled = true
+    }: CreateUserRequest = await req.json();
 
     if (!email || !password) {
       throw new Error("Email and password are required");
@@ -71,6 +82,21 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (createError) {
       throw createError;
+    }
+
+    // Create user permissions record
+    const { error: permissionsError } = await supabaseServiceRole
+      .from('user_permissions')
+      .insert({
+        user_id: newUser.user?.id,
+        gratitude_journaling_enabled,
+        talk_buddy_enabled,
+        thought_buddy_enabled
+      });
+
+    if (permissionsError) {
+      console.error("Error creating user permissions:", permissionsError);
+      // Don't fail the entire operation if permissions fail, just log it
     }
 
     console.log("User created successfully:", newUser.user?.id);

@@ -39,7 +39,10 @@ const AdminDashboard = () => {
     email: '',
     password: '',
     username: '',
-    display_name: ''
+    display_name: '',
+    gratitude_journaling_enabled: true,
+    talk_buddy_enabled: true,
+    thought_buddy_enabled: true
   });
   const [creatingUser, setCreatingUser] = useState(false);
 
@@ -155,7 +158,10 @@ const AdminDashboard = () => {
         email: '',
         password: '',
         username: '',
-        display_name: ''
+        display_name: '',
+        gratitude_journaling_enabled: true,
+        talk_buddy_enabled: true,
+        thought_buddy_enabled: true
       });
       setCreateUserDialog(false);
     } catch (error: any) {
@@ -372,6 +378,37 @@ const AdminDashboard = () => {
                             required
                             minLength={6}
                           />
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <Label className="text-base font-medium">Feature Access Permissions</Label>
+                          
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="gratitude_journaling">Gratitude Journaling</Label>
+                            <Switch
+                              id="gratitude_journaling"
+                              checked={newUserData.gratitude_journaling_enabled}
+                              onCheckedChange={(checked) => setNewUserData(prev => ({ ...prev, gratitude_journaling_enabled: checked }))}
+                            />
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="talk_buddy">Talk Buddy</Label>
+                            <Switch
+                              id="talk_buddy"
+                              checked={newUserData.talk_buddy_enabled}
+                              onCheckedChange={(checked) => setNewUserData(prev => ({ ...prev, talk_buddy_enabled: checked }))}
+                            />
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="thought_buddy">Thought Buddy (CBT Assistant)</Label>
+                            <Switch
+                              id="thought_buddy"
+                              checked={newUserData.thought_buddy_enabled}
+                              onCheckedChange={(checked) => setNewUserData(prev => ({ ...prev, thought_buddy_enabled: checked }))}
+                            />
+                          </div>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="username">Username</Label>

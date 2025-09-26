@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { FeatureGate } from '@/components/FeatureGate';
 import { Mic, MicOff, RotateCcw, Send, Heart, ArrowLeft } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
@@ -296,7 +297,8 @@ const TalkBuddy = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <FeatureGate feature="talk_buddy">
+      <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6 flex items-center justify-between">
           <Button
@@ -454,7 +456,8 @@ const TalkBuddy = () => {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </FeatureGate>
   );
 };
 

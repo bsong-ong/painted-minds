@@ -7,6 +7,7 @@ import { Save, RefreshCw, ArrowLeft, Heart, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { FeatureGate } from '@/components/FeatureGate';
 import { MobileCanvas, MobileCanvasRef } from '@/components/MobileCanvas';
 import { MobileToolbar } from '@/components/MobileToolbar';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -238,7 +239,8 @@ const Drawing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-rose-950/20">
+    <FeatureGate feature="gratitude_journaling">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-rose-950/20">
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-2">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
@@ -333,7 +335,8 @@ const Drawing = () => {
           />
         )}
       </main>
-    </div>
+      </div>
+    </FeatureGate>
   );
 };
 
