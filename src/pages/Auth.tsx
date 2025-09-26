@@ -8,14 +8,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useAdminSettings } from '@/hooks/useAdminSettings';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const Auth = () => {
-  const [email, setEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const { t } = useLanguage();
+  const { settings } = useAdminSettings();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,7 +31,32 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signIn(email, password);
+    let emailToUse = emailOrUsername;
+    
+    // If username login is enabled and input doesn't contain @, try to get email by username
+    if (settings.enable_username_login && !emailOrUsername.includes('@')) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', emailOrUsername)
+          .single();
+        
+        if (error || !data) {
+          toast.error('Username not found');
+          setLoading(false);
+          return;
+        }
+        
+        emailToUse = data.email;
+      } catch (error) {
+        toast.error('Error looking up username');
+        setLoading(false);
+        return;
+      }
+    }
+    
+    const { error } = await signIn(emailToUse, password);
     
     if (error) {
       toast.error(error.message);
@@ -43,7 +71,14 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signUp(email, password);
+    // For sign up, always use email format
+    if (!emailOrUsername.includes('@')) {
+      toast.error('Please use a valid email address for registration');
+      setLoading(false);
+      return;
+    }
+    
+    const { error } = await signUp(emailOrUsername, password);
     
     if (error) {
       toast.error(error.message);
@@ -76,13 +111,15 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">{t('email')}</Label>
+                  <Label htmlFor="signin-email">
+                    {settings.enable_username_login ? 'Email or Username' : t('email')}
+                  </Label>
                   <Input
                     id="signin-email"
-                    type="email"
-                    placeholder={t('emailPlaceholder')}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type={settings.enable_username_login ? "text" : "email"}
+                    placeholder={settings.enable_username_login ? "Enter your email or username" : t('emailPlaceholder')}
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
                     required
                   />
                 </div>
@@ -111,8 +148,8 @@ const Auth = () => {
                     id="signup-email"
                     type="email"
                     placeholder={t('emailPlaceholder')}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
                     required
                   />
                 </div>
