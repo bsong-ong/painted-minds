@@ -33,14 +33,11 @@ const Auth = () => {
     
     let emailToUse = emailOrUsername;
     
-    // If username login is enabled and input doesn't contain @, try to get email by username
     if (settings.enable_username_login && !emailOrUsername.includes('@')) {
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('username', emailOrUsername)
-          .single();
+        const { data, error } = await supabase.rpc('get_email_by_username', {
+          lookup_username: emailOrUsername.trim()
+        });
         
         if (error || !data) {
           toast.error('Username not found');
@@ -48,7 +45,7 @@ const Auth = () => {
           return;
         }
         
-        emailToUse = data.email;
+        emailToUse = data as string;
       } catch (error) {
         toast.error('Error looking up username');
         setLoading(false);
