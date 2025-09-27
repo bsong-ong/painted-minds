@@ -271,12 +271,12 @@ const translations = {
     successfullySignedIn: 'เข้าสู่ระบบสำเร็จ!',
     
     // Index page
-    gratitudeArtJournal: 'ไดอารี่ศิลปะความกตัญญู',
+    gratitudeArtJournal: 'ไดอารี่ศิลปะความขอบคุณ',
     viewJournal: 'ดูไดอารี่',
-    startYourDailyGratitude: 'เริ่มต้นการฝึกความกตัญญูประจำวันของคุณ',
+    startYourDailyGratitude: 'เริ่มต้นการฝึกความขอบคุณประจำวันของคุณ',
     takeAMomentToReflect: 'ใช้เวลาสักครู่เพื่อคิดถึงสิ่งที่คุณรู้สึกขอบคุณในวันนี้ แล้วแสดงออกผ่านศิลปะ',
-    startGratitudeEntry: 'เริ่มบันทึกความกตัญญู',
-    yourRecentGratitudeArt: 'ศิลปะความกตัญญูล่าสุดของคุณ',
+    startGratitudeEntry: 'เริ่มบันทึกความขอบคุณ',
+    yourRecentGratitudeArt: 'ศิลปะความขอบคุณล่าสุดของคุณ',
     
     // Onboarding page
     gratitudeAndMindfulness: 'ภาพประกอบความกตัญญูและสติ',
@@ -338,8 +338,8 @@ const translations = {
     green: 'เขียว',
     clear: 'ล้าง',
     saveDrawing: 'บันทึกภาพวาด',
-    drawYourGratitude: 'วาดความกตัญญูของคุณ:',
-    expressYourGratitudeThrough: 'แสดงความกตัญญูของคุณผ่านศิลปะ',
+    drawYourGratitude: 'วาดความขอบคุณของคุณ:',
+    expressYourGratitudeThrough: 'แสดงความขอบคุณของคุณผ่านศิลปะ',
     pencil: 'ดินสอ',
     eraser: 'ยางลบ',
     colors: 'สี',
@@ -348,8 +348,8 @@ const translations = {
     saveAndEnhanceEntry: 'บันทึกและปรับปรุงรายการ',
     canvasCleared: 'ล้างผ้าใบแล้ว',
     pleaseDrawSomething: 'กรุณาวาดอะไรสักอย่างก่อน',
-    gratitudeDrawingSaved: 'บันทึกภาพวาดความกตัญญูแล้ว!',
-    gratitudeDrawingEnhanced: 'ภาพวาดความกตัญญูของคุณกำลังถูกปรับปรุง! ตรวจสอบไดอารี่ของคุณ',
+    gratitudeDrawingSaved: 'บันทึกภาพวาดความขอบคุณแล้ว!',
+    gratitudeDrawingEnhanced: 'ภาพวาดความขอบคุณของคุณกำลังถูกปรับปรุง! ตรวจสอบไดอารี่ของคุณ',
     failedToSaveDrawing: 'บันทึกภาพวาดไม่สำเร็จ',
     
     // Text entry page
@@ -371,7 +371,7 @@ const translations = {
     publicGallery: 'แกลเลอรี่สาธารณะ',
     loadingPublicGallery: 'กำลังโหลดแกลเลอรี่สาธารณะ...',
     noPublicDrawingsYet: 'ยังไม่มีงานวาดสาธารณะ',
-    beTheFirstToShare: 'เป็นคนแรกที่แบ่งปันศิลปะความกตัญญูของคุณกับชุมชน!',
+    beTheFirstToShare: 'เป็นคนแรกที่แบ่งปันศิลปะความขอบคุณของคุณกับชุมชน!',
     by: 'โดย',
     anonymous: 'ไม่ระบุชื่อ',
     authenticationRequired: 'จำเป็นต้องยืนยันตัวตน',
@@ -383,21 +383,21 @@ const translations = {
     
     // Share dialog
     share: 'แบ่งปัน',
-    shareYourGratitudeArt: 'แบ่งปันศิลปะความกตัญญูของคุณ',
+    shareYourGratitudeArt: 'แบ่งปันศิลปะความขอบคุณของคุณ',
     public: 'สาธารณะ',
     private: 'ส่วนตัว',
     anyoneCanSeeYourDrawing: 'ทุกคนสามารถเห็นงานวาดของคุณในแกลเลอรี่สาธารณะ',
     onlyYouCanSeeThis: 'เฉพาะคุณเท่านั้นที่เห็นงานวาดนี้',
     yourArtIsNowPublic: 'งานศิลปะของคุณเป็นสาธารณะแล้ว!',
-    othersCanViewAndStar: 'ผู้อื่นสามารถดูและให้ดาวศิลปะความกตัญญูของคุณในแกลเลอรี่สาธารณะ การแบ่งปันความคิดสร้างสรรคของคุณช่วยสร้างแรงบันดาลใจให้กับชุมชน!',
+    othersCanViewAndStar: 'ผู้อื่นสามารถดูและให้ดาวศิลปะความขอบคุณของคุณในแกลเลอรี่สาธารณะ การแบ่งปันความคิดสร้างสรรคของคุณช่วยสร้างแรงบันดาลใจให้กับชุมชน!',
     drawingShared: 'แบ่งปันงานวาดแล้ว!',
     drawingMadePrivate: 'ทำให้งานวาดเป็นส่วนตัวแล้ว',
-    artNowVisibleInGallery: 'ศิลปะความกตัญญูของคุณปรากฏในแกลเลอรี่สาธารณะแล้ว',
+    artNowVisibleInGallery: 'ศิลปะความขอบคุณของคุณปรากฏในแกลเลอรี่สาธารณะแล้ว',
     drawingNowPrivate: 'งานวาดของคุณเป็นส่วนตัวแล้ว',
     failedToUpdateSharingStatus: 'อัปเดตสถานะการแบ่งปันไม่สำเร็จ',
     
     // Story generator
-    createYourGratitudeStory: 'สร้างเรื่องราวความกตัญญูของคุณ',
+    createYourGratitudeStory: 'สร้างเรื่องราวความขอบคุณของคุณ',
     selectExactly3Images: 'เลือกรูปภาพ 3 รูปจากไดอารี่ของคุณเพื่อสร้างเรื่องราวที่น่าติดตาม AI จะสานรูปภาพเหล่านี้เข้าด้วยกันเป็นเรื่องเล่าที่อบอุ่นหัวใจ',
     selected: 'เลือกแล้ว',
     readyToGenerate: 'พร้อมสร้าง!',
@@ -406,7 +406,7 @@ const translations = {
     generateStory: 'สร้างเรื่องราว',
     generatingStory: 'กำลังสร้างเรื่องราว...',
     reset: 'รีเซ็ต',
-    yourGratitudeStory: 'เรื่องราวความกตัญญูของคุณ',
+    yourGratitudeStory: 'เรื่องราวความขอบคุณของคุณ',
     createNewStory: 'สร้างเรื่องราวใหม่',
     illustration: 'ภาพประกอบ',
     storyGeneratedSuccessfully: 'สร้างเรื่องราวสำเร็จ!',
@@ -414,9 +414,9 @@ const translations = {
     generateStoryFromImages: 'สร้างเรื่องราวจากรูปภาพ',
 
     // Rewards panel
-    yourGratitudeJourney: 'การเดินทางความกตัญญูของคุณ',
+    yourGratitudeJourney: 'การเดินทางความขอบคุณของคุณ',
     currentStreak: 'ความต่อเนื่องปัจจุบัน',
-    gratitudeMaster: 'ปรมาจารย์ความกตัญญู',
+    gratitudeMaster: 'ปรมาจารย์ความขอบคุณ',
     mindfulSoul: 'วิญญาณมีสติ',
     thankfulHeart: 'หัวใจขอบคุณ',
     gratefulBeginner: 'มือใหม่ผู้กตัญญู',
