@@ -9,6 +9,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useAdminSettings } from '@/hooks/useAdminSettings';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { getRedirectPath } from '@/utils/userRedirect';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -19,13 +22,16 @@ const Auth = () => {
   const { signIn, signUp, user } = useAuth();
   const { t } = useLanguage();
   const { settings } = useAdminSettings();
+  const { permissions } = useUserPermissions();
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      navigate('/');
+    if (user && permissions) {
+      const redirectPath = getRedirectPath(permissions, isAdmin);
+      navigate(redirectPath);
     }
-  }, [user, navigate]);
+  }, [user, permissions, isAdmin, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();

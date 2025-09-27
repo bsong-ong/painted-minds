@@ -7,6 +7,8 @@ import { LogOut, Heart, BookOpen, PenTool, Globe, Settings, Brain } from 'lucide
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { getRedirectPath } from '@/utils/userRedirect';
 import DrawingGallery from '@/components/DrawingGallery';
 import RewardsPanel from '@/components/RewardsPanel';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -17,6 +19,7 @@ const Index = () => {
   const { user, signOut, loading } = useAuth();
   const { t } = useLanguage();
   const { isAdmin } = useIsAdmin();
+  const { permissions } = useUserPermissions();
   const navigate = useNavigate();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -31,8 +34,17 @@ const Index = () => {
     const onboardingCompleted = localStorage.getItem('onboarding_completed');
     if (!onboardingCompleted && user && !loading) {
       navigate('/onboarding');
+      return;
     }
-  }, [user, loading, navigate]);
+
+    // Redirect users based on their permissions if they don't have access to gratitude journaling
+    if (!loading && user && permissions && !isAdmin && !permissions.gratitude_journaling_enabled) {
+      const redirectPath = getRedirectPath(permissions, isAdmin);
+      if (redirectPath !== '/') {
+        navigate(redirectPath);
+      }
+    }
+  }, [user, loading, navigate, permissions, isAdmin]);
 
   const handleSaveSuccess = () => {
     setRefreshTrigger(prev => prev + 1);

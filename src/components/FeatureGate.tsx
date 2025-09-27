@@ -1,5 +1,6 @@
 import React from 'react';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock } from 'lucide-react';
 
@@ -15,6 +16,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   fallback 
 }) => {
   const { permissions, loading } = useUserPermissions();
+  const { isAdmin } = useIsAdmin();
 
   if (loading) {
     return (
@@ -22,6 +24,11 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
         <div className="animate-pulse">Loading...</div>
       </div>
     );
+  }
+
+  // Admins have access to all features regardless of settings
+  if (isAdmin) {
+    return <>{children}</>;
   }
 
   const featureMap = {
