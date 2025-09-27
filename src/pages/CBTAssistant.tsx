@@ -266,7 +266,7 @@ const CBTAssistant = () => {
           {isStandalonePage && (
             <div className="flex items-center justify-center gap-3 mb-4">
               <Brain className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">{t('Thought Buddy') || 'Thought Buddy'}</h1>
+              <h1 className="text-3xl font-bold text-foreground">{t('thoughtBuddy')}</h1>
             </div>
           )}
           <p className="text-muted-foreground">

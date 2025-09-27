@@ -408,7 +408,7 @@ const AdminDashboard = () => {
                           </div>
                           
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="talk_buddy">Talk Buddy</Label>
+                            <Label htmlFor="talk_buddy">{t('talkBuddy')}</Label>
                             <Switch
                               id="talk_buddy"
                               checked={newUserData.talk_buddy_enabled}
@@ -417,7 +417,7 @@ const AdminDashboard = () => {
                           </div>
                           
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="thought_buddy">Thought Buddy (CBT Assistant)</Label>
+                            <Label htmlFor="thought_buddy">{t('thoughtBuddy')} (CBT Assistant)</Label>
                             <Switch
                               id="thought_buddy"
                               checked={newUserData.thought_buddy_enabled}

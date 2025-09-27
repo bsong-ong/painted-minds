@@ -332,7 +332,7 @@ const TalkBuddy = () => {
         <div className="mb-6 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Heart className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">Talk Buddy</h1>
+            <h1 className="text-3xl font-bold text-foreground">{t('talkBuddy')}</h1>
           </div>
           <p className="text-muted-foreground">
             Your cheerful AI companion for happy conversations about your gratitude journal
