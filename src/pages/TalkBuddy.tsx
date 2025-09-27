@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FeatureGate } from '@/components/FeatureGate';
-import { Mic, MicOff, RotateCcw, Send, Heart, ArrowLeft } from 'lucide-react';
+import { Mic, MicOff, RotateCcw, Send, Heart, ArrowLeft, LogOut } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,7 +23,7 @@ interface Message {
 
 const TalkBuddy = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -273,6 +273,11 @@ const TalkBuddy = () => {
     await processMessage(text, false);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
   // Show loading state while user is being authenticated
   if (loading) {
     return (
@@ -310,7 +315,18 @@ const TalkBuddy = () => {
             <ArrowLeft className="h-4 w-4" />
             {t('backToHome') || 'Back to Home'}
           </Button>
-          <LanguageSwitcher />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSignOut}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </Button>
+          </div>
         </div>
         
         <div className="mb-6 text-center">

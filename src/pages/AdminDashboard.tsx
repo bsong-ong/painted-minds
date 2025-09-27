@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, Settings, Users, Share2, BookOpen, UserPlus } from 'lucide-react';
+import { ArrowLeft, Settings, Users, Share2, BookOpen, UserPlus, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useToast } from '@/hooks/use-toast';
@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const AdminDashboard = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useIsAdmin();
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -176,6 +176,11 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
   if (authLoading || adminLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -194,15 +199,25 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-rose-950/20">
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={() => navigate('/')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to App
-            </Button>
-            <div className="flex items-center gap-2">
-              <Settings className="h-6 w-6" />
-              <h1 className="text-xl font-bold">Admin Dashboard</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="outline" onClick={() => navigate('/')}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to App
+              </Button>
+              <div className="flex items-center gap-2">
+                <Settings className="h-6 w-6" />
+                <h1 className="text-xl font-bold">Admin Dashboard</h1>
+              </div>
             </div>
+            <Button
+              variant="outline"
+              onClick={handleSignOut}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </Button>
           </div>
         </div>
       </header>

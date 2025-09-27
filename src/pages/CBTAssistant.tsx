@@ -7,9 +7,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FeatureGate } from '@/components/FeatureGate';
-import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft } from 'lucide-react';
+import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft, LogOut } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface Message {
@@ -22,6 +23,7 @@ interface Message {
 const CBTAssistant = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { signOut } = useAuth();
   const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -225,6 +227,11 @@ const CBTAssistant = () => {
     await processMessage(text, false);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
   return (
     <FeatureGate feature="thought_buddy">
       <div className={isStandalonePage ? "min-h-screen bg-background" : "w-full"}>
@@ -240,7 +247,18 @@ const CBTAssistant = () => {
               <ArrowLeft className="h-4 w-4" />
               {t('backToHome') || 'Back to Home'}
             </Button>
-            <LanguageSwitcher />
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
+            </div>
           </div>
         )}
         

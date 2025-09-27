@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Calendar, Eye, Download, Trash2, Share2, BookOpen } from 'lucide-react';
+import { ArrowLeft, Calendar, Eye, Download, Trash2, Share2, BookOpen, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,7 +29,7 @@ interface Drawing {
 }
 
 const Journal = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [drawings, setDrawings] = useState<Drawing[]>([]);
@@ -143,6 +143,11 @@ const Journal = () => {
     ));
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -181,6 +186,15 @@ const Journal = () => {
                 </Button>
               </StoryGeneratorDialog>
               <LanguageSwitcher />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
             </div>
           </div>
         </div>
