@@ -27,7 +27,7 @@ const translations = {
     download: 'Download',
     
     // Auth page
-    drawingApp: 'Gratitude Art App',
+    drawingApp: 'Painted Smiles',
     signInToSave: 'Sign in to save and view your drawings',
     emailPlaceholder: 'you@example.com',
     passwordPlaceholder: 'Your password',
@@ -269,7 +269,7 @@ const translations = {
     download: 'ดาวน์โหลด',
     
     // Auth page
-    drawingApp: 'แอปศิลปะความกตัญญู',
+    drawingApp: 'Painted Smiles',
     signInToSave: 'เข้าสู่ระบบเพื่อบันทึกและดูงานวาดของคุณ',
     emailPlaceholder: 'example@email.com',
     passwordPlaceholder: 'รหัสผ่านของคุณ',
