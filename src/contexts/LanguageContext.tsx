@@ -207,6 +207,13 @@ const translations = {
     amazingConsistency: "Amazing consistency! You're inspiring! 🌟",
     gratitudeMasterMsg: "You're a true gratitude master! 🏆",
     
+    // Buddy state translations
+    nextBuddyState: 'Next buddy state:',
+    buddyWillBe: 'Your buddy will be',
+    whenYouReach: 'when you reach a',
+    dayStreak: '-day streak!',
+    moreDaysToGo: 'more days to go!',
+    
     // Puppy buddy messages
     "Your gratitude buddy is absolutely thrilled! You're a true gratitude master!": "Your gratitude buddy is absolutely thrilled! You're a true gratitude master!",
     "Your gratitude buddy is jumping with excitement! Amazing consistency!": "Your gratitude buddy is jumping with excitement! Amazing consistency!",
@@ -441,6 +448,13 @@ const translations = {
     buildingHabit: 'คุณกำลังสร้างนิสัยที่งดงาม! ✨',
     amazingConsistency: 'ความสม่ำเสมอที่น่าทึ่ง! คุณเป็นแรงบันดาลใจ! 🌟',
     gratitudeMasterMsg: 'คุณเป็นปรมาจารย์ความกตัญญูตัวจริง! 🏆',
+    
+    // Buddy state translations
+    nextBuddyState: 'สถานะเพื่อนถัดไป:',
+    buddyWillBe: 'เพื่อนของคุณจะ',
+    whenYouReach: 'เมื่อคุณไปถึง',
+    dayStreak: '-วันติดต่อกัน!',
+    moreDaysToGo: 'วันเพิ่มเติมที่ต้องทำ!',
     
     // Puppy buddy messages
     "Your gratitude buddy is absolutely thrilled! You're a true gratitude master!": "เพื่อนความกตัญญูของคุณตื่นเต้นมาก! คุณเป็นปรมาจารย์ความกตัญญูตัวจริง!",

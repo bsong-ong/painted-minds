@@ -199,16 +199,16 @@ const RewardsPanel = () => {
           
           {/* Buddy State Info */}
           {nextBuddyState && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 max-w-xs mx-auto">
+            <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-lg p-3 max-w-xs mx-auto">
               <div className="flex items-start gap-2">
-                <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                <div className="text-xs text-blue-700 dark:text-blue-300">
-                  <span className="font-medium">Next buddy state:</span>
+                <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-foreground">
+                  <span className="font-medium">{t('nextBuddyState')}</span>
                   <br />
-                  Your buddy will be <span className="font-medium">{nextBuddyState.state}</span> when you reach a {nextBuddyState.target}-day streak!
+                  {t('buddyWillBe')} <span className="font-medium">{nextBuddyState.state}</span> {t('whenYouReach')} {nextBuddyState.target}{t('dayStreak')}
                   <br />
-                  <span className="text-blue-600 dark:text-blue-400 font-medium">
-                    {nextBuddyState.target - currentStreak} more days to go!
+                  <span className="text-primary font-medium">
+                    {nextBuddyState.target - currentStreak} {t('moreDaysToGo')}
                   </span>
                 </div>
               </div>
