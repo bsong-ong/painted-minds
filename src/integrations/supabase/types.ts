@@ -29,6 +29,7 @@ export type Database = {
           language_switcher_enabled: boolean | null
           show_nutritional_ranges: boolean | null
           story_creation_enabled: boolean
+          talk_buddy_visible: boolean
           use_openrouter_for_images: boolean | null
         }
         Insert: {
@@ -45,6 +46,7 @@ export type Database = {
           language_switcher_enabled?: boolean | null
           show_nutritional_ranges?: boolean | null
           story_creation_enabled?: boolean
+          talk_buddy_visible?: boolean
           use_openrouter_for_images?: boolean | null
         }
         Update: {
@@ -61,6 +63,7 @@ export type Database = {
           language_switcher_enabled?: boolean | null
           show_nutritional_ranges?: boolean | null
           story_creation_enabled?: boolean
+          talk_buddy_visible?: boolean
           use_openrouter_for_images?: boolean | null
         }
         Relationships: []

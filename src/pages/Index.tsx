@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useAdminSettings } from '@/hooks/useAdminSettings';
 import { getRedirectPath } from '@/utils/userRedirect';
 import DrawingGallery from '@/components/DrawingGallery';
 import RewardsPanel from '@/components/RewardsPanel';
@@ -18,6 +19,7 @@ const Index = () => {
   const { t } = useLanguage();
   const { isAdmin } = useIsAdmin();
   const { permissions } = useUserPermissions();
+  const { settings } = useAdminSettings();
   const navigate = useNavigate();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -103,11 +105,13 @@ const Index = () => {
                 <span className="ml-2 hidden sm:inline">{t('thoughtBuddy')}</span>
                 <span className="ml-2 sm:hidden">CBT</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/talk-buddy')} className="flex-shrink-0">
-                <Heart className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">{t('talkBuddy')}</span>
-                <span className="ml-2 sm:hidden">Talk</span>
-              </Button>
+              {settings.talk_buddy_visible && (
+                <Button variant="outline" size="sm" onClick={() => navigate('/talk-buddy')} className="flex-shrink-0">
+                  <Heart className="h-4 w-4" />
+                  <span className="ml-2 hidden sm:inline">{t('talkBuddy')}</span>
+                  <span className="ml-2 sm:hidden">Talk</span>
+                </Button>
+              )}
               <LanguageSwitcher />
               <Button variant="outline" size="sm" onClick={handleSignOut} className="flex-shrink-0">
                 <LogOut className="h-4 w-4" />

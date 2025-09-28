@@ -30,6 +30,7 @@ const AdminDashboard = () => {
     enable_ai_insights: true,
     use_openrouter_for_images: false,
     enable_username_login: false,
+    talk_buddy_visible: true,
   });
   const [loading, setLoading] = useState(true);
   
@@ -84,6 +85,7 @@ const AdminDashboard = () => {
           enable_ai_insights: data.enable_ai_insights,
           use_openrouter_for_images: data.use_openrouter_for_images || false,
           enable_username_login: data.enable_username_login || false,
+          talk_buddy_visible: data.talk_buddy_visible !== undefined ? data.talk_buddy_visible : true,
         });
       }
     } catch (error) {
@@ -334,6 +336,19 @@ const AdminDashboard = () => {
                   <Switch
                     checked={settings.enable_username_login}
                     onCheckedChange={(checked) => updateSetting('enable_username_login', checked)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label className="text-base font-medium">{t('talkBuddy')} Visibility</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Control whether users can access the Talk Buddy feature
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settings.talk_buddy_visible}
+                    onCheckedChange={(checked) => updateSetting('talk_buddy_visible', checked)}
                   />
                 </div>
             </CardContent>
