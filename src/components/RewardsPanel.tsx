@@ -298,21 +298,6 @@ const RewardsPanel = () => {
           })()}
         </div>
 
-        {/* Motivation */}
-        <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-4 rounded-lg">
-          <p className="text-sm text-center text-muted-foreground">
-            {currentStreak === 0 
-              ? t('startGratitudeToday')
-              : currentStreak === 1
-              ? t('greatStart')
-              : currentStreak < 7
-              ? t('buildingHabit')
-              : currentStreak < 30
-              ? t('amazingConsistency')
-              : t('gratitudeMasterMsg')
-            }
-          </p>
-        </div>
       </CardContent>
     </Card>
   );
