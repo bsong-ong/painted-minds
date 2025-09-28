@@ -205,7 +205,7 @@ const RewardsPanel = () => {
                 <div className="text-xs text-foreground">
                   <span className="font-medium">{t('nextBuddyState')}</span>
                   <br />
-                  {t('buddyWillBe')} <span className="font-medium">{nextBuddyState.state}</span> {t('whenYouReach')} {nextBuddyState.target}{t('dayStreak')}
+                  {t('buddyWillBe')} {t('whenYouReach')} {nextBuddyState.target}{t('dayStreak')}
                   <br />
                   <span className="text-primary font-medium">
                     {nextBuddyState.target - currentStreak} {t('moreDaysToGo')}

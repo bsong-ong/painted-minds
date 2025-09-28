@@ -209,7 +209,7 @@ const translations = {
     
     // Buddy state translations
     nextBuddyState: 'Next buddy state:',
-    buddyWillBe: 'Your buddy will be',
+    buddyWillBe: 'Your buddy will be much happier',
     whenYouReach: 'when you reach a',
     dayStreak: '-day streak!',
     moreDaysToGo: 'more days to go!',
@@ -451,7 +451,7 @@ const translations = {
     
     // Buddy state translations
     nextBuddyState: 'สถานะเพื่อนถัดไป:',
-    buddyWillBe: 'เพื่อนของคุณจะ',
+    buddyWillBe: 'เพื่อนของคุณจะมีความสุขมากขึ้น',
     whenYouReach: 'เมื่อคุณไปถึง',
     dayStreak: '-วันติดต่อกัน!',
     moreDaysToGo: 'วันเพิ่มเติมที่ต้องทำ!',
