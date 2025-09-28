@@ -29,6 +29,8 @@ const translations = {
     // Auth page
     drawingApp: 'Painted Smiles',
     signInToSave: 'Sign in to save and view your drawings',
+    emailOrUsername: 'Email or Username',
+    emailOrUsernamePlaceholder: 'Enter your email or username',
     emailPlaceholder: 'you@example.com',
     passwordPlaceholder: 'Your password',
     createPasswordPlaceholder: 'Create a password',
@@ -271,6 +273,8 @@ const translations = {
     // Auth page
     drawingApp: 'Painted Smiles',
     signInToSave: 'เข้าสู่ระบบเพื่อบันทึกและดูงานวาดของคุณ',
+    emailOrUsername: 'อีเมลหรือชื่อผู้ใช้',
+    emailOrUsernamePlaceholder: 'กรอกอีเมลหรือชื่อผู้ใช้ของคุณ',
     emailPlaceholder: 'example@email.com',
     passwordPlaceholder: 'รหัสผ่านของคุณ',
     createPasswordPlaceholder: 'สร้างรหัสผ่าน',

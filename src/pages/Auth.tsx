@@ -115,12 +115,12 @@ const Auth = () => {
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">
-                    {settings.enable_username_login ? 'Email or Username' : t('email')}
+                    {settings.enable_username_login ? t('emailOrUsername') : t('email')}
                   </Label>
                   <Input
                     id="signin-email"
                     type={settings.enable_username_login ? "text" : "email"}
-                    placeholder={settings.enable_username_login ? "Enter your email or username" : t('emailPlaceholder')}
+                    placeholder={settings.enable_username_login ? t('emailOrUsernamePlaceholder') : t('emailPlaceholder')}
                     value={emailOrUsername}
                     onChange={(e) => setEmailOrUsername(e.target.value)}
                     required
