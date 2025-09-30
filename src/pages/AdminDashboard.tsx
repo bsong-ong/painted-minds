@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Settings, Users, Share2, BookOpen, UserPlus, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
@@ -31,6 +32,9 @@ const AdminDashboard = () => {
     use_openrouter_for_images: false,
     enable_username_login: false,
     talk_buddy_visible: true,
+    default_language: 'en',
+    gratitude_drawing_visible: true,
+    cbt_assistant_visible: true,
   });
   const [loading, setLoading] = useState(true);
   
@@ -86,6 +90,9 @@ const AdminDashboard = () => {
           use_openrouter_for_images: data.use_openrouter_for_images || false,
           enable_username_login: data.enable_username_login || false,
           talk_buddy_visible: data.talk_buddy_visible !== undefined ? data.talk_buddy_visible : true,
+          default_language: data.default_language || 'en',
+          gratitude_drawing_visible: data.gratitude_drawing_visible !== undefined ? data.gratitude_drawing_visible : true,
+          cbt_assistant_visible: data.cbt_assistant_visible !== undefined ? data.cbt_assistant_visible : true,
         });
       }
     } catch (error) {
@@ -101,6 +108,31 @@ const AdminDashboard = () => {
   };
 
   const updateSetting = async (key: string, value: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('admin_settings')
+        .update({ [key]: value })
+        .eq('id', (await supabase.from('admin_settings').select('id').single()).data?.id);
+
+      if (error) throw error;
+
+      setSettings(prev => ({ ...prev, [key]: value }));
+      
+      toast({
+        title: 'Success',
+        description: `Setting updated successfully`,
+      });
+    } catch (error) {
+      console.error('Error updating setting:', error);
+      toast({
+        title: t('error'),
+        description: 'Failed to update setting',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const updateStringSetting = async (key: string, value: string) => {
     try {
       const { error } = await supabase
         .from('admin_settings')
@@ -339,18 +371,62 @@ const AdminDashboard = () => {
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label className="text-base font-medium">{t('talkBuddy')} Visibility</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Control whether users can access the Talk Buddy feature
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.talk_buddy_visible}
-                    onCheckedChange={(checked) => updateSetting('talk_buddy_visible', checked)}
-                  />
-                </div>
+                 <div className="flex items-center justify-between">
+                   <div className="space-y-1">
+                     <Label className="text-base font-medium">{t('talkBuddy')} Visibility</Label>
+                     <p className="text-sm text-muted-foreground">
+                       Control whether users can access the Talk Buddy feature
+                     </p>
+                   </div>
+                   <Switch
+                     checked={settings.talk_buddy_visible}
+                     onCheckedChange={(checked) => updateSetting('talk_buddy_visible', checked)}
+                   />
+                 </div>
+
+                 <div className="flex items-center justify-between">
+                   <div className="space-y-1">
+                     <Label className="text-base font-medium">Gratitude Drawing Visibility</Label>
+                     <p className="text-sm text-muted-foreground">
+                       Control whether users can access the gratitude drawing features
+                     </p>
+                   </div>
+                   <Switch
+                     checked={settings.gratitude_drawing_visible}
+                     onCheckedChange={(checked) => updateSetting('gratitude_drawing_visible', checked)}
+                   />
+                 </div>
+
+                 <div className="flex items-center justify-between">
+                   <div className="space-y-1">
+                     <Label className="text-base font-medium">CBT Assistant Visibility</Label>
+                     <p className="text-sm text-muted-foreground">
+                       Control whether users can access the CBT assistant feature
+                     </p>
+                   </div>
+                   <Switch
+                     checked={settings.cbt_assistant_visible}
+                     onCheckedChange={(checked) => updateSetting('cbt_assistant_visible', checked)}
+                   />
+                 </div>
+
+                 <div className="flex items-center justify-between">
+                   <div className="space-y-1">
+                     <Label className="text-base font-medium">Default Language</Label>
+                     <p className="text-sm text-muted-foreground">
+                       Set the default language for new users and fallback
+                     </p>
+                   </div>
+                   <Select value={settings.default_language} onValueChange={(value) => updateStringSetting('default_language', value)}>
+                     <SelectTrigger className="w-[120px]">
+                       <SelectValue />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="en">English</SelectItem>
+                       <SelectItem value="th">ไทย</SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
             </CardContent>
           </Card>
 

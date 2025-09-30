@@ -100,11 +100,13 @@ const Index = () => {
                 <span className="ml-2 hidden sm:inline">{t('publicGallery')}</span>
                 <span className="ml-2 sm:hidden">Gallery</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate('/cbt-assistant')} className="flex-shrink-0">
-                <Brain className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">{t('thoughtBuddy')}</span>
-                <span className="ml-2 sm:hidden">CBT</span>
-              </Button>
+              {settings.cbt_assistant_visible && (
+                <Button variant="outline" size="sm" onClick={() => navigate('/cbt-assistant')} className="flex-shrink-0">
+                  <Brain className="h-4 w-4" />
+                  <span className="ml-2 hidden sm:inline">{t('thoughtBuddy')}</span>
+                  <span className="ml-2 sm:hidden">CBT</span>
+                </Button>
+              )}
               {settings.talk_buddy_visible && (
                 <Button variant="outline" size="sm" onClick={() => navigate('/talk-buddy')} className="flex-shrink-0">
                   <Heart className="h-4 w-4" />
@@ -112,7 +114,7 @@ const Index = () => {
                   <span className="ml-2 sm:hidden">Talk</span>
                 </Button>
               )}
-              <LanguageSwitcher />
+              {settings.language_switcher_enabled && <LanguageSwitcher />}
               <Button variant="outline" size="sm" onClick={handleSignOut} className="flex-shrink-0">
                 <LogOut className="h-4 w-4" />
                 <span className="ml-2 hidden sm:inline">{t('signOut')}</span>
@@ -124,8 +126,9 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-full overflow-hidden">
-        <FeatureGate feature="gratitude_journaling">
-          <div className="grid lg:grid-cols-4 gap-4 sm:gap-8 w-full">
+        {settings.gratitude_drawing_visible && (
+          <FeatureGate feature="gratitude_journaling">
+            <div className="grid lg:grid-cols-4 gap-4 sm:gap-8 w-full">
             <div className="lg:col-span-3 w-full min-w-0 space-y-4">
               {/* Start Gratitude Entry Card */}
               <Card className="h-fit w-full bg-gradient-to-r from-primary/10 to-gratitude-warm/10 border-primary/20">
@@ -146,9 +149,10 @@ const Index = () => {
             
             <div className="lg:col-span-1 w-full min-w-0">
               <RewardsPanel />
+              </div>
             </div>
-          </div>
-        </FeatureGate>
+          </FeatureGate>
+        )}
       </main>
     </div>
   );

@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           admin_only_registration: boolean | null
           art_sharing_enabled: boolean
+          cbt_assistant_visible: boolean
           chatbot_enabled: boolean | null
           default_language: string | null
           enable_ai_insights: boolean
@@ -25,6 +26,7 @@ export type Database = {
           enable_few_shot_prompting: boolean
           enable_username_login: boolean | null
           enable_weight_tracking: boolean
+          gratitude_drawing_visible: boolean
           id: string
           language_switcher_enabled: boolean | null
           show_nutritional_ranges: boolean | null
@@ -35,6 +37,7 @@ export type Database = {
         Insert: {
           admin_only_registration?: boolean | null
           art_sharing_enabled?: boolean
+          cbt_assistant_visible?: boolean
           chatbot_enabled?: boolean | null
           default_language?: string | null
           enable_ai_insights?: boolean
@@ -42,6 +45,7 @@ export type Database = {
           enable_few_shot_prompting?: boolean
           enable_username_login?: boolean | null
           enable_weight_tracking?: boolean
+          gratitude_drawing_visible?: boolean
           id?: string
           language_switcher_enabled?: boolean | null
           show_nutritional_ranges?: boolean | null
@@ -52,6 +56,7 @@ export type Database = {
         Update: {
           admin_only_registration?: boolean | null
           art_sharing_enabled?: boolean
+          cbt_assistant_visible?: boolean
           chatbot_enabled?: boolean | null
           default_language?: string | null
           enable_ai_insights?: boolean
@@ -59,6 +64,7 @@ export type Database = {
           enable_few_shot_prompting?: boolean
           enable_username_login?: boolean | null
           enable_weight_tracking?: boolean
+          gratitude_drawing_visible?: boolean
           id?: string
           language_switcher_enabled?: boolean | null
           show_nutritional_ranges?: boolean | null
