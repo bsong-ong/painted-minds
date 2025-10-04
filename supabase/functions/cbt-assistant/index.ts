@@ -100,9 +100,10 @@ Remember: You're a supportive tool, not a replacement for professional therapy.`
 
   } catch (error) {
     console.error('Error in CBT assistant function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: errorMessage,
         response: "I'm sorry, I'm having trouble responding right now. Please try again in a moment, or consider reaching out to a mental health professional if you need immediate support."
       }),
       {

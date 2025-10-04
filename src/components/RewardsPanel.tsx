@@ -91,7 +91,13 @@ const RewardsPanel = () => {
         .single();
 
       if (pointsData) {
-        setPoints(pointsData);
+        // Transform the data to match UserPoints interface
+        const transformedPoints: UserPoints = {
+          total: pointsData.total_points,
+          level: Math.floor(pointsData.total_points / 100),
+          next_level_points: (Math.floor(pointsData.total_points / 100) + 1) * 100
+        };
+        setPoints(transformedPoints);
       }
 
       // Fetch total gratitude entries

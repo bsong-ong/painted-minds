@@ -77,11 +77,11 @@ serve(async (req) => {
     // Parse the generated content into individual prompts - more robust parsing
     let prompts = generatedContent
       .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 3 && line.length < 100) // Keep reasonable length prompts
-      .map(line => line.replace(/^\d+[\.\)]\s*/, '')) // Remove numbering
-      .map(line => line.replace(/^[-•*]\s*/, '')) // Remove bullets
-      .filter(line => !line.toLowerCase().includes('here are') && !line.toLowerCase().includes('prompts'))
+      .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 3 && line.length < 100) // Keep reasonable length prompts
+      .map((line: string) => line.replace(/^\d+[\.\)]\s*/, '')) // Remove numbering
+      .map((line: string) => line.replace(/^[-•*]\s*/, '')) // Remove bullets
+      .filter((line: string) => !line.toLowerCase().includes('here are') && !line.toLowerCase().includes('prompts'))
       .slice(0, 3);
 
     // Fallback prompts if parsing fails
@@ -100,7 +100,8 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error in generate-gratitude-hints function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

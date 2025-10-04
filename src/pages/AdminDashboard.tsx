@@ -24,17 +24,13 @@ const AdminDashboard = () => {
   const [settings, setSettings] = useState({
     art_sharing_enabled: true,
     story_creation_enabled: true,
-    chatbot_enabled: true,
-    language_switcher_enabled: true,
-    admin_only_registration: false,
-    enable_cgm_functionality: true,
-    enable_ai_insights: true,
     use_openrouter_for_images: false,
     enable_username_login: false,
     talk_buddy_visible: true,
     default_language: 'en',
     gratitude_drawing_visible: true,
     cbt_assistant_visible: true,
+    language_switcher_enabled: true,
   });
   const [loading, setLoading] = useState(true);
   
@@ -82,11 +78,7 @@ const AdminDashboard = () => {
         setSettings({
           art_sharing_enabled: data.art_sharing_enabled,
           story_creation_enabled: data.story_creation_enabled,
-          chatbot_enabled: data.chatbot_enabled || true,
           language_switcher_enabled: data.language_switcher_enabled || true,
-          admin_only_registration: data.admin_only_registration || false,
-          enable_cgm_functionality: data.enable_cgm_functionality,
-          enable_ai_insights: data.enable_ai_insights,
           use_openrouter_for_images: data.use_openrouter_for_images || false,
           enable_username_login: data.enable_username_login || false,
           talk_buddy_visible: data.talk_buddy_visible !== undefined ? data.talk_buddy_visible : true,
@@ -295,19 +287,6 @@ const AdminDashboard = () => {
 
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <Label className="text-base font-medium">Chatbot</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enable AI chatbot functionality
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.chatbot_enabled}
-                  onCheckedChange={(checked) => updateSetting('chatbot_enabled', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
                   <Label className="text-base font-medium">Language Switcher</Label>
                   <p className="text-sm text-muted-foreground">
                     Show language switcher in the interface
@@ -318,32 +297,6 @@ const AdminDashboard = () => {
                   onCheckedChange={(checked) => updateSetting('language_switcher_enabled', checked)}
                 />
               </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-base font-medium">CGM Functionality</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enable continuous glucose monitoring features
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.enable_cgm_functionality}
-                  onCheckedChange={(checked) => updateSetting('enable_cgm_functionality', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-base font-medium">AI Insights</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enable AI-powered insights and recommendations
-                  </p>
-                </div>
-                 <Switch
-                   checked={settings.enable_ai_insights}
-                   onCheckedChange={(checked) => updateSetting('enable_ai_insights', checked)}
-                 />
-               </div>
 
                <div className="flex items-center justify-between">
                  <div className="space-y-1">
@@ -550,18 +503,6 @@ const AdminDashboard = () => {
                 </Dialog>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-base font-medium">Admin-Only Registration</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Restrict new user registration to administrators only
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.admin_only_registration}
-                  onCheckedChange={(checked) => updateSetting('admin_only_registration', checked)}
-                />
-              </div>
             </CardContent>
           </Card>
         </div>
