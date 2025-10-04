@@ -14,13 +14,229 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_settings: {
+        Row: {
+          art_sharing_enabled: boolean | null
+          cbt_assistant_visible: boolean | null
+          created_at: string | null
+          default_language: string | null
+          enable_username_login: boolean | null
+          gratitude_drawing_visible: boolean | null
+          id: string
+          language_switcher_enabled: boolean | null
+          story_creation_enabled: boolean | null
+          talk_buddy_visible: boolean | null
+          updated_at: string | null
+          use_openrouter_for_images: boolean | null
+        }
+        Insert: {
+          art_sharing_enabled?: boolean | null
+          cbt_assistant_visible?: boolean | null
+          created_at?: string | null
+          default_language?: string | null
+          enable_username_login?: boolean | null
+          gratitude_drawing_visible?: boolean | null
+          id?: string
+          language_switcher_enabled?: boolean | null
+          story_creation_enabled?: boolean | null
+          talk_buddy_visible?: boolean | null
+          updated_at?: string | null
+          use_openrouter_for_images?: boolean | null
+        }
+        Update: {
+          art_sharing_enabled?: boolean | null
+          cbt_assistant_visible?: boolean | null
+          created_at?: string | null
+          default_language?: string | null
+          enable_username_login?: boolean | null
+          gratitude_drawing_visible?: boolean | null
+          id?: string
+          language_switcher_enabled?: boolean | null
+          story_creation_enabled?: boolean | null
+          talk_buddy_visible?: boolean | null
+          updated_at?: string | null
+          use_openrouter_for_images?: boolean | null
+        }
+        Relationships: []
+      }
+      admins: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      drawings: {
+        Row: {
+          created_at: string | null
+          drawing_data: string | null
+          id: string
+          is_gratitude_entry: boolean | null
+          shared: boolean | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          drawing_data?: string | null
+          id?: string
+          is_gratitude_entry?: boolean | null
+          shared?: boolean | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          drawing_data?: string | null
+          id?: string
+          is_gratitude_entry?: boolean | null
+          shared?: boolean | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_permissions: {
+        Row: {
+          created_at: string | null
+          gratitude_journaling_enabled: boolean | null
+          id: string
+          talk_buddy_enabled: boolean | null
+          thought_buddy_enabled: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          gratitude_journaling_enabled?: boolean | null
+          id?: string
+          talk_buddy_enabled?: boolean | null
+          thought_buddy_enabled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          gratitude_journaling_enabled?: boolean | null
+          id?: string
+          talk_buddy_enabled?: boolean | null
+          thought_buddy_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_points: {
+        Row: {
+          created_at: string | null
+          id: string
+          total_points: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          total_points?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_streaks: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          id: string
+          last_entry_date: string | null
+          longest_streak: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_entry_date?: string | null
+          longest_streak?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_entry_date?: string | null
+          longest_streak?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_email_by_username: {
+        Args: { lookup_username: string }
+        Returns: string
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
