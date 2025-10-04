@@ -80,6 +80,35 @@ export type Database = {
         }
         Relationships: []
       }
+      drawing_stars: {
+        Row: {
+          created_at: string | null
+          drawing_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          drawing_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          drawing_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drawing_stars_drawing_id_fkey"
+            columns: ["drawing_id"]
+            isOneToOne: false
+            referencedRelation: "drawings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drawings: {
         Row: {
           created_at: string | null
@@ -92,7 +121,9 @@ export type Database = {
           image_url: string | null
           is_enhanced: boolean | null
           is_gratitude_entry: boolean | null
+          is_public: boolean | null
           shared: boolean | null
+          star_count: number | null
           storage_path: string | null
           title: string | null
           updated_at: string | null
@@ -110,7 +141,9 @@ export type Database = {
           image_url?: string | null
           is_enhanced?: boolean | null
           is_gratitude_entry?: boolean | null
+          is_public?: boolean | null
           shared?: boolean | null
+          star_count?: number | null
           storage_path?: string | null
           title?: string | null
           updated_at?: string | null
@@ -128,7 +161,9 @@ export type Database = {
           image_url?: string | null
           is_enhanced?: boolean | null
           is_gratitude_entry?: boolean | null
+          is_public?: boolean | null
           shared?: boolean | null
+          star_count?: number | null
           storage_path?: string | null
           title?: string | null
           updated_at?: string | null
