@@ -83,30 +83,36 @@ export type Database = {
       drawings: {
         Row: {
           created_at: string | null
-          drawing_data: string | null
+          gratitude_prompt: string | null
           id: string
+          image_url: string | null
           is_gratitude_entry: boolean | null
           shared: boolean | null
+          storage_path: string | null
           title: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
-          drawing_data?: string | null
+          gratitude_prompt?: string | null
           id?: string
+          image_url?: string | null
           is_gratitude_entry?: boolean | null
           shared?: boolean | null
+          storage_path?: string | null
           title?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
-          drawing_data?: string | null
+          gratitude_prompt?: string | null
           id?: string
+          image_url?: string | null
           is_gratitude_entry?: boolean | null
           shared?: boolean | null
+          storage_path?: string | null
           title?: string | null
           updated_at?: string | null
           user_id?: string
