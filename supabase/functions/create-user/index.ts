@@ -15,6 +15,7 @@ interface CreateUserRequest {
   gratitude_journaling_enabled?: boolean;
   talk_buddy_enabled?: boolean;
   thought_buddy_enabled?: boolean;
+  is_admin?: boolean;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -61,7 +62,8 @@ const handler = async (req: Request): Promise<Response> => {
       display_name,
       gratitude_journaling_enabled = true,
       talk_buddy_enabled = true,
-      thought_buddy_enabled = true
+      thought_buddy_enabled = true,
+      is_admin = false
     }: CreateUserRequest = await req.json();
 
     if (!email || !password) {
@@ -113,6 +115,23 @@ const handler = async (req: Request): Promise<Response> => {
     if (permissionsError) {
       console.error("Error creating user permissions:", permissionsError);
       // Don't fail the entire operation if permissions fail, just log it
+    }
+
+    // Create admin record if requested
+    if (is_admin && newUser.user?.id) {
+      const { error: adminError } = await supabaseServiceRole
+        .from('admins')
+        .insert({
+          user_id: newUser.user.id,
+          role: 'admin'
+        });
+
+      if (adminError) {
+        console.error("Error creating admin record:", adminError);
+        // Don't fail the entire operation if admin creation fails
+      } else {
+        console.log("Admin role assigned to user:", newUser.user.id);
+      }
     }
 
     console.log("User created successfully:", newUser.user?.id);
