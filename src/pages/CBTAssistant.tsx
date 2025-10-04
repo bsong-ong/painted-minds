@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FeatureGate } from '@/components/FeatureGate';
-import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft, LogOut } from 'lucide-react';
+import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft, LogOut, Info } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -274,6 +275,12 @@ const CBTAssistant = () => {
           </p>
         </div>
 
+        <Alert className="mb-6">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Important:</strong> Thought Buddy is a supportive tool and not a replacement for professional mental health care. If you are experiencing a crisis or emergency, please contact a crisis helpline or emergency services immediately. For ongoing concerns, we encourage you to speak with a qualified mental health professional.
+          </AlertDescription>
+        </Alert>
 
         <Card className="mb-6">
           <CardHeader>
