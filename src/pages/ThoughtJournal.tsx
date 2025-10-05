@@ -186,8 +186,8 @@ const ThoughtJournal = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="max-h-60">
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  <ScrollArea className="h-60 w-full rounded-md border p-4">
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap pr-4">
                       {entry.summary}
                     </p>
                   </ScrollArea>
