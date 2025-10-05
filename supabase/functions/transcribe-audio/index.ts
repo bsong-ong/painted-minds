@@ -12,11 +12,15 @@ serve(async (req) => {
   }
 
   try {
-    const { audio } = await req.json();
+    const { audio, language } = await req.json();
     
     if (!audio) {
       throw new Error('No audio data provided');
     }
+
+    // Default to English if no language specified, or if invalid language
+    const validLanguage = (language === 'th' || language === 'en') ? language : 'en';
+    console.log('Transcribing audio in language:', validLanguage);
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
@@ -37,6 +41,7 @@ serve(async (req) => {
     const audioBlob = new Blob([bytes], { type: 'audio/webm' });
     formData.append('file', audioBlob, 'audio.webm');
     formData.append('model', 'gpt-4o-transcribe');
+    formData.append('language', validLanguage);
 
     const transcriptionResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',

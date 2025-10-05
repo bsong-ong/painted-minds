@@ -24,7 +24,7 @@ interface Message {
 const TalkBuddy = () => {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -116,7 +116,10 @@ const TalkBuddy = () => {
       const base64Audio = await blobToBase64(audioBlob);
       
       const transcriptionResult = await supabase.functions.invoke('transcribe-audio', {
-        body: { audio: base64Audio }
+        body: { 
+          audio: base64Audio,
+          language: language // Pass current language from context
+        }
       });
 
       if (transcriptionResult.error) {
