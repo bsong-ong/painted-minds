@@ -275,15 +275,6 @@ const CBTAssistant = () => {
   };
 
   const handleSaveToJournal = async () => {
-    if (!journalTitle.trim()) {
-      toast({
-        title: "Title Required",
-        description: "Please enter a title for your journal entry.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSavingToJournal(true);
 
     try {
@@ -293,11 +284,14 @@ const CBTAssistant = () => {
 
       const conversationMessages = messages.filter((msg, idx) => idx > 0);
 
+      // Use the provided title or generate a default one based on timestamp
+      const entryTitle = journalTitle.trim() || `Thought Entry - ${new Date().toLocaleDateString()}`;
+
       const { error } = await supabase
         .from('thought_journal')
         .insert([{
           user_id: user.id,
-          title: journalTitle.trim(),
+          title: entryTitle,
           summary: summary,
           conversation_data: conversationMessages as any
         }]);
@@ -622,10 +616,10 @@ const CBTAssistant = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="journal-title">{t('journalTitle')}</Label>
+              <Label htmlFor="journal-title">{t('journalTitle')} <span className="text-muted-foreground text-xs">({t('optional')})</span></Label>
               <Input
                 id="journal-title"
-                placeholder={t('enterTitle')}
+                placeholder={t('enterTitle') || 'Leave empty for auto-generated title'}
                 value={journalTitle}
                 onChange={(e) => setJournalTitle(e.target.value)}
                 disabled={isSavingToJournal}

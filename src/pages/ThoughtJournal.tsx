@@ -167,7 +167,9 @@ const ThoughtJournal = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg">{entry.title}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {entry.title || `Thought Entry - ${new Date(entry.created_at).toLocaleDateString()}`}
+                      </CardTitle>
                       <CardDescription>
                         {new Date(entry.created_at).toLocaleDateString()} at{' '}
                         {new Date(entry.created_at).toLocaleTimeString()}
