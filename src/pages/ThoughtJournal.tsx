@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import ReactMarkdown from 'react-markdown';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -187,9 +188,9 @@ const ThoughtJournal = () => {
                 </CardHeader>
                 <CardContent>
                   <ScrollArea className="h-60 w-full rounded-md border p-4">
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap pr-4">
-                      {entry.summary}
-                    </p>
+                    <div className="text-sm text-muted-foreground pr-4 prose prose-sm dark:prose-invert max-w-none">
+                      <ReactMarkdown>{entry.summary}</ReactMarkdown>
+                    </div>
                   </ScrollArea>
                 </CardContent>
               </Card>
