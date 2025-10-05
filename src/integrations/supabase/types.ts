@@ -199,6 +199,36 @@ export type Database = {
         }
         Relationships: []
       }
+      thought_journal: {
+        Row: {
+          conversation_data: Json | null
+          created_at: string | null
+          id: string
+          summary: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_data?: Json | null
+          created_at?: string | null
+          id?: string
+          summary: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_data?: Json | null
+          created_at?: string | null
+          id?: string
+          summary?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_permissions: {
         Row: {
           created_at: string | null

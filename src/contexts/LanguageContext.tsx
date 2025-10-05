@@ -243,7 +243,7 @@ const translations = {
      cbtDescription: 'A friendly space to talk through your thoughts and feelings',
      cbtWelcomeMessage: "Hi there! I'm here to listen and help you work through whatever's on your mind. Feel free to share what you're thinking about or how you're feeling today.",
      conversation: 'Conversation',
-     shareThoughts: 'Share your thoughts and let\'s work through them together using CBT techniques',
+     shareThoughts: 'Share your thoughts and let\'s work through them together',
      resetSession: 'Reset Session',
      startRecording: 'Start Recording',
      stopRecording: 'Stop Recording',
@@ -253,7 +253,19 @@ const translations = {
      send: 'Send',
      sessionReset: 'Session Reset',
      newSessionStarted: 'New session started successfully.',
-     backToHome: 'Back to Home'
+     backToHome: 'Back to Home',
+     generateSummary: 'Generate Summary',
+     generatingSummary: 'Generating Summary...',
+     conversationSummary: 'Conversation Summary',
+     saveToJournal: 'Save to Journal',
+     savingToJournal: 'Saving...',
+     journalTitle: 'Journal Title',
+     enterTitle: 'Enter a title for this entry...',
+     savedToJournal: 'Saved to Journal',
+     viewJournalEntries: 'View Journal Entries',
+     thoughtJournal: 'Thought Journal',
+     noJournalEntries: 'No journal entries yet',
+     startSavingSummaries: 'Start saving conversation summaries to build your thought journal'
   },
   th: {
     // Common
@@ -487,7 +499,7 @@ const translations = {
      cbtDescription: 'พื้นที่ที่เป็นกันเองสำหรับพูดคุยเรื่องความคิดและความรู้สึก',
      cbtWelcomeMessage: 'สวัสดีครับ/ค่ะ! ฉันอยู่ที่นี่เพื่อรับฟังและช่วยคุณคิดเรื่องต่างๆ ที่อยู่ในใจ คุณอยากจะเล่าหรือแบ่งปันความรู้สึกอะไรไหม?',
      conversation: 'การสนทนา',
-     shareThoughts: 'แบ่งปันความคิดของคุณและลองแก้ไขปัญหาด้วยกันโดยใช้เทคนิค CBT',
+     shareThoughts: 'แบ่งปันความคิดของคุณและลองทำงานร่วมกัน',
      resetSession: 'รีเซ็ตเซสชัน',
      startRecording: 'เริ่มบันทึกเสียง',
      stopRecording: 'หยุดบันทึกเสียง',
@@ -497,7 +509,19 @@ const translations = {
      send: 'ส่ง',
      sessionReset: 'รีเซ็ตเซสชัน',
      newSessionStarted: 'เริ่มเซสชันใหม่สำเร็จแล้ว',
-     backToHome: 'กลับไปหน้าหลัก'
+     backToHome: 'กลับไปหน้าหลัก',
+     generateSummary: 'สร้างสรุป',
+     generatingSummary: 'กำลังสร้างสรุป...',
+     conversationSummary: 'สรุปการสนทนา',
+     saveToJournal: 'บันทึกลงไดอารี่',
+     savingToJournal: 'กำลังบันทึก...',
+     journalTitle: 'หัวข้อไดอารี่',
+     enterTitle: 'กรอกหัวข้อสำหรับรายการนี้...',
+     savedToJournal: 'บันทึกลงไดอารี่แล้ว',
+     viewJournalEntries: 'ดูรายการไดอารี่',
+     thoughtJournal: 'ไดอารี่ความคิด',
+     noJournalEntries: 'ยังไม่มีรายการไดอารี่',
+     startSavingSummaries: 'เริ่มบันทึกสรุปการสนทนาเพื่อสร้างไดอารี่ความคิดของคุณ'
   }
 };
 

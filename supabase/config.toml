@@ -1,1 +1,40 @@
 project_id = "kmhnnkwcxroxyfkbhqia"
+
+[functions.summarize-conversation]
+verify_jwt = true
+
+[functions.generate-cbt-response]
+verify_jwt = true
+
+[functions.transcribe-audio]
+verify_jwt = true
+
+[functions.text-to-speech-cbt]
+verify_jwt = true
+
+[functions.create-user]
+verify_jwt = true
+
+[functions.generate-story]
+verify_jwt = true
+
+[functions.enhance-drawing]
+verify_jwt = true
+
+[functions.generate-gratitude-hints]
+verify_jwt = true
+
+[functions.text-to-speech]
+verify_jwt = true
+
+[functions.voice-to-text]
+verify_jwt = true
+
+[functions.talk-buddy-chat]
+verify_jwt = true
+
+[functions.openai-realtime]
+verify_jwt = true
+
+[functions.cbt-assistant]
+verify_jwt = true

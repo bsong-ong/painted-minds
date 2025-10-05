@@ -5,10 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/components/ui/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FeatureGate } from '@/components/FeatureGate';
-import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft, LogOut, Info } from 'lucide-react';
+import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft, LogOut, Info, FileText, BookOpen } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,6 +36,13 @@ const CBTAssistant = () => {
   const [status, setStatus] = useState('Ready');
   const [error, setError] = useState('');
   const { toast } = useToast();
+  
+  // Summary and journal state
+  const [showSummaryDialog, setShowSummaryDialog] = useState(false);
+  const [summary, setSummary] = useState('');
+  const [journalTitle, setJournalTitle] = useState('');
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [isSavingToJournal, setIsSavingToJournal] = useState(false);
   
   // Audio recording setup
   const audioRecorderRef = useRef<AudioRecorder | null>(null);
@@ -210,6 +220,103 @@ const CBTAssistant = () => {
     conversationHistory.current = [];
     setStatus(t('ready') || 'Ready');
     setError('');
+    setSummary('');
+    setJournalTitle('');
+  };
+
+  const handleGenerateSummary = async () => {
+    // Filter out the welcome message for summarization
+    const conversationMessages = messages.filter((msg, idx) => idx > 0);
+    
+    if (conversationMessages.length < 2) {
+      toast({
+        title: "Not enough conversation",
+        description: "Please have a conversation first before generating a summary.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingSummary(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('summarize-conversation', {
+        body: { 
+          messages: conversationMessages.map(m => ({
+            role: m.role,
+            content: m.content
+          }))
+        }
+      });
+
+      if (error) throw error;
+
+      setSummary(data.summary);
+      setShowSummaryDialog(true);
+      
+      toast({
+        title: "Summary Generated",
+        description: "Your conversation has been summarized.",
+      });
+    } catch (error: any) {
+      console.error('Error generating summary:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate summary. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
+  const handleSaveToJournal = async () => {
+    if (!journalTitle.trim()) {
+      toast({
+        title: "Title Required",
+        description: "Please enter a title for your journal entry.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingToJournal(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) throw new Error("Not authenticated");
+
+      const conversationMessages = messages.filter((msg, idx) => idx > 0);
+
+      const { error } = await supabase
+        .from('thought_journal')
+        .insert([{
+          user_id: user.id,
+          title: journalTitle.trim(),
+          summary: summary,
+          conversation_data: conversationMessages as any
+        }]);
+
+      if (error) throw error;
+
+      toast({
+        title: t('savedToJournal'),
+        description: "Your conversation summary has been saved to your journal.",
+      });
+
+      setShowSummaryDialog(false);
+      setJournalTitle('');
+    } catch (error: any) {
+      console.error('Error saving to journal:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save to journal. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingToJournal(false);
+    }
   };
 
   const sendMessage = async (text: string = inputText) => {
@@ -247,6 +354,15 @@ const CBTAssistant = () => {
             >
               <ArrowLeft className="h-4 w-4" />
               {t('backToHome') || 'Back to Home'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/thought-journal')}
+              className="flex items-center gap-2"
+            >
+              <BookOpen className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('viewJournalEntries')}</span>
             </Button>
             <div className="flex items-center gap-2">
               <LanguageSwitcher />
@@ -331,6 +447,17 @@ const CBTAssistant = () => {
             </Button>
             
             <Button
+              onClick={handleGenerateSummary}
+              disabled={isRecording || isProcessing || isGeneratingSummary || messages.length <= 1}
+              variant="secondary"
+              size="lg"
+              className="w-full"
+            >
+              <FileText className="w-5 h-5 mr-2" />
+              {isGeneratingSummary ? t('generatingSummary') : t('generateSummary')}
+            </Button>
+            
+            <Button
               onClick={isRecording ? stopRecording : startRecording}
               disabled={isProcessing}
               variant={isRecording ? "destructive" : "default"}
@@ -388,6 +515,52 @@ const CBTAssistant = () => {
           </Card>
         </div>
       </div>
+
+      {/* Summary Dialog */}
+      <Dialog open={showSummaryDialog} onOpenChange={setShowSummaryDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {t('conversationSummary')}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm whitespace-pre-wrap">{summary}</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="journal-title">{t('journalTitle')}</Label>
+              <Input
+                id="journal-title"
+                placeholder={t('enterTitle')}
+                value={journalTitle}
+                onChange={(e) => setJournalTitle(e.target.value)}
+                disabled={isSavingToJournal}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowSummaryDialog(false)}
+              disabled={isSavingToJournal}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveToJournal}
+              disabled={isSavingToJournal || !journalTitle.trim()}
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              {isSavingToJournal ? t('savingToJournal') : t('saveToJournal')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       </div>
     </FeatureGate>
   );
