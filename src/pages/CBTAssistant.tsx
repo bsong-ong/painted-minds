@@ -11,12 +11,13 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FeatureGate } from '@/components/FeatureGate';
-import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft, LogOut, Info, FileText, BookOpen, Lightbulb, CheckCircle2 } from 'lucide-react';
+import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft, LogOut, Info, FileText, BookOpen, Lightbulb, CheckCircle2, Save } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Badge } from '@/components/ui/badge';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -611,8 +612,8 @@ const CBTAssistant = () => {
           </DialogHeader>
           
           <div className="space-y-4">
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="text-sm whitespace-pre-wrap">{summary}</p>
+            <div className="bg-muted p-4 rounded-lg prose prose-sm dark:prose-invert max-w-none">
+              <ReactMarkdown>{summary}</ReactMarkdown>
             </div>
 
             <div className="space-y-2">
@@ -637,9 +638,9 @@ const CBTAssistant = () => {
             </Button>
             <Button
               onClick={handleSaveToJournal}
-              disabled={isSavingToJournal || !journalTitle.trim()}
+              disabled={isSavingToJournal}
             >
-              <BookOpen className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2" />
               {isSavingToJournal ? t('savingToJournal') : t('saveToJournal')}
             </Button>
           </DialogFooter>
