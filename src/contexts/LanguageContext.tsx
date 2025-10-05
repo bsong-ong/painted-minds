@@ -262,10 +262,12 @@ const translations = {
      journalTitle: 'Journal Title',
      enterTitle: 'Enter a title for this entry...',
      savedToJournal: 'Saved to Journal',
-     viewJournalEntries: 'View Journal Entries',
-     thoughtJournal: 'Thought Journal',
-     noJournalEntries: 'No journal entries yet',
-     startSavingSummaries: 'Start saving conversation summaries to build your thought journal'
+      viewJournalEntries: 'View Journal Entries',
+      thoughtJournal: 'Thought Journal',
+      noJournalEntries: 'No journal entries yet',
+      startSavingSummaries: 'Start saving conversation summaries to build your thought journal',
+      thoughtRestructuring: 'Thought Restructuring Process',
+      guidedSteps: "I'll guide you through these steps",
   },
   th: {
     // Common
@@ -518,10 +520,12 @@ const translations = {
      journalTitle: 'หัวข้อไดอารี่',
      enterTitle: 'กรอกหัวข้อสำหรับรายการนี้...',
      savedToJournal: 'บันทึกลงไดอารี่แล้ว',
-     viewJournalEntries: 'ดูรายการไดอารี่',
-     thoughtJournal: 'ไดอารี่ความคิด',
-     noJournalEntries: 'ยังไม่มีรายการไดอารี่',
-     startSavingSummaries: 'เริ่มบันทึกสรุปการสนทนาเพื่อสร้างไดอารี่ความคิดของคุณ'
+      viewJournalEntries: 'ดูรายการไดอารี่',
+      thoughtJournal: 'ไดอารี่ความคิด',
+      noJournalEntries: 'ยังไม่มีรายการไดอารี่',
+      startSavingSummaries: 'เริ่มบันทึกสรุปการสนทนาเพื่อสร้างไดอารี่ความคิดของคุณ',
+      thoughtRestructuring: 'กระบวนการปรับโครงสร้างความคิด',
+      guidedSteps: 'ฉันจะแนะนำคุณผ่านขั้นตอนเหล่านี้',
   }
 };
 

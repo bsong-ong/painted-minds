@@ -11,11 +11,12 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { FeatureGate } from '@/components/FeatureGate';
-import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft, LogOut, Info, FileText, BookOpen } from 'lucide-react';
+import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft, LogOut, Info, FileText, BookOpen, Lightbulb, CheckCircle2 } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { Badge } from '@/components/ui/badge';
 
 interface Message {
   id: string;
@@ -43,6 +44,9 @@ const CBTAssistant = () => {
   const [journalTitle, setJournalTitle] = useState('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [isSavingToJournal, setIsSavingToJournal] = useState(false);
+  
+  // Thought restructuring process tracking
+  const [showProcessGuide, setShowProcessGuide] = useState(true);
   
   // Audio recording setup
   const audioRecorderRef = useRef<AudioRecorder | null>(null);
@@ -397,6 +401,92 @@ const CBTAssistant = () => {
             <strong>Important:</strong> Thought Buddy is a supportive tool and not a replacement for professional mental health care. If you are experiencing a crisis or emergency, please contact a crisis helpline or emergency services immediately. For ongoing concerns, we encourage you to speak with a qualified mental health professional.
           </AlertDescription>
         </Alert>
+
+        {/* Thought Restructuring Process Guide */}
+        {showProcessGuide && (
+          <Card className="mb-6 border-primary/20 bg-primary/5">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-lg">Thought Restructuring Process</CardTitle>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowProcessGuide(false)}
+                  className="h-6 w-6 p-0"
+                >
+                  ×
+                </Button>
+              </div>
+              <CardDescription>
+                I'll guide you through these steps to help restructure unhelpful thinking patterns
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex items-start gap-2 p-2 rounded-md bg-background/50">
+                  <Badge variant="outline" className="mt-0.5">1</Badge>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">Identify Situation</div>
+                    <div className="text-xs text-muted-foreground">What happened?</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2 rounded-md bg-background/50">
+                  <Badge variant="outline" className="mt-0.5">2</Badge>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">Notice Thoughts</div>
+                    <div className="text-xs text-muted-foreground">What went through your mind?</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2 rounded-md bg-background/50">
+                  <Badge variant="outline" className="mt-0.5">3</Badge>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">Recognize Emotions</div>
+                    <div className="text-xs text-muted-foreground">What did you feel? (0-10)</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2 rounded-md bg-background/50">
+                  <Badge variant="outline" className="mt-0.5">4</Badge>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">Examine Evidence</div>
+                    <div className="text-xs text-muted-foreground">Facts for and against</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2 rounded-md bg-background/50">
+                  <Badge variant="outline" className="mt-0.5">5</Badge>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">Identify Distortions</div>
+                    <div className="text-xs text-muted-foreground">Recognize thinking patterns</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2 rounded-md bg-background/50">
+                  <Badge variant="outline" className="mt-0.5">6</Badge>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">Create Balanced Thought</div>
+                    <div className="text-xs text-muted-foreground">More realistic perspective</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 p-2 rounded-md bg-background/50 md:col-span-2">
+                  <Badge variant="outline" className="mt-0.5">7</Badge>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">Re-rate Emotions</div>
+                    <div className="text-xs text-muted-foreground">Notice any changes in intensity</div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 p-3 rounded-md bg-primary/10 border border-primary/20">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-foreground">
+                    Don't worry about following these perfectly! I'll guide you naturally through each step based on what you share. Just start by telling me what's on your mind.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="mb-6">
           <CardHeader>
