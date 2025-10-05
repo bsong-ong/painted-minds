@@ -98,7 +98,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-gratitude-warm/10 p-4">
       <div className="w-full max-w-5xl grid md:grid-cols-2 gap-6 items-center">
         {/* Hero Image Section */}
-        <div className="hidden md:block">
+        <div className="w-full">
           <div className="relative rounded-2xl overflow-hidden shadow-2xl">
             <img 
               src={paintedMindsHero}
@@ -119,9 +119,6 @@ const Auth = () => {
           <CardHeader className="text-center">
             <div className="flex justify-end mb-4">
               <LanguageSwitcher />
-            </div>
-            <div className="md:hidden flex justify-center mb-4">
-              <Brain className="h-12 w-12 text-primary" />
             </div>
             <CardTitle className="text-2xl font-bold">{t('drawingApp')}</CardTitle>
             <CardDescription>
