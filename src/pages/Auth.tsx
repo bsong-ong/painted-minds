@@ -14,6 +14,8 @@ import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { getRedirectPath } from '@/utils/userRedirect';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Brain } from 'lucide-react';
+import paintedMindsHero from '@/assets/painted-smiles-hero.jpg';
 
 const Auth = () => {
   const [emailOrUsername, setEmailOrUsername] = useState('');
@@ -93,17 +95,39 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-end mb-4">
-            <LanguageSwitcher />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-gratitude-warm/10 p-4">
+      <div className="w-full max-w-5xl grid md:grid-cols-2 gap-6 items-center">
+        {/* Hero Image Section */}
+        <div className="hidden md:block">
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+            <img 
+              src={paintedMindsHero}
+              alt="Painted Minds - Creative mental wellness through art"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            <div className="absolute bottom-8 left-8 right-8 text-white">
+              <Brain className="h-12 w-12 mb-4 text-amber-300" />
+              <h2 className="text-3xl font-bold mb-2">Painted Minds</h2>
+              <p className="text-lg text-white/90">Express, Reflect, Grow</p>
+            </div>
           </div>
-          <CardTitle className="text-2xl font-bold">{t('drawingApp')}</CardTitle>
-          <CardDescription>
-            {t('signInToSave')}
-          </CardDescription>
-        </CardHeader>
+        </div>
+
+        {/* Auth Card Section */}
+        <Card className="w-full max-w-md mx-auto shadow-xl">
+          <CardHeader className="text-center">
+            <div className="flex justify-end mb-4">
+              <LanguageSwitcher />
+            </div>
+            <div className="md:hidden flex justify-center mb-4">
+              <Brain className="h-12 w-12 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold">{t('drawingApp')}</CardTitle>
+            <CardDescription>
+              {t('signInToSave')}
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -175,7 +199,8 @@ const Auth = () => {
             </TabsContent>
           </Tabs>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };

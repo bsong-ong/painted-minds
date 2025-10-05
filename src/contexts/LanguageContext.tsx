@@ -27,7 +27,7 @@ const translations = {
     download: 'Download',
     
     // Auth page
-    drawingApp: 'Painted Smiles',
+    drawingApp: 'Painted Minds',
     signInToSave: 'Sign in to save and view your drawings',
     emailOrUsername: 'Email or Username',
     emailOrUsernamePlaceholder: 'Enter your email or username',
@@ -40,7 +40,7 @@ const translations = {
     successfullySignedIn: 'Successfully signed in!',
     
     // Index page
-    gratitudeArtJournal: 'Painted Smiles',
+    gratitudeArtJournal: 'Painted Minds',
     viewJournal: 'View Journal',
     startYourDailyGratitude: 'Start Your Daily Gratitude Practice',
     takeAMomentToReflect: 'Take a moment to reflect on what you\'re grateful for today, then express it through art.',
@@ -271,7 +271,7 @@ const translations = {
     download: 'ดาวน์โหลด',
     
     // Auth page
-    drawingApp: 'Painted Smiles',
+    drawingApp: 'Painted Minds',
     signInToSave: 'เข้าสู่ระบบเพื่อบันทึกและดูงานวาดของคุณ',
     emailOrUsername: 'อีเมลหรือชื่อผู้ใช้',
     emailOrUsernamePlaceholder: 'กรอกอีเมลหรือชื่อผู้ใช้ของคุณ',

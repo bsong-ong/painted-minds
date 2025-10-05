@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.lovable.87a603037bd14064831a9c397a92c9e6',
-  appName: 'sketchpad-supabase-gallery',
+  appName: 'Painted Minds',
   webDir: 'dist',
   server: {
     url: 'https://87a60303-7bd1-4064-831a-9c397a92c9e6.lovableproject.com?forceHideBadge=true',

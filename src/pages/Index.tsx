@@ -79,7 +79,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-2">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/onboarding')}>
-              <img src="/lovable-uploads/01795ac7-0239-4692-8c4d-ef3130b2f3eb.png" alt="Painted Smiles" className="h-8 w-auto" />
+              <img src="/lovable-uploads/01795ac7-0239-4692-8c4d-ef3130b2f3eb.png" alt="Painted Minds" className="h-8 w-auto" />
               <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent hover:opacity-80 transition-opacity">{t('gratitudeArtJournal')}</h1>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">

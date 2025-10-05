@@ -32,14 +32,14 @@ const Onboarding = () => {
               <div className="relative mb-8">
                 <img 
                   src={paintedSmilesHeroImage} 
-                  alt="Painted Smiles - Creative happiness and artistic expression" 
+                  alt="Painted Minds - Creative mental wellness and artistic expression" 
                   className="w-full max-w-2xl h-64 sm:h-80 object-cover rounded-2xl shadow-2xl"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-2xl" />
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-center">
                   <Heart className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 text-amber-300" />
                   <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold">
-                    Painted Smiles
+                    Painted Minds
                   </h1>
                 </div>
               </div>

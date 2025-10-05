@@ -170,7 +170,7 @@ const Journal = () => {
               </Button>
               <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/onboarding')}>
                 <Calendar className="h-6 w-6 text-primary" />
-                <h1 className="text-lg sm:text-xl font-bold hover:opacity-80 transition-opacity">Painted Smiles</h1>
+                <h1 className="text-lg sm:text-xl font-bold hover:opacity-80 transition-opacity">Painted Minds</h1>
               </div>
             </div>
             <div className="flex items-center gap-2">
