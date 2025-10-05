@@ -8,7 +8,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Onboarding from "./pages/Onboarding";
 import Journal from "./pages/Journal";
 import TextEntry from "./pages/TextEntry";
 import Drawing from "./pages/Drawing";
@@ -32,7 +31,6 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/journal" element={<Journal />} />
               <Route path="/text-entry" element={<TextEntry />} />
               <Route path="/drawing" element={<Drawing />} />

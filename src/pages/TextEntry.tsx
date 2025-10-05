@@ -97,9 +97,9 @@ const TextEntry = () => {
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-2">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/onboarding')}>
+            <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
-              <h1 className="text-lg sm:text-xl font-bold text-primary hover:opacity-80 transition-opacity">{t('gratitudeArtJournal')}</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-primary">{t('gratitudeArtJournal')}</h1>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <LanguageSwitcher />

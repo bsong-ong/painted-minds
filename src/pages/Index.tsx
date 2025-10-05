@@ -30,13 +30,6 @@ const Index = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    // Check if user has completed onboarding
-    const onboardingCompleted = localStorage.getItem('onboarding_completed');
-    if (!onboardingCompleted && user && !loading) {
-      navigate('/onboarding');
-      return;
-    }
-
     // Redirect users based on their permissions if they don't have access to gratitude journaling
     if (!loading && user && permissions && !isAdmin && !permissions.gratitude_journaling_enabled) {
       const redirectPath = getRedirectPath(permissions, isAdmin);
@@ -78,9 +71,9 @@ const Index = () => {
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-2">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/onboarding')}>
+            <div className="flex items-center gap-2">
               <img src="/lovable-uploads/01795ac7-0239-4692-8c4d-ef3130b2f3eb.png" alt="Painted Minds" className="h-8 w-auto" />
-              <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent hover:opacity-80 transition-opacity">{t('gratitudeArtJournal')}</h1>
+              <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-gratitude-warm bg-clip-text text-transparent">{t('gratitudeArtJournal')}</h1>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
               {isAdmin && (
