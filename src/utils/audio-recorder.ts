@@ -1,5 +1,5 @@
 /**
- * Audio recording utility for CBT Assistant
+ * Audio recording utility for Thought Buddy
  */
 
 export class AudioRecorder {

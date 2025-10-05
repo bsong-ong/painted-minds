@@ -350,18 +350,18 @@ const AdminDashboard = () => {
                    />
                  </div>
 
-                 <div className="flex items-center justify-between">
-                   <div className="space-y-1">
-                     <Label className="text-base font-medium">CBT Assistant Visibility</Label>
-                     <p className="text-sm text-muted-foreground">
-                       Control whether users can access the CBT assistant feature
-                     </p>
-                   </div>
-                   <Switch
-                     checked={settings.cbt_assistant_visible}
-                     onCheckedChange={(checked) => updateSetting('cbt_assistant_visible', checked)}
-                   />
-                 </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label className="text-base font-medium">Thought Buddy Visibility</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Control whether users can access the Thought Buddy feature
+                      </p>
+                    </div>
+                    <Switch
+                      checked={settings.cbt_assistant_visible}
+                      onCheckedChange={(checked) => updateSetting('cbt_assistant_visible', checked)}
+                    />
+                  </div>
 
                  <div className="flex items-center justify-between">
                    <div className="space-y-1">
@@ -461,7 +461,7 @@ const AdminDashboard = () => {
                           </div>
                           
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="thought_buddy">{t('thoughtBuddy')} (CBT Assistant)</Label>
+                            <Label htmlFor="thought_buddy">{t('thoughtBuddy')}</Label>
                             <Switch
                               id="thought_buddy"
                               checked={newUserData.thought_buddy_enabled}

@@ -57,7 +57,7 @@ const CBTAssistant = () => {
     const welcomeMessage: Message = {
       id: '1',
       role: 'assistant',
-      content: t('cbtWelcomeMessage') || "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: t('cbtWelcomeMessage') || "Hi there! I'm here to listen and help you work through whatever's on your mind. Feel free to share what you're thinking about or how you're feeling today.",
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
@@ -203,7 +203,7 @@ const CBTAssistant = () => {
     const welcomeMessage: Message = {
       id: '1',
       role: 'assistant',
-      content: t('cbtWelcomeMessage') || "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+      content: t('cbtWelcomeMessage') || "Hi there! I'm here to listen and help you work through whatever's on your mind. Feel free to share what you're thinking about or how you're feeling today.",
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);

@@ -239,9 +239,9 @@ const translations = {
      failedToDeleteDrawing: 'Failed to delete drawing',
 
      // CBT Assistant
-     cbtAssistant: 'CBT Assistant',
-     cbtDescription: 'Your personal cognitive behavioral therapy assistant with chained AI processing',
-     cbtWelcomeMessage: "Hello! I'm your CBT assistant. I'm here to help you explore your thoughts and feelings through evidence-based cognitive behavioral therapy techniques. You can either type or speak to me about what's on your mind. How are you feeling today?",
+     cbtAssistant: 'Thought Buddy',
+     cbtDescription: 'A friendly space to talk through your thoughts and feelings',
+     cbtWelcomeMessage: "Hi there! I'm here to listen and help you work through whatever's on your mind. Feel free to share what you're thinking about or how you're feeling today.",
      conversation: 'Conversation',
      shareThoughts: 'Share your thoughts and let\'s work through them together using CBT techniques',
      resetSession: 'Reset Session',
@@ -483,9 +483,9 @@ const translations = {
      failedToDeleteDrawing: 'ลบงานวาดไม่สำเร็จ',
 
      // CBT Assistant
-     cbtAssistant: 'ผู้ช่วย CBT',
-     cbtDescription: 'ผู้ช่วยบำบัดความคิดและพฤติกรรมส่วนตัวของคุณ พร้อมการประมวลผล AI แบบต่อเนื่อง',
-     cbtWelcomeMessage: 'สวัสดีครับ/ค่ะ! ฉันคือผู้ช่วย CBT ของคุณ ฉันจะช่วยให้คุณสำรวจความคิดและความรู้สึกผ่านเทคนิคบำบัดความคิดและพฤติกรรมที่มีหลักฐานทางวิทยาศาสตร์ คุณสามารถพิมพ์หรือพูดกับฉันเกี่ยวกับสิ่งที่อยู่ในใจได้ วันนี้คุณรู้สึกอย่างไร?',
+     cbtAssistant: 'เพื่อนคิด',
+     cbtDescription: 'พื้นที่ที่เป็นกันเองสำหรับพูดคุยเรื่องความคิดและความรู้สึก',
+     cbtWelcomeMessage: 'สวัสดีครับ/ค่ะ! ฉันอยู่ที่นี่เพื่อรับฟังและช่วยคุณคิดเรื่องต่างๆ ที่อยู่ในใจ คุณอยากจะเล่าหรือแบ่งปันความรู้สึกอะไรไหม?',
      conversation: 'การสนทนา',
      shareThoughts: 'แบ่งปันความคิดของคุณและลองแก้ไขปัญหาด้วยกันโดยใช้เทคนิค CBT',
      resetSession: 'รีเซ็ตเซสชัน',
