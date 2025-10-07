@@ -98,32 +98,27 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-gratitude-warm/5 to-gratitude-sunset/10 p-4">
       <div className="w-full max-w-5xl grid md:grid-cols-2 gap-8 items-center">
         {/* Hero Image Section */}
-        <div className="hidden md:block w-full">
+        <div className="w-full">
           <div className="relative rounded-3xl overflow-hidden shadow-2xl ring-1 ring-gratitude-warm/20">
             <img 
               src={paintedMindsHero}
               alt="Painted Minds - Creative mental wellness through art"
-              className="w-full h-[600px] object-cover"
+              className="w-full h-[400px] md:h-[600px] object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-gratitude-sunset/80 via-gratitude-warm/30 to-transparent" />
-            <div className="absolute bottom-12 left-12 right-12 text-white">
-              <Brain className="h-16 w-16 mb-6 text-gratitude-warm drop-shadow-lg" />
-              <h1 className="text-5xl font-bold mb-3 drop-shadow-lg">Painted Minds</h1>
-              <p className="text-xl text-white/95 font-medium drop-shadow-md">Express, Reflect, Grow</p>
+            <div className="absolute bottom-8 md:bottom-12 left-8 md:left-12 right-8 md:right-12 text-white">
+              <Brain className="h-12 md:h-16 w-12 md:w-16 mb-4 md:mb-6 text-gratitude-warm drop-shadow-lg" />
+              <h1 className="text-3xl md:text-5xl font-bold mb-2 md:mb-3 drop-shadow-lg">Painted Minds</h1>
+              <p className="text-base md:text-xl text-white/95 font-medium drop-shadow-md">Express, Reflect, Grow</p>
             </div>
           </div>
         </div>
 
         {/* Auth Card Section */}
         <Card className="w-full max-w-md mx-auto shadow-2xl border-gratitude-warm/20 bg-card/95 backdrop-blur">
-          <CardHeader className="text-center space-y-6">
+          <CardHeader className="text-center space-y-4">
             <div className="flex justify-end">
               <LanguageSwitcher />
-            </div>
-            <div className="md:hidden flex flex-col items-center mb-4">
-              <Brain className="h-12 w-12 mb-3 text-gratitude-warm" />
-              <h1 className="text-3xl font-bold text-gratitude-sunset mb-1">Painted Minds</h1>
-              <p className="text-sm text-muted-foreground">Express, Reflect, Grow</p>
             </div>
             <CardTitle className="text-2xl font-bold text-foreground">{t('drawingApp')}</CardTitle>
             <CardDescription className="text-base">
