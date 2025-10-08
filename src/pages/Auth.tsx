@@ -20,6 +20,7 @@ import paintedMindsHero from '@/assets/painted-smiles-hero.jpg';
 const Auth = () => {
   const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const { t } = useLanguage();
@@ -83,11 +84,35 @@ const Auth = () => {
       return;
     }
     
+    // Validate username if provided
+    if (settings.enable_username_login && username) {
+      if (username.length < 3) {
+        toast.error('Username must be at least 3 characters');
+        setLoading(false);
+        return;
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        toast.error('Username can only contain letters, numbers, and underscores');
+        setLoading(false);
+        return;
+      }
+    }
+    
     const { error } = await signUp(emailOrUsername, password);
     
     if (error) {
       toast.error(error.message);
     } else {
+      // Update profile with username if provided
+      if (settings.enable_username_login && username) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('profiles')
+            .update({ username: username.toLowerCase() })
+            .eq('id', user.id);
+        }
+      }
       toast.success(t('checkEmailConfirmation'));
     }
     
@@ -177,6 +202,18 @@ const Auth = () => {
                     required
                   />
                 </div>
+                {settings.enable_username_login && (
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-username">Username (optional)</Label>
+                    <Input
+                      id="signup-username"
+                      type="text"
+                      placeholder="Choose a username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                    />
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">{t('password')}</Label>
                   <Input
