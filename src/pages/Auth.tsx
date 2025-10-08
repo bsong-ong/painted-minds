@@ -98,21 +98,11 @@ const Auth = () => {
       }
     }
     
-    const { error } = await signUp(emailOrUsername, password);
+    const { error } = await signUp(emailOrUsername, password, username);
     
     if (error) {
       toast.error(error.message);
     } else {
-      // Update profile with username if provided
-      if (settings.enable_username_login && username) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase
-            .from('profiles')
-            .update({ username: username.toLowerCase() })
-            .eq('id', user.id);
-        }
-      }
       toast.success(t('checkEmailConfirmation'));
     }
     
