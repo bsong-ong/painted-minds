@@ -35,6 +35,11 @@ const config: CapacitorConfig = {
     },
     Haptics: {},
   },
+  cordova: {
+    preferences: {
+      permissions: 'RECORD_AUDIO'
+    }
+  }
 };
 
 export default config;

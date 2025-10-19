@@ -13,6 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { FeatureGate } from '@/components/FeatureGate';
 import { Mic, MicOff, RotateCcw, Send, Brain, ArrowLeft, LogOut, Info, FileText, BookOpen, Lightbulb, CheckCircle2, Save } from 'lucide-react';
 import { AudioRecorder, blobToBase64, playAudioFromBase64 } from '@/utils/audio-recorder';
+import { requestMicrophonePermission, getMicrophoneErrorMessage } from '@/utils/permissions';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -196,6 +197,13 @@ const CBTAssistant = () => {
 
     try {
       setError('');
+      
+      // Check permissions first
+      const hasPermission = await requestMicrophonePermission();
+      if (!hasPermission) {
+        throw new Error('Microphone permission is required to use voice recording. Please enable it in your device settings.');
+      }
+      
       audioRecorderRef.current = new AudioRecorder(handleAudioRecording);
       await audioRecorderRef.current.start();
       
@@ -205,7 +213,8 @@ const CBTAssistant = () => {
     } catch (err) {
       console.error('Error starting recording:', err);
       setStatus('Ready');
-      setError(`Error: ${(err as Error).message}`);
+      const errorMessage = err instanceof Error ? getMicrophoneErrorMessage(err) : String(err);
+      setError(errorMessage);
     }
   };
 

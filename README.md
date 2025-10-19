@@ -71,3 +71,29 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Mobile App Setup (Capacitor)
+
+This app can be built as a native mobile app for iOS and Android using Capacitor. See [CAPACITOR_SETUP.md](./CAPACITOR_SETUP.md) for detailed setup instructions.
+
+### Quick Start
+
+1. **Export and Clone**: Export to GitHub and clone locally
+2. **Install Dependencies**: `npm install`
+3. **Add Platform**: 
+   - iOS: `npx cap add ios`
+   - Android: `npx cap add android`
+4. **Configure Permissions** (Required for microphone features):
+   - **Android**: Add microphone permissions to `android/app/src/main/AndroidManifest.xml`
+   - **iOS**: Add microphone usage description to `ios/App/App/Info.plist`
+5. **Build**: `npm run build`
+6. **Sync**: `npx cap sync`
+7. **Run**: Open in native IDE
+   - iOS: `npx cap open ios` (requires Xcode on Mac)
+   - Android: `npx cap open android` (requires Android Studio)
+
+### Important Notes
+
+- The CBT Assistant and Talk Buddy features require microphone access
+- You must manually configure microphone permissions in native config files
+- See [CAPACITOR_SETUP.md](./CAPACITOR_SETUP.md) for complete instructions with code examples

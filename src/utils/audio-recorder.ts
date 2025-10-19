@@ -14,6 +14,13 @@ export class AudioRecorder {
 
   async start() {
     try {
+      // Check if we're in a Capacitor environment
+      const isCapacitor = (window as any).Capacitor !== undefined;
+      
+      if (isCapacitor) {
+        console.log('Requesting microphone permission in Capacitor app...');
+      }
+      
       this.stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: 16000,
@@ -46,6 +53,21 @@ export class AudioRecorder {
       console.log('Recording started');
     } catch (error) {
       console.error('Error starting recording:', error);
+      
+      // Provide helpful error messages based on error type
+      const err = error as Error;
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        const isCapacitor = (window as any).Capacitor !== undefined;
+        if (isCapacitor) {
+          throw new Error('Microphone permission denied. Please enable microphone access in your device settings.');
+        }
+        throw new Error('Microphone permission denied. Please allow microphone access when prompted.');
+      } else if (err.name === 'NotFoundError') {
+        throw new Error('No microphone found on your device.');
+      } else if (err.name === 'NotReadableError') {
+        throw new Error('Microphone is already in use by another application.');
+      }
+      
       throw error;
     }
   }
