@@ -10,6 +10,21 @@ interface LinkAccountRequest {
   linkToken: string;
 }
 
+function parseJwtSubject(token: string): string | null {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    let base = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = base.length % 4;
+    if (pad) base += '='.repeat(4 - pad);
+    const json = atob(base);
+    const obj = JSON.parse(json);
+    return obj.sub || null;
+  } catch (_e) {
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -30,14 +45,10 @@ serve(async (req) => {
     // Create Supabase client with service role key for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify JWT and get user (JWT is already validated by verify_jwt=true)
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(jwt);
-
-    if (authError || !user) {
-      console.error("Auth error:", authError);
+    // Get user id from JWT (already validated by verify_jwt)
+    const userId = parseJwtSubject(jwt);
+    if (!userId) {
+      console.error("Failed to parse user id from JWT");
       throw new Error("Unauthorized");
     }
 
@@ -104,7 +115,7 @@ serve(async (req) => {
     const { data, error } = await supabase
       .from("line_accounts")
       .upsert({
-        user_id: user.id,
+        user_id: userId,
         line_user_id: lineUserId,
       })
       .select()
@@ -115,7 +126,7 @@ serve(async (req) => {
       throw error;
     }
 
-    console.log(`Successfully linked LINE account ${lineUserId} to user ${user.id}`);
+    console.log(`Successfully linked LINE account ${lineUserId} to user ${userId}`);
 
     return new Response(
       JSON.stringify({ success: true, data }),
