@@ -16,6 +16,7 @@ import CBTAssistant from "./pages/CBTAssistant";
 import TalkBuddy from "./pages/TalkBuddy";
 import AdminDashboard from "./pages/AdminDashboard";
 import ThoughtJournal from "./pages/ThoughtJournal";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/thought-journal" element={<ThoughtJournal />} />
               <Route path="/talk-buddy" element={<TalkBuddy />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
