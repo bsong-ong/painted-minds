@@ -126,8 +126,9 @@ export const LineAccountLink = () => {
               </p>
               <ol className="text-sm space-y-1 list-decimal list-inside text-muted-foreground">
                 <li>Add the Painted Minds bot as a friend on LINE</li>
-                <li>Send a message to the bot to receive your link token</li>
-                <li>Enter the token below and click Link Account</li>
+                <li>Send any message to the bot (e.g., "hello")</li>
+                <li>Copy the link token the bot sends you</li>
+                <li>Paste the token below and click Link Account</li>
               </ol>
             </div>
             <div className="space-y-2">

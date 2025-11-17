@@ -165,10 +165,14 @@ function SettingsPage() {
 ### Linking Flow
 
 1. User adds your LINE bot as a friend
-2. Bot sends a welcome message with linking instructions
-3. User enters the link token in the app
-4. Account is linked and stored in the database
-5. Future LINE interactions are personalized based on the linked account
+2. User sends any message to the bot (e.g., "hello")
+3. Bot automatically generates and sends a link token
+4. User copies the token and enters it in the app Settings > LINE tab
+5. Account is linked and stored in the database
+6. Future LINE interactions are personalized based on the linked account
+
+**The link token format is:** `LINE_{lineUserId}_{timestamp}`
+**Tokens expire after 5 minutes** for security
 
 ### Checking Link Status in Code
 
