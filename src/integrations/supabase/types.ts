@@ -172,6 +172,36 @@ export type Database = {
         }
         Relationships: []
       }
+      line_accounts: {
+        Row: {
+          display_name: string | null
+          id: string
+          line_user_id: string
+          linked_at: string
+          picture_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          display_name?: string | null
+          id?: string
+          line_user_id: string
+          linked_at?: string
+          picture_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          display_name?: string | null
+          id?: string
+          line_user_id?: string
+          linked_at?: string
+          picture_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
