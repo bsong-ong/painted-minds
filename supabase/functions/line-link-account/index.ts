@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface LinkAccountRequest {
-  linkToken: string; // A one-time token to link accounts
+  linkToken: string;
 }
 
 serve(async (req) => {
@@ -17,27 +17,28 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const authHeader = req.headers.get("Authorization");
 
     if (!authHeader) {
       throw new Error("Missing authorization header");
     }
 
-    // Create authenticated Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    // Create client with anon key and user's JWT for proper auth
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: {
         headers: { Authorization: authHeader },
       },
     });
 
-    // Get authenticated user
+    // Get authenticated user using their JWT
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.error("Auth error:", authError);
       throw new Error("Unauthorized");
     }
 
@@ -53,14 +54,11 @@ serve(async (req) => {
       );
     }
 
-    // Verify the link token and get LINE user info
-    // In a real implementation, you would verify this token with LINE
-    // For now, we'll extract the LINE user ID from the token
-    // Token format: "LINE_USERID_TIMESTAMP"
+    // Verify the link token format
     const parts = linkToken.split("_");
-    if (parts.length < 2 || parts[0] !== "LINE") {
+    if (parts.length < 3 || parts[0] !== "LINE") {
       return new Response(
-        JSON.stringify({ error: "Invalid link token" }),
+        JSON.stringify({ error: "Invalid link token format" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -69,13 +67,29 @@ serve(async (req) => {
     }
 
     const lineUserId = parts[1];
+    const timestamp = parseInt(parts[2]);
+
+    // Check token expiration (5 minutes)
+    const now = Date.now();
+    const tokenAge = now - timestamp;
+    const fiveMinutes = 5 * 60 * 1000;
+
+    if (tokenAge > fiveMinutes) {
+      return new Response(
+        JSON.stringify({ error: "Link token has expired. Please request a new one from LINE." }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     // Check if this LINE account is already linked
     const { data: existing } = await supabase
       .from("line_accounts")
       .select("*")
       .eq("line_user_id", lineUserId)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return new Response(
