@@ -161,6 +161,8 @@ serve(async (req) => {
               `Received message from ${lineUserId}: ${event.message.text}`
             );
 
+            const messageText = event.message.text?.toLowerCase() || "";
+
             if (!linkedAccount) {
               // Generate link token for unlinked user
               const linkToken = `LINE_${lineUserId}_${Date.now()}`;
@@ -172,24 +174,118 @@ serve(async (req) => {
                   text: `🔗 Link Your Account\n\nYour link token is:\n\n${linkToken}\n\nCopy this token and paste it in the Painted Minds app under Settings > LINE to connect your account.\n\nThis token expires in 5 minutes.`,
                 },
               ]);
+            } else if (messageText.includes("help") || messageText.includes("menu")) {
+              // Help menu
+              await replyMessage(event.replyToken, [
+                {
+                  type: "text",
+                  text: "✨ Painted Minds Help\n\n📝 Your account is linked!\n\n🎨 Send me what you're grateful for and I'll create a beautiful image for you!\n\nExample: \"I'm grateful for my family\"\n\n⭐ Track your streaks and achievements in the app\n🔔 Get daily reminders\n\nVisit the app for more features!",
+                },
+              ]);
             } else {
-              // User is linked, process their message
-              const userMessage = event.message.text?.toLowerCase() || "";
-              
-              if (userMessage.includes("help")) {
-                await replyMessage(event.replyToken, [
+              // User is sending gratitude - generate image
+              await replyMessage(event.replyToken, [
+                {
+                  type: "text",
+                  text: "🎨 Creating your gratitude image...\n\nThis may take a moment. I'll send it to you shortly! ✨",
+                },
+              ]);
+
+              // Generate image in background
+              try {
+                console.log(`Generating image for gratitude: "${event.message.text}"`);
+                
+                const imageResponse = await fetch(
+                  `${SUPABASE_URL}/functions/v1/generate-gratitude-image`,
                   {
-                    type: "text",
-                    text: "✨ Painted Minds Help\n\n📝 Your account is linked!\n🎨 Create gratitude drawings in the app\n⭐ Track your streaks and achievements\n🔔 Get daily reminders\n\nVisit the app to start your gratitude journey!",
-                  },
-                ]);
-              } else {
-                await replyMessage(event.replyToken, [
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
+                    },
+                    body: JSON.stringify({
+                      gratitudeText: event.message.text,
+                      userId: linkedAccount.user_id,
+                    }),
+                  }
+                );
+
+                if (!imageResponse.ok) {
+                  throw new Error(`Image generation failed: ${imageResponse.status}`);
+                }
+
+                const imageData = await imageResponse.json();
+                console.log("Image generated, sending to LINE");
+
+                // Convert base64 to blob URL for LINE
+                const base64Image = imageData.imageUrl.split(",")[1];
+                const binaryData = Uint8Array.from(atob(base64Image), (c) => c.charCodeAt(0));
+                
+                // Upload to temporary storage for LINE
+                const fileName = `temp_${lineUserId}_${Date.now()}.png`;
+                const uploadResponse = await fetch(
+                  `${SUPABASE_URL}/storage/v1/object/drawings/${fileName}`,
                   {
-                    type: "text",
-                    text: `Thanks for your message! 🌟\n\nYour account is linked and ready. Visit the Painted Minds app to create your next gratitude drawing!\n\nSend "help" for more options.`,
+                    method: "POST",
+                    headers: {
+                      "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
+                      "Content-Type": "image/png",
+                    },
+                    body: binaryData,
+                  }
+                );
+
+                if (!uploadResponse.ok) {
+                  throw new Error("Failed to upload image");
+                }
+
+                // Get public URL
+                const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/drawings/${fileName}`;
+
+                // Send image via LINE
+                await fetch("https://api.line.me/v2/bot/message/push", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
                   },
-                ]);
+                  body: JSON.stringify({
+                    to: lineUserId,
+                    messages: [
+                      {
+                        type: "image",
+                        originalContentUrl: publicUrl,
+                        previewImageUrl: publicUrl,
+                      },
+                      {
+                        type: "text",
+                        text: `✨ Here's your gratitude image!\n\n"${event.message.text}"\n\nYou can view all your gratitude entries in the Painted Minds app. Keep up the great work! 🌟`,
+                      },
+                    ],
+                  }),
+                });
+
+                console.log("Image sent successfully to LINE");
+              } catch (error) {
+                console.error("Error generating/sending image:", error);
+                
+                // Send error message to user
+                await fetch("https://api.line.me/v2/bot/message/push", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
+                  },
+                  body: JSON.stringify({
+                    to: lineUserId,
+                    messages: [
+                      {
+                        type: "text",
+                        text: "Sorry, I had trouble creating your image. Please try again or send 'help' for options.",
+                      },
+                    ],
+                  }),
+                });
               }
             }
           }

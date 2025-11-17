@@ -213,7 +213,27 @@ The webhook now automatically:
 
 ## Use Cases for Painted Minds
 
-### 1. **Send Personalized Daily Gratitude Reminders**
+### 1. **Gratitude Image Generation via LINE** 🎨
+
+Users can now send their gratitude messages directly to the LINE bot and receive beautiful AI-generated images!
+
+**How it works:**
+1. User links their LINE account in Settings
+2. User sends a message like "I'm grateful for my family" to the bot
+3. Bot generates a beautiful artistic image representing that gratitude
+4. Bot sends the image back to the user on LINE
+5. Image is automatically saved to the user's gallery in the app
+
+**Commands:**
+- Send any gratitude message → Get an AI-generated image
+- Send "help" or "menu" → See available options
+
+**Example messages:**
+- "I'm grateful for the beautiful sunset today"
+- "Thankful for my health and happiness"
+- "Grateful for my loving family"
+
+### 2. **Send Personalized Daily Gratitude Reminders**
 
 ```typescript
 // Send reminders only to users who have linked their LINE accounts
