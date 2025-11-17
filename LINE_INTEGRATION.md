@@ -6,6 +6,7 @@ Your app now has full LINE Messaging API integration with the following capabili
 - **Receive messages** from LINE users via webhook
 - **Send messages** to LINE users programmatically
 - **Handle events** like follow, unfollow, join, and leave
+- **Account linking** - Connect LINE accounts to app user accounts for personalized experiences
 
 ## Setup Instructions
 
@@ -134,12 +135,99 @@ await sendLineMessage("U1234567890abcdef", "Hello from Painted Minds! 🎨");
 
 ---
 
-## Use Cases for Painted Minds
+## Account Linking
 
-### 1. **Send Daily Gratitude Reminders**
+Users can now link their LINE accounts to their Painted Minds app accounts for a personalized experience.
+
+### How It Works
+
+1. **Database Table**: `line_accounts` stores the mapping between app users and LINE user IDs
+2. **Link Component**: Use the `LineAccountLink` component to let users link/unlink their accounts
+3. **Webhook Integration**: The webhook automatically checks if incoming LINE users are linked and provides appropriate responses
+
+### Setup in Your App
+
+Add the LINE account linking component to a settings page:
 
 ```typescript
-// Send a reminder to users who haven't journaled today
+import { LineAccountLink } from "@/components/LineAccountLink";
+
+function SettingsPage() {
+  return (
+    <div>
+      <h1>Settings</h1>
+      <LineAccountLink />
+    </div>
+  );
+}
+```
+
+### Linking Flow
+
+1. User adds your LINE bot as a friend
+2. Bot sends a welcome message with linking instructions
+3. User enters the link token in the app
+4. Account is linked and stored in the database
+5. Future LINE interactions are personalized based on the linked account
+
+### Checking Link Status in Code
+
+```typescript
+import { supabase } from "@/integrations/supabase/client";
+
+// Check if current user has linked LINE account
+const { data: lineAccount } = await supabase
+  .from("line_accounts")
+  .select("*")
+  .eq("user_id", user.id)
+  .single();
+
+if (lineAccount) {
+  console.log("User's LINE ID:", lineAccount.line_user_id);
+  // Send personalized message
+  await supabase.functions.invoke("line-send-message", {
+    body: {
+      to: lineAccount.line_user_id,
+      messages: [{
+        type: "text",
+        text: "Hello from your linked account!"
+      }]
+    }
+  });
+}
+```
+
+### Webhook Behavior with Linked Accounts
+
+The webhook now automatically:
+- Checks if incoming LINE users are linked to app accounts
+- Sends linking instructions to unlinked users
+- Processes messages differently for linked vs unlinked users
+- Auto-unlinks accounts when users unfollow the bot
+
+---
+
+## Use Cases for Painted Minds
+
+### 1. **Send Personalized Daily Gratitude Reminders**
+
+```typescript
+// Send reminders only to users who have linked their LINE accounts
+const { data: linkedUsers } = await supabase
+  .from("line_accounts")
+  .select("*, profiles!inner(*)");
+
+for (const linkedUser of linkedUsers) {
+  await supabase.functions.invoke("line-send-message", {
+    body: {
+      to: linkedUser.line_user_id,
+      messages: [{
+        type: "text",
+        text: `Hi ${linkedUser.profiles.display_name}! 🌟 Take a moment to reflect on what you're grateful for today.`
+      }]
+    }
+  });
+}
 const sendGratitudeReminder = async (userId: string) => {
   await supabase.functions.invoke("line-send-message", {
     body: {

@@ -6,6 +6,12 @@ verify_jwt = false
 [functions.line-send-message]
 verify_jwt = true
 
+[functions.line-link-account]
+verify_jwt = true
+
+[functions.line-get-link-token]
+verify_jwt = true
+
 [functions.summarize-conversation]
 verify_jwt = true
 
