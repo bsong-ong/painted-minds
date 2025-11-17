@@ -22,11 +22,11 @@ export const LineAccountLink = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from("line_accounts")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+    const { data, error } = await supabase
+      .from("line_accounts")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
       if (data) {
         setIsLinked(true);
