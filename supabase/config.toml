@@ -9,8 +9,8 @@ verify_jwt = true
 [functions.line-link-account]
 verify_jwt = true
 
-[functions.line-get-link-token]
-verify_jwt = true
+[functions.generate-gratitude-image]
+verify_jwt = false
 
 [functions.summarize-conversation]
 verify_jwt = true
