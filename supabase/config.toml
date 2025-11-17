@@ -1,5 +1,11 @@
 project_id = "kmhnnkwcxroxyfkbhqia"
 
+[functions.line-webhook]
+verify_jwt = false
+
+[functions.line-send-message]
+verify_jwt = true
+
 [functions.summarize-conversation]
 verify_jwt = true
 
