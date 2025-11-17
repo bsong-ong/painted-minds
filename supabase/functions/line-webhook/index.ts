@@ -162,22 +162,35 @@ serve(async (req) => {
             );
 
             if (!linkedAccount) {
-              // Send linking instructions
+              // Generate link token for unlinked user
+              const linkToken = `LINE_${lineUserId}_${Date.now()}`;
+              
+              // Send the link token
               await replyMessage(event.replyToken, [
                 {
                   type: "text",
-                  text: "Welcome! To use Painted Minds features, please link your account in the app settings.",
+                  text: `🔗 Link Your Account\n\nYour link token is:\n\n${linkToken}\n\nCopy this token and paste it in the Painted Minds app under Settings > LINE to connect your account.\n\nThis token expires in 5 minutes.`,
                 },
               ]);
             } else {
               // User is linked, process their message
-              // TODO: Add custom logic for linked users
-              await replyMessage(event.replyToken, [
-                {
-                  type: "text",
-                  text: `Thanks for your message! Your account is linked. (User ID: ${linkedAccount.user_id})`,
-                },
-              ]);
+              const userMessage = event.message.text?.toLowerCase() || "";
+              
+              if (userMessage.includes("help")) {
+                await replyMessage(event.replyToken, [
+                  {
+                    type: "text",
+                    text: "✨ Painted Minds Help\n\n📝 Your account is linked!\n🎨 Create gratitude drawings in the app\n⭐ Track your streaks and achievements\n🔔 Get daily reminders\n\nVisit the app to start your gratitude journey!",
+                  },
+                ]);
+              } else {
+                await replyMessage(event.replyToken, [
+                  {
+                    type: "text",
+                    text: `Thanks for your message! 🌟\n\nYour account is linked and ready. Visit the Painted Minds app to create your next gratitude drawing!\n\nSend "help" for more options.`,
+                  },
+                ]);
+              }
             }
           }
           break;
@@ -187,7 +200,7 @@ serve(async (req) => {
           await replyMessage(event.replyToken, [
             {
               type: "text",
-              text: "Welcome to Painted Minds! 🎨\nPlease link your account in the app to get started.",
+              text: "🎨 Welcome to Painted Minds!\n\nSend me any message to get your link token and connect your account.\n\nOnce linked, you'll receive:\n✅ Daily gratitude reminders\n✅ Achievement notifications\n✅ Personalized encouragement",
             },
           ]);
           break;
