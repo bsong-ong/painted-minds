@@ -25,6 +25,7 @@ const translations = {
     cancel: 'Cancel',
     delete: 'Delete',
     download: 'Download',
+    settings: 'Settings',
     
     // Auth page
     drawingApp: 'Painted Minds',
@@ -284,6 +285,7 @@ const translations = {
     cancel: 'ยกเลิก',
     delete: 'ลบ',
     download: 'ดาวน์โหลด',
+    settings: 'การตั้งค่า',
     
     // Auth page
     drawingApp: 'Painted Minds',

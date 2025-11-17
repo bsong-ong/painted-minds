@@ -83,6 +83,11 @@ const Index = () => {
                   <span className="ml-2 sm:hidden">Admin</span>
                 </Button>
               )}
+              <Button variant="outline" size="sm" onClick={() => navigate('/settings')} className="flex-shrink-0">
+                <Settings className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Settings</span>
+                <span className="ml-2 sm:hidden">Settings</span>
+              </Button>
               <Button variant="outline" size="sm" onClick={() => navigate('/journal')} className="flex-shrink-0">
                 <BookOpen className="h-4 w-4" />
                 <span className="ml-2 hidden sm:inline">{t('viewJournal')}</span>
