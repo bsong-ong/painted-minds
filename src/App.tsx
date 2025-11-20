@@ -18,6 +18,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ThoughtJournal from "./pages/ThoughtJournal";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import LiffDrawing from "./pages/LiffDrawing";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/talk-buddy" element={<TalkBuddy />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/liff-drawing" element={<LiffDrawing />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
