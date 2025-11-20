@@ -38,25 +38,36 @@ To test:
 
 ### 4. Set up LIFF App (for Drawing Canvas)
 
-To enable users to draw directly in LINE:
+To enable users to draw directly in LINE, you need to create a separate LINE Login channel:
 
 1. Go to [LINE Developers Console](https://developers.line.biz/console/)
-2. Select your Messaging API channel
-3. Navigate to **LIFF** tab
-4. Click **Add** to create a new LIFF app
-5. Configure the LIFF app:
-   - **LIFF app name**: `Drawing Canvas` (or any name you prefer)
+2. Select your provider (or create one if needed)
+3. Click **Create a new channel**
+4. Select **LINE Login** as the channel type
+5. Fill in the required information:
+   - **Channel name**: `Drawing Canvas` (or any name you prefer)
+   - **Channel description**: Description of your app
+   - **App types**: Check **Web app**
+6. After creating the channel, navigate to the **LIFF** tab
+7. Click **Add** to create a new LIFF app
+8. Configure the LIFF app:
+   - **LIFF app name**: `Drawing Canvas`
    - **Size**: `Full`
    - **Endpoint URL**: `https://[your-deployed-app-url]/liff-drawing`
      - Replace with your actual deployed URL (e.g., `https://yourapp.lovable.app/liff-drawing`)
    - **Scopes**: Check `profile` and `openid`
-   - **Bot link feature**: Select `On (Linked)` and choose your bot
-6. Click **Add**
-7. Copy the **LIFF ID** (format: `1234567890-abcdefgh`)
-8. Add the LIFF ID to your app:
-   - In your project, go to Settings → Secrets
-   - Add a new secret: `VITE_LIFF_ID` with the value from step 7
-9. Create a Rich Menu button that opens the LIFF URL to make it easy for users to access
+   - **Bot link feature**: Select `On (Aggressive)` or `On (Normal)` and choose your Messaging API bot from step 2
+9. Click **Add**
+10. Copy the **LIFF ID** (format: `1234567890-abcdefgh`)
+11. Add the LIFF ID to your app:
+    - In your project, go to Settings → Secrets
+    - Add a new secret: `VITE_LIFF_ID` with the value from step 10
+12. Create a Rich Menu button in your Messaging API channel that opens the LIFF URL to make it easy for users to access
+
+**Important Notes:**
+- The LINE Login channel and Messaging API channel are separate but can be linked via the LIFF Bot link feature
+- Users who access the LIFF app will be able to add your bot if they haven't already
+- Make sure both channels are under the same provider
 
 ---
 
