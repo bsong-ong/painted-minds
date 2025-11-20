@@ -36,6 +36,28 @@ To test:
 3. Add the bot as a friend
 4. Send a test message
 
+### 4. Set up LIFF App (for Drawing Canvas)
+
+To enable users to draw directly in LINE:
+
+1. Go to [LINE Developers Console](https://developers.line.biz/console/)
+2. Select your Messaging API channel
+3. Navigate to **LIFF** tab
+4. Click **Add** to create a new LIFF app
+5. Configure the LIFF app:
+   - **LIFF app name**: `Drawing Canvas` (or any name you prefer)
+   - **Size**: `Full`
+   - **Endpoint URL**: `https://[your-deployed-app-url]/liff-drawing`
+     - Replace with your actual deployed URL (e.g., `https://yourapp.lovable.app/liff-drawing`)
+   - **Scopes**: Check `profile` and `openid`
+   - **Bot link feature**: Select `On (Linked)` and choose your bot
+6. Click **Add**
+7. Copy the **LIFF ID** (format: `1234567890-abcdefgh`)
+8. Add the LIFF ID to your app:
+   - In your project, go to Settings → Secrets
+   - Add a new secret: `VITE_LIFF_ID` with the value from step 7
+9. Create a Rich Menu button that opens the LIFF URL to make it easy for users to access
+
 ---
 
 ## How to Use
@@ -213,7 +235,32 @@ The webhook now automatically:
 
 ## Use Cases for Painted Minds
 
-### 1. **Gratitude Image Generation via LINE** 🎨
+### 1. **Draw Directly in LINE (LIFF App)** ✏️
+
+Users can access a full drawing canvas directly within LINE through the LIFF integration:
+
+**Features:**
+- Complete drawing tools (freehand, shapes, colors)
+- Save drawings to their gallery
+- Send drawings directly to LINE chat
+- Works entirely within LINE - no need to open external browser
+
+**Setup:**
+1. Create a Rich Menu in LINE Developers Console
+2. Add a button with the LIFF URL
+3. Users tap the button to open the canvas
+4. Draw, customize, and share!
+
+**User Flow:**
+1. User taps Rich Menu button in LINE chat
+2. LIFF app opens with drawing canvas
+3. User draws their artwork
+4. User can:
+   - **Save** → Saves to app gallery
+   - **Send to Chat** → Instantly shares in LINE conversation
+   - **Clear** → Start over
+
+### 2. **Gratitude Image Generation via LINE** 🎨
 
 Users can now send their gratitude messages directly to the LINE bot and receive beautiful AI-generated images!
 
@@ -233,7 +280,7 @@ Users can now send their gratitude messages directly to the LINE bot and receive
 - "Thankful for my health and happiness"
 - "Grateful for my loving family"
 
-### 2. **Send Personalized Daily Gratitude Reminders**
+### 3. **Send Personalized Daily Gratitude Reminders**
 
 ```typescript
 // Send reminders only to users who have linked their LINE accounts
@@ -265,7 +312,7 @@ const sendGratitudeReminder = async (userId: string) => {
 };
 ```
 
-### 2. **Share Artwork on LINE**
+### 4. **Share Artwork on LINE**
 
 ```typescript
 // Send a drawing to a user's LINE chat
@@ -289,7 +336,7 @@ const shareDrawingToLine = async (userId: string, imageUrl: string) => {
 };
 ```
 
-### 3. **Send CBT Encouragement**
+### 5. **Send CBT Encouragement**
 
 ```typescript
 // Send encouraging messages after a CBT session
