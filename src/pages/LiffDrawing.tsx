@@ -46,17 +46,27 @@ export default function LiffDrawing() {
         console.log("LINE User ID:", lineUserId);
 
         // Find the app user linked to this LINE account via edge function
+        console.log("Calling edge function with LINE user ID:", lineUserId);
         const { data, error: functionError } = await supabase.functions.invoke("line-get-user-id", {
           body: { lineUserId },
         });
 
-        if (functionError || !data?.userId) {
-          console.error("Failed to get user ID:", functionError);
+        console.log("Edge function response:", { data, error: functionError });
+
+        if (functionError) {
+          console.error("Edge function error:", functionError);
           toast.error("LINE account not linked. Please link your account in the app settings.");
-        } else {
-          console.log("Found linked account:", data.userId);
-          setUserId(data.userId);
+          return;
         }
+
+        if (!data?.userId) {
+          console.error("No userId in response:", data);
+          toast.error("LINE account not linked. Please link your account in the app settings.");
+          return;
+        }
+
+        console.log("Found linked account:", data.userId);
+        setUserId(data.userId);
       } catch (error) {
         console.error("LIFF initialization failed:", error);
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
