@@ -51,6 +51,9 @@ verify_jwt = true
 [functions.cbt-assistant]
 verify_jwt = true
 
+[functions.enhance-drawing]
+verify_jwt = false
+
 [functions.line-get-user-id]
 verify_jwt = false
 
