@@ -1,23 +1,26 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import liff from "@line/liff";
 import { MobileCanvas } from "@/components/MobileCanvas";
 import type { MobileCanvasRef } from "@/components/MobileCanvas";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { LIFF_CONFIG } from "@/config/liff";
 
 export default function LiffDrawing() {
+  const [searchParams] = useSearchParams();
+  const gratitudeParam = searchParams.get('gratitude');
   const [isLiffReady, setIsLiffReady] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [activeTool, setActiveTool] = useState<"draw" | "select" | "rectangle" | "circle">("draw");
   const [activeColor, setActiveColor] = useState("#000000");
   const [isSaving, setIsSaving] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const canvasRef = useRef<MobileCanvasRef>(null);
   const navigate = useNavigate();
+  const isGratitudeMode = !!gratitudeParam;
 
   const addDebug = (msg: string) => {
     console.log(msg);
@@ -105,7 +108,6 @@ export default function LiffDrawing() {
 
       addDebug("Calling save edge function...");
       const functionUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/save-liff-drawing`;
-      
       const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
@@ -114,6 +116,7 @@ export default function LiffDrawing() {
         body: JSON.stringify({
           imageData: dataUrl,
           userId: userId,
+          gratitudePrompt: gratitudeParam || null,
         }),
       });
 
@@ -125,13 +128,59 @@ export default function LiffDrawing() {
         throw new Error(data?.error || 'Failed to save drawing');
       }
 
+      // If in gratitude mode, enhance the drawing
+      if (isGratitudeMode && data.drawingId) {
+        addDebug("Gratitude mode: enhancing drawing...");
+        setIsEnhancing(true);
+        
+        const enhanceUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/enhance-drawing`;
+        const enhanceResponse = await fetch(enhanceUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            imageData: dataUrl,
+            prompt: '',
+            userDescription: gratitudeParam,
+            drawingId: data.drawingId,
+          }),
+        });
+
+        const enhanceData = await enhanceResponse.json();
+        addDebug(`Enhancement response: ${JSON.stringify(enhanceData)}`);
+
+        if (enhanceResponse.ok && enhanceData.enhancedImageUrl && liff.isInClient()) {
+          // Send enhanced image to LINE
+          try {
+            await liff.sendMessages([
+              {
+                type: "image",
+                originalContentUrl: enhanceData.enhancedImageUrl,
+                previewImageUrl: enhanceData.enhancedImageUrl,
+              },
+            ]);
+            addDebug("Enhanced image sent to LINE");
+            toast.success("Enhanced image sent to LINE chat!");
+          } catch (sendError) {
+            addDebug(`Failed to send to LINE: ${sendError}`);
+            toast.success("Drawing enhanced! Check your gallery.");
+          }
+        } else {
+          toast.success("Drawing saved and enhancing! Check back soon.");
+        }
+      } else {
+        toast.success("Drawing saved!");
+      }
+
       addDebug("Save complete!");
-      toast.success("Drawing saved!");
       
       // Close LIFF window
-      if (liff.isInClient()) {
-        liff.closeWindow();
-      }
+      setTimeout(() => {
+        if (liff.isInClient()) {
+          liff.closeWindow();
+        }
+      }, 2000);
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       addDebug(`Save failed: ${errorMsg}`);
@@ -139,6 +188,7 @@ export default function LiffDrawing() {
       toast.error(`Failed to save: ${errorMsg}`);
     } finally {
       setIsSaving(false);
+      setIsEnhancing(false);
     }
   };
 
@@ -174,6 +224,7 @@ export default function LiffDrawing() {
         body: JSON.stringify({
           imageData: dataUrl,
           userId: userId,
+          gratitudePrompt: gratitudeParam || null,
         }),
       });
 
@@ -279,6 +330,13 @@ export default function LiffDrawing() {
         />
       </div>
 
+      {/* Gratitude text reminder (if in gratitude mode) */}
+      {isGratitudeMode && gratitudeParam && (
+        <div className="bg-muted p-2 text-sm text-center border-b border-border">
+          <span className="font-medium">Your gratitude:</span> {gratitudeParam}
+        </div>
+      )}
+
       {/* Canvas */}
       <div className="flex-1 overflow-hidden">
         <MobileCanvas
@@ -310,18 +368,28 @@ export default function LiffDrawing() {
         </Button>
         <Button
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isSaving || isEnhancing}
           className="flex-1"
         >
-          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
+          {isSaving || isEnhancing ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {isEnhancing ? "Enhancing..." : "Saving..."}
+            </>
+          ) : (
+            <>
+              {isGratitudeMode ? <Sparkles className="w-4 h-4 mr-2" /> : null}
+              {isGratitudeMode ? "Save & Enhance" : "Save"}
+            </>
+          )}
         </Button>
-        {liff.isInClient() && (
+        {!isGratitudeMode && liff.isInClient() && (
           <Button
             onClick={handleSendToChat}
             disabled={isSaving}
             className="flex-1"
           >
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-4 h-4 mr-1" /> Send</>}
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Send"}
           </Button>
         )}
       </div>

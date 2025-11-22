@@ -19,7 +19,6 @@ import ThoughtJournal from "./pages/ThoughtJournal";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import LiffDrawing from "./pages/LiffDrawing";
-import LiffGratitude from "./pages/LiffGratitude";
 
 const queryClient = new QueryClient();
 
@@ -44,7 +43,6 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/liff-drawing" element={<LiffDrawing />} />
-              <Route path="/liff-gratitude" element={<LiffGratitude />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
