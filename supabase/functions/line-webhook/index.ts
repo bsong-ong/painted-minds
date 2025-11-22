@@ -213,29 +213,29 @@ serve(async (req) => {
                 },
               ]);
             } else if (messageText.includes("journal")) {
-              // Show recent journal entries (last 90 days to catch older entries)
+              // Show recent gratitude drawings (last 90 days)
               const ninetyDaysAgo = new Date();
               ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
               
-              console.log(`Fetching journals for user: ${linkedAccount.user_id}`);
+              console.log(`Fetching drawings for user: ${linkedAccount.user_id}`);
               console.log(`Date range: from ${ninetyDaysAgo.toISOString()} to now`);
               
-              const { data: journals, error: journalError } = await supabase
-                .from('thought_journal')
-                .select('id, title, summary, created_at')
+              const { data: drawings, error: drawingsError } = await supabase
+                .from('drawings')
+                .select('id, title, gratitude_prompt, created_at, enhanced_image_url, image_url, is_enhanced')
                 .eq('user_id', linkedAccount.user_id)
                 .gte('created_at', ninetyDaysAgo.toISOString())
                 .order('created_at', { ascending: false })
-                .limit(10); // Show up to 10 most recent entries
+                .limit(10); // Show up to 10 most recent drawings
 
-              console.log(`Journal query result:`, { 
-                count: journals?.length || 0, 
-                error: journalError,
-                journals: journals?.map(j => ({ id: j.id, created_at: j.created_at }))
+              console.log(`Drawings query result:`, { 
+                count: drawings?.length || 0, 
+                error: drawingsError,
+                drawings: drawings?.map(d => ({ id: d.id, title: d.title, created_at: d.created_at }))
               });
 
-              if (journalError) {
-                console.error('Error fetching journals:', journalError);
+              if (drawingsError) {
+                console.error('Error fetching drawings:', drawingsError);
                 await replyMessage(event.replyToken, [
                   {
                     type: "text",
@@ -245,7 +245,7 @@ serve(async (req) => {
                 break;
               }
 
-              if (!journals || journals.length === 0) {
+              if (!drawings || drawings.length === 0) {
                 await replyMessage(event.replyToken, [
                   {
                     type: "text",
@@ -255,25 +255,34 @@ serve(async (req) => {
                 break;
               }
 
-              // Create carousel of journal entries
-              const bubbles = journals.map(journal => {
-                const date = new Date(journal.created_at);
+              // Create carousel of drawing entries
+              const bubbles = drawings.map(drawing => {
+                const date = new Date(drawing.created_at);
                 const formattedDate = date.toLocaleDateString(userLanguage === 'th' ? 'th-TH' : 'en-US', {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric'
                 });
                 
+                const imageUrl = drawing.is_enhanced ? drawing.enhanced_image_url : drawing.image_url;
+                
                 return {
                   type: "bubble",
                   size: "kilo",
+                  hero: imageUrl ? {
+                    type: "image",
+                    url: imageUrl,
+                    size: "full",
+                    aspectRatio: "1:1",
+                    aspectMode: "cover"
+                  } : undefined,
                   header: {
                     type: "box",
                     layout: "vertical",
                     contents: [
                       {
                         type: "text",
-                        text: journal.title || getMessage(userLanguage, 'journal.untitled'),
+                        text: drawing.title || getMessage(userLanguage, 'journal.untitled'),
                         weight: "bold",
                         size: "lg",
                         wrap: true,
@@ -289,32 +298,41 @@ serve(async (req) => {
                     ],
                     paddingAll: "15px"
                   },
-                  body: {
+                  body: drawing.gratitude_prompt ? {
                     type: "box",
                     layout: "vertical",
                     contents: [
                       {
                         type: "text",
-                        text: journal.summary || getMessage(userLanguage, 'journal.noSummary'),
+                        text: drawing.gratitude_prompt,
                         wrap: true,
                         size: "sm",
                         color: "#666666"
                       }
                     ],
                     paddingAll: "15px"
-                  },
-                  styles: {
-                    footer: {
-                      separator: true
-                    }
-                  }
+                  } : undefined,
+                  footer: drawing.is_enhanced ? {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                      {
+                        type: "text",
+                        text: "✨ Enhanced",
+                        size: "xs",
+                        color: "#FF1493",
+                        align: "center"
+                      }
+                    ],
+                    paddingAll: "10px"
+                  } : undefined
                 };
               });
 
               await replyMessage(event.replyToken, [
                 {
                   type: "flex",
-                  altText: getMessage(userLanguage, 'journal.carouselAlt', journals.length),
+                  altText: getMessage(userLanguage, 'journal.carouselAlt', drawings.length),
                   contents: {
                     type: "carousel",
                     contents: bubbles
