@@ -15,60 +15,68 @@ export default function LiffDrawing() {
   const [activeTool, setActiveTool] = useState<"draw" | "select" | "rectangle" | "circle">("draw");
   const [activeColor, setActiveColor] = useState("#000000");
   const [isSaving, setIsSaving] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const canvasRef = useRef<MobileCanvasRef>(null);
   const navigate = useNavigate();
+
+  const addDebug = (msg: string) => {
+    console.log(msg);
+    setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`]);
+  };
 
   useEffect(() => {
     const initLiff = async () => {
       try {
+        addDebug("Starting LIFF initialization");
         // Check if LIFF_ID is set
         if (!LIFF_CONFIG.liffId) {
-          console.error("LIFF_ID is not set");
+          addDebug("ERROR: LIFF_ID is not set");
           toast.error("LIFF ID is not configured. Please add your LIFF ID to src/config/liff.ts");
           return;
         }
 
-        console.log("Initializing LIFF with ID:", LIFF_CONFIG.liffId);
+        addDebug(`LIFF ID configured: ${LIFF_CONFIG.liffId}`);
         await liff.init({ liffId: LIFF_CONFIG.liffId });
+        addDebug("LIFF initialized");
         
         if (!liff.isLoggedIn()) {
-          console.log("User not logged in, redirecting to login");
+          addDebug("User not logged in, redirecting to login");
           liff.login();
           return;
         }
 
-        console.log("LIFF initialized successfully");
+        addDebug("User logged in to LIFF");
         setIsLiffReady(true);
         
         // Get LINE user profile
         const profile = await liff.getProfile();
         const lineUserId = profile.userId;
-        console.log("LINE User ID:", lineUserId);
+        addDebug(`LINE User ID: ${lineUserId}`);
 
         // Find the app user linked to this LINE account via edge function
-        console.log("Calling edge function with LINE user ID:", lineUserId);
+        addDebug("Calling edge function...");
         const { data, error: functionError } = await supabase.functions.invoke("line-get-user-id", {
           body: { lineUserId },
         });
 
-        console.log("Edge function response:", { data, error: functionError });
+        addDebug(`Edge function response: ${JSON.stringify({ data, error: functionError })}`);
 
         if (functionError) {
-          console.error("Edge function error:", functionError);
+          addDebug(`ERROR: ${JSON.stringify(functionError)}`);
           toast.error("LINE account not linked. Please link your account in the app settings.");
           return;
         }
 
         if (!data?.userId) {
-          console.error("No userId in response:", data);
+          addDebug(`ERROR: No userId in response: ${JSON.stringify(data)}`);
           toast.error("LINE account not linked. Please link your account in the app settings.");
           return;
         }
 
-        console.log("Found linked account:", data.userId);
+        addDebug(`Found linked account: ${data.userId}`);
         setUserId(data.userId);
       } catch (error) {
-        console.error("LIFF initialization failed:", error);
+        addDebug(`EXCEPTION: ${error instanceof Error ? error.message : String(error)}`);
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         toast.error(`Failed to initialize LINE app: ${errorMessage}`);
       }
@@ -164,10 +172,18 @@ export default function LiffDrawing() {
 
   if (!userId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+        <div className="text-center mb-4">
           <p className="text-foreground mb-4">Please link your LINE account first</p>
           <Button onClick={() => liff.closeWindow()}>Close</Button>
+        </div>
+        <div className="w-full max-w-md bg-card p-4 rounded-lg border border-border overflow-auto max-h-96">
+          <h3 className="text-sm font-semibold mb-2">Debug Log:</h3>
+          <div className="text-xs font-mono space-y-1">
+            {debugInfo.map((info, i) => (
+              <div key={i} className="text-muted-foreground">{info}</div>
+            ))}
+          </div>
         </div>
       </div>
     );
