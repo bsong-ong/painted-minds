@@ -55,23 +55,24 @@ export default function LiffDrawing() {
 
         // Find the app user linked to this LINE account via edge function
         addDebug(`Calling edge function with ID: ${lineUserId}`);
-        const { data, error: functionError } = await supabase.functions.invoke("line-get-user-id", {
-          body: { lineUserId },
+        
+        // Make direct fetch call to edge function
+        const functionUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/line-get-user-id`;
+        const response = await fetch(functionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttaG5ua3djeHJveHlma2JocWlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0Njk5OTMsImV4cCI6MjA3NTA0NTk5M30.VlcxLNhoyj_aoFzg9a3ma-5a01zfPr32wfcvm0UF5Xo',
+          },
+          body: JSON.stringify({ lineUserId }),
         });
 
-        addDebug(`Response: ${JSON.stringify(data)}`);
-        if (functionError) {
-          addDebug(`Error: ${JSON.stringify(functionError)}`);
-        }
+        addDebug(`Response status: ${response.status}`);
+        const data = await response.json();
+        addDebug(`Response data: ${JSON.stringify(data)}`);
 
-        if (functionError) {
-          addDebug(`Function error occurred`);
-          toast.error("LINE account not linked. Please link your account in the app settings.");
-          return;
-        }
-
-        if (!data?.userId) {
-          addDebug(`No userId in response`);
+        if (!response.ok || !data.userId) {
+          addDebug(`Failed to get user ID`);
           toast.error("LINE account not linked. Please link your account in the app settings.");
           return;
         }
