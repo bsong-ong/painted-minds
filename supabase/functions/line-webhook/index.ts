@@ -213,16 +213,26 @@ serve(async (req) => {
                 },
               ]);
             } else if (messageText.includes("journal")) {
-              // Show journal entries from last 7 days
-              const sevenDaysAgo = new Date();
-              sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+              // Show recent journal entries (last 90 days to catch older entries)
+              const ninetyDaysAgo = new Date();
+              ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+              
+              console.log(`Fetching journals for user: ${linkedAccount.user_id}`);
+              console.log(`Date range: from ${ninetyDaysAgo.toISOString()} to now`);
               
               const { data: journals, error: journalError } = await supabase
                 .from('thought_journal')
                 .select('id, title, summary, created_at')
                 .eq('user_id', linkedAccount.user_id)
-                .gte('created_at', sevenDaysAgo.toISOString())
-                .order('created_at', { ascending: false });
+                .gte('created_at', ninetyDaysAgo.toISOString())
+                .order('created_at', { ascending: false })
+                .limit(10); // Show up to 10 most recent entries
+
+              console.log(`Journal query result:`, { 
+                count: journals?.length || 0, 
+                error: journalError,
+                journals: journals?.map(j => ({ id: j.id, created_at: j.created_at }))
+              });
 
               if (journalError) {
                 console.error('Error fetching journals:', journalError);
