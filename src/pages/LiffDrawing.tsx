@@ -45,23 +45,17 @@ export default function LiffDrawing() {
         const lineUserId = profile.userId;
         console.log("LINE User ID:", lineUserId);
 
-        // Find the app user linked to this LINE account
-        const { data: lineAccount, error: queryError } = await supabase
-          .from("line_accounts")
-          .select("user_id")
-          .eq("line_user_id", lineUserId)
-          .single();
+        // Find the app user linked to this LINE account via edge function
+        const { data, error: functionError } = await supabase.functions.invoke("line-get-user-id", {
+          body: { lineUserId },
+        });
 
-        if (queryError) {
-          console.error("Database query error:", queryError);
-        }
-
-        if (lineAccount) {
-          console.log("Found linked account:", lineAccount.user_id);
-          setUserId(lineAccount.user_id);
-        } else {
-          console.log("No linked account found");
+        if (functionError || !data?.userId) {
+          console.error("Failed to get user ID:", functionError);
           toast.error("LINE account not linked. Please link your account in the app settings.");
+        } else {
+          console.log("Found linked account:", data.userId);
+          setUserId(data.userId);
         }
       } catch (error) {
         console.error("LIFF initialization failed:", error);
