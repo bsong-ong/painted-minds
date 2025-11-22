@@ -22,34 +22,52 @@ export default function LiffDrawing() {
   useEffect(() => {
     const initLiff = async () => {
       try {
+        // Check if LIFF_ID is set
+        if (!LIFF_ID) {
+          console.error("LIFF_ID is not set");
+          toast.error("LIFF ID is not configured. Please add VITE_LIFF_ID to your secrets.");
+          return;
+        }
+
+        console.log("Initializing LIFF with ID:", LIFF_ID);
         await liff.init({ liffId: LIFF_ID });
         
         if (!liff.isLoggedIn()) {
+          console.log("User not logged in, redirecting to login");
           liff.login();
           return;
         }
 
+        console.log("LIFF initialized successfully");
         setIsLiffReady(true);
         
         // Get LINE user profile
         const profile = await liff.getProfile();
         const lineUserId = profile.userId;
+        console.log("LINE User ID:", lineUserId);
 
         // Find the app user linked to this LINE account
-        const { data: lineAccount } = await supabase
+        const { data: lineAccount, error: queryError } = await supabase
           .from("line_accounts")
           .select("user_id")
           .eq("line_user_id", lineUserId)
           .single();
 
+        if (queryError) {
+          console.error("Database query error:", queryError);
+        }
+
         if (lineAccount) {
+          console.log("Found linked account:", lineAccount.user_id);
           setUserId(lineAccount.user_id);
         } else {
+          console.log("No linked account found");
           toast.error("LINE account not linked. Please link your account in the app settings.");
         }
       } catch (error) {
-        console.error("LIFF initialization failed", error);
-        toast.error("Failed to initialize LINE app");
+        console.error("LIFF initialization failed:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        toast.error(`Failed to initialize LINE app: ${errorMessage}`);
       }
     };
 
