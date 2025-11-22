@@ -104,20 +104,24 @@ export default function LiffDrawing() {
       addDebug(`Data URL length: ${dataUrl.length}`);
 
       addDebug("Calling save edge function...");
-      const { data, error } = await supabase.functions.invoke('save-liff-drawing', {
-        body: {
+      const functionUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/save-liff-drawing`;
+      
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           imageData: dataUrl,
           userId: userId,
-        },
+        }),
       });
 
-      addDebug(`Response: ${JSON.stringify({ data, error })}`);
+      addDebug(`Response status: ${response.status}`);
+      const data = await response.json();
+      addDebug(`Response: ${JSON.stringify(data)}`);
 
-      if (error) {
-        throw new Error(error.message || 'Failed to save drawing');
-      }
-
-      if (!data?.success) {
+      if (!response.ok || !data?.success) {
         throw new Error(data?.error || 'Failed to save drawing');
       }
 
@@ -160,20 +164,24 @@ export default function LiffDrawing() {
       }
 
       addDebug("Uploading image first...");
-      const { data, error } = await supabase.functions.invoke('save-liff-drawing', {
-        body: {
+      const functionUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/save-liff-drawing`;
+      
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           imageData: dataUrl,
           userId: userId,
-        },
+        }),
       });
 
-      addDebug(`Upload response: ${JSON.stringify({ data, error })}`);
+      addDebug(`Response status: ${response.status}`);
+      const data = await response.json();
+      addDebug(`Upload response: ${JSON.stringify(data)}`);
 
-      if (error) {
-        throw new Error(error.message || 'Failed to upload image');
-      }
-
-      if (!data?.success || !data?.publicUrl) {
+      if (!response.ok || !data?.success || !data?.publicUrl) {
         throw new Error(data?.error || 'Failed to upload image');
       }
 
