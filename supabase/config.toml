@@ -53,3 +53,6 @@ verify_jwt = true
 
 [functions.line-get-user-id]
 verify_jwt = false
+
+[functions.save-liff-drawing]
+verify_jwt = false

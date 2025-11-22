@@ -103,27 +103,22 @@ export default function LiffDrawing() {
       const dataUrl = canvasRef.current.getDataURL();
       addDebug(`Data URL length: ${dataUrl.length}`);
 
-      // Call edge function to handle upload
       addDebug("Calling save edge function...");
-      const response = await fetch(
-        `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/save-liff-drawing`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            imageData: dataUrl,
-            userId: userId,
-          }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('save-liff-drawing', {
+        body: {
+          imageData: dataUrl,
+          userId: userId,
+        },
+      });
 
-      const result = await response.json();
-      addDebug(`Response: ${JSON.stringify(result)}`);
+      addDebug(`Response: ${JSON.stringify({ data, error })}`);
 
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to save drawing');
+      if (error) {
+        throw new Error(error.message || 'Failed to save drawing');
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to save drawing');
       }
 
       addDebug("Save complete!");
@@ -164,37 +159,32 @@ export default function LiffDrawing() {
         return;
       }
 
-      // First upload to get a public URL (LINE doesn't accept data URLs)
       addDebug("Uploading image first...");
-      const response = await fetch(
-        `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/save-liff-drawing`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            imageData: dataUrl,
-            userId: userId,
-          }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('save-liff-drawing', {
+        body: {
+          imageData: dataUrl,
+          userId: userId,
+        },
+      });
 
-      const result = await response.json();
-      addDebug(`Upload response: ${JSON.stringify(result)}`);
+      addDebug(`Upload response: ${JSON.stringify({ data, error })}`);
 
-      if (!result.success || !result.publicUrl) {
-        throw new Error(result.error || 'Failed to upload image');
+      if (error) {
+        throw new Error(error.message || 'Failed to upload image');
       }
 
-      addDebug(`Sending URL to LINE: ${result.publicUrl}`);
+      if (!data?.success || !data?.publicUrl) {
+        throw new Error(data?.error || 'Failed to upload image');
+      }
+
+      addDebug(`Sending URL to LINE: ${data.publicUrl}`);
       
       // Send public URL to LINE chat
       await liff.sendMessages([
         {
           type: "image",
-          originalContentUrl: result.publicUrl,
-          previewImageUrl: result.publicUrl,
+          originalContentUrl: data.publicUrl,
+          previewImageUrl: data.publicUrl,
         },
       ]);
       
