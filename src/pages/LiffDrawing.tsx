@@ -90,27 +90,45 @@ export default function LiffDrawing() {
   }, []);
 
   const handleSave = async () => {
-    if (!canvasRef.current || !userId) return;
+    if (!canvasRef.current || !userId) {
+      addDebug("Save: Missing canvas or userId");
+      toast.error("Cannot save - missing canvas or user ID");
+      return;
+    }
 
+    addDebug("Starting save...");
     setIsSaving(true);
     try {
+      addDebug("Getting canvas data URL...");
       const dataUrl = canvasRef.current.getDataURL();
+      addDebug(`Data URL length: ${dataUrl.length}`);
+      
+      addDebug("Converting to blob...");
       const blob = await (await fetch(dataUrl)).blob();
+      addDebug(`Blob size: ${blob.size}`);
+      
       const fileName = `liff-drawing-${Date.now()}.png`;
       const filePath = `${userId}/${fileName}`;
+      addDebug(`Uploading to: ${filePath}`);
 
       // Upload to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from("drawings")
         .upload(filePath, blob);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        addDebug(`Upload error: ${JSON.stringify(uploadError)}`);
+        throw uploadError;
+      }
+      addDebug("Upload successful");
 
       const { data: { publicUrl } } = supabase.storage
         .from("drawings")
         .getPublicUrl(filePath);
+      addDebug(`Public URL: ${publicUrl}`);
 
       // Save to database
+      addDebug("Saving to database...");
       const { error: insertError } = await supabase
         .from("drawings")
         .insert({
@@ -122,8 +140,12 @@ export default function LiffDrawing() {
           is_public: false,
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        addDebug(`Insert error: ${JSON.stringify(insertError)}`);
+        throw insertError;
+      }
 
+      addDebug("Save complete!");
       toast.success("Drawing saved!");
       
       // Close LIFF window
@@ -131,21 +153,31 @@ export default function LiffDrawing() {
         liff.closeWindow();
       }
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      addDebug(`Save failed: ${errorMsg}`);
       console.error("Error saving drawing:", error);
-      toast.error("Failed to save drawing");
+      toast.error(`Failed to save drawing: ${errorMsg}`);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleSendToChat = async () => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current) {
+      addDebug("Send: Missing canvas ref");
+      toast.error("Cannot send - missing canvas");
+      return;
+    }
 
+    addDebug("Starting send to chat...");
     setIsSaving(true);
     try {
+      addDebug("Getting canvas data URL...");
       const dataUrl = canvasRef.current.getDataURL();
+      addDebug(`Data URL length: ${dataUrl.length}`);
       
       if (liff.isInClient()) {
+        addDebug("Sending to LINE chat...");
         // Send image to LINE chat
         await liff.sendMessages([
           {
@@ -155,12 +187,18 @@ export default function LiffDrawing() {
           },
         ]);
         
+        addDebug("Sent successfully!");
         toast.success("Drawing sent to chat!");
         liff.closeWindow();
+      } else {
+        addDebug("Not in LINE client");
+        toast.error("Can only send when opened in LINE");
       }
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      addDebug(`Send failed: ${errorMsg}`);
       console.error("Error sending to chat:", error);
-      toast.error("Failed to send drawing");
+      toast.error(`Failed to send drawing: ${errorMsg}`);
     } finally {
       setIsSaving(false);
     }
@@ -244,6 +282,17 @@ export default function LiffDrawing() {
           activeColor={activeColor}
         />
       </div>
+
+      {/* Debug info (only show when debugging) */}
+      {debugInfo.length > 5 && (
+        <div className="bg-card border-t border-border p-2 max-h-32 overflow-auto">
+          <div className="text-xs font-mono space-y-1">
+            {debugInfo.slice(-10).map((info, i) => (
+              <div key={i} className="text-muted-foreground">{info}</div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Action buttons */}
       <div className="bg-card border-t border-border p-4 flex gap-2">
