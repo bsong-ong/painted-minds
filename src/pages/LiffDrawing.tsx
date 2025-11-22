@@ -17,49 +17,32 @@ export default function LiffDrawing() {
   const [activeColor, setActiveColor] = useState("#000000");
   const [isSaving, setIsSaving] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const canvasRef = useRef<MobileCanvasRef>(null);
   const navigate = useNavigate();
   const isGratitudeMode = !!gratitudeParam;
 
-  const addDebug = (msg: string) => {
-    console.log(msg);
-    setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`]);
-  };
-
   useEffect(() => {
     const initLiff = async () => {
       try {
-        addDebug("Starting LIFF initialization");
-        // Check if LIFF_ID is set
         if (!LIFF_CONFIG.liffId) {
-          addDebug("ERROR: LIFF_ID is not set");
           toast.error("LIFF ID is not configured. Please add your LIFF ID to src/config/liff.ts");
           return;
         }
 
-        addDebug(`LIFF ID configured: ${LIFF_CONFIG.liffId}`);
         await liff.init({ liffId: LIFF_CONFIG.liffId });
-        addDebug("LIFF initialized");
         
         if (!liff.isLoggedIn()) {
-          addDebug("User not logged in, redirecting to login");
           liff.login();
           return;
         }
 
-        addDebug("User logged in to LIFF");
         setIsLiffReady(true);
         
         // Get LINE user profile
         const profile = await liff.getProfile();
         const lineUserId = profile.userId;
-        addDebug(`LINE User ID: ${lineUserId}`);
 
         // Find the app user linked to this LINE account via edge function
-        addDebug(`Calling edge function with ID: ${lineUserId}`);
-        
-        // Make direct fetch call to edge function
         const functionUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/line-get-user-id`;
         const response = await fetch(functionUrl, {
           method: 'POST',
@@ -70,22 +53,23 @@ export default function LiffDrawing() {
           body: JSON.stringify({ lineUserId }),
         });
 
-        addDebug(`Response status: ${response.status}`);
         const data = await response.json();
-        addDebug(`Response data: ${JSON.stringify(data)}`);
 
         if (!response.ok || !data.userId) {
-          addDebug(`Failed to get user ID`);
           toast.error("LINE account not linked. Please link your account in the app settings.");
+          if (liff.isInClient()) {
+            setTimeout(() => liff.closeWindow(), 2000);
+          }
           return;
         }
 
-        addDebug(`Success! User ID: ${data.userId}`);
         setUserId(data.userId);
       } catch (error) {
-        addDebug(`EXCEPTION: ${error instanceof Error ? error.message : String(error)}`);
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         toast.error(`Failed to initialize LINE app: ${errorMessage}`);
+        if (liff.isInClient()) {
+          setTimeout(() => liff.closeWindow(), 2000);
+        }
       }
     };
 
@@ -94,19 +78,14 @@ export default function LiffDrawing() {
 
   const handleSave = async () => {
     if (!canvasRef.current || !userId) {
-      addDebug("Save: Missing canvas or userId");
       toast.error("Cannot save - missing canvas or user ID");
       return;
     }
 
-    addDebug("Starting save...");
     setIsSaving(true);
     try {
-      addDebug("Getting canvas data URL...");
       const dataUrl = canvasRef.current.getDataURL();
-      addDebug(`Data URL length: ${dataUrl.length}`);
 
-      addDebug("Calling save edge function...");
       const functionUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/save-liff-drawing`;
       const response = await fetch(functionUrl, {
         method: 'POST',
@@ -120,9 +99,7 @@ export default function LiffDrawing() {
         }),
       });
 
-      addDebug(`Response status: ${response.status}`);
       const data = await response.json();
-      addDebug(`Response: ${JSON.stringify(data)}`);
 
       if (!response.ok || !data?.success) {
         throw new Error(data?.error || 'Failed to save drawing');
@@ -130,7 +107,6 @@ export default function LiffDrawing() {
 
       // If in gratitude mode, enhance the drawing
       if (isGratitudeMode && data.drawingId) {
-        addDebug("Gratitude mode: enhancing drawing...");
         setIsEnhancing(true);
         
         const enhanceUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/enhance-drawing`;
@@ -148,7 +124,6 @@ export default function LiffDrawing() {
         });
 
         const enhanceData = await enhanceResponse.json();
-        addDebug(`Enhancement response: ${JSON.stringify(enhanceData)}`);
 
         if (enhanceResponse.ok && enhanceData.enhancedImageUrl && liff.isInClient()) {
           // Send enhanced image to LINE
@@ -160,10 +135,8 @@ export default function LiffDrawing() {
                 previewImageUrl: enhanceData.enhancedImageUrl,
               },
             ]);
-            addDebug("Enhanced image sent to LINE");
             toast.success("Enhanced image sent to LINE chat!");
           } catch (sendError) {
-            addDebug(`Failed to send to LINE: ${sendError}`);
             toast.success("Drawing enhanced! Check your gallery.");
           }
         } else {
@@ -172,8 +145,6 @@ export default function LiffDrawing() {
       } else {
         toast.success("Drawing saved!");
       }
-
-      addDebug("Save complete!");
       
       // Close LIFF window
       setTimeout(() => {
@@ -183,7 +154,6 @@ export default function LiffDrawing() {
       }, 2000);
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      addDebug(`Save failed: ${errorMsg}`);
       console.error("Error saving drawing:", error);
       toast.error(`Failed to save: ${errorMsg}`);
     } finally {
@@ -194,26 +164,20 @@ export default function LiffDrawing() {
 
   const handleSendToChat = async () => {
     if (!canvasRef.current || !userId) {
-      addDebug("Send: Missing canvas or userId");
       toast.error("Cannot send - missing canvas or user ID");
       return;
     }
 
-    addDebug("Starting send to chat...");
     setIsSaving(true);
     try {
-      addDebug("Getting canvas data URL...");
       const dataUrl = canvasRef.current.getDataURL();
-      addDebug(`Data URL length: ${dataUrl.length}`);
       
       if (!liff.isInClient()) {
-        addDebug("Not in LINE client");
         toast.error("Can only send when opened in LINE");
         setIsSaving(false);
         return;
       }
 
-      addDebug("Uploading image first...");
       const functionUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/save-liff-drawing`;
       
       const response = await fetch(functionUrl, {
@@ -228,15 +192,11 @@ export default function LiffDrawing() {
         }),
       });
 
-      addDebug(`Response status: ${response.status}`);
       const data = await response.json();
-      addDebug(`Upload response: ${JSON.stringify(data)}`);
 
       if (!response.ok || !data?.success || !data?.publicUrl) {
         throw new Error(data?.error || 'Failed to upload image');
       }
-
-      addDebug(`Sending URL to LINE: ${data.publicUrl}`);
       
       // Send public URL to LINE chat
       await liff.sendMessages([
@@ -247,12 +207,10 @@ export default function LiffDrawing() {
         },
       ]);
       
-      addDebug("Sent successfully!");
       toast.success("Drawing sent to chat!");
       liff.closeWindow();
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      addDebug(`Send failed: ${errorMsg}`);
       console.error("Error sending to chat:", error);
       toast.error(`Failed to send: ${errorMsg}`);
     } finally {
@@ -260,29 +218,10 @@ export default function LiffDrawing() {
     }
   };
 
-  if (!isLiffReady) {
+  if (!isLiffReady || !userId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!userId) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-        <div className="text-center mb-4">
-          <p className="text-foreground mb-4">Please link your LINE account first</p>
-          <Button onClick={() => liff.closeWindow()}>Close</Button>
-        </div>
-        <div className="w-full max-w-md bg-card p-4 rounded-lg border border-border overflow-auto max-h-96">
-          <h3 className="text-sm font-semibold mb-2">Debug Log:</h3>
-          <div className="text-xs font-mono space-y-1">
-            {debugInfo.map((info, i) => (
-              <div key={i} className="text-muted-foreground">{info}</div>
-            ))}
-          </div>
-        </div>
       </div>
     );
   }
@@ -345,17 +284,6 @@ export default function LiffDrawing() {
           activeColor={activeColor}
         />
       </div>
-
-      {/* Debug info (only show when debugging) */}
-      {debugInfo.length > 5 && (
-        <div className="bg-card border-t border-border p-2 max-h-32 overflow-auto">
-          <div className="text-xs font-mono space-y-1">
-            {debugInfo.slice(-10).map((info, i) => (
-              <div key={i} className="text-muted-foreground">{info}</div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Action buttons */}
       <div className="bg-card border-t border-border p-4 flex gap-2">
