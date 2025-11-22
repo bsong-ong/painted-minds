@@ -202,6 +202,33 @@ export type Database = {
         }
         Relationships: []
       }
+      line_link_tokens: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          line_user_id: string | null
+          token: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          line_user_id?: string | null
+          token: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          line_user_id?: string | null
+          token?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null

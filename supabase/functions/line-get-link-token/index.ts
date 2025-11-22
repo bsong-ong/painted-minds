@@ -44,14 +44,35 @@ serve(async (req) => {
       .eq("user_id", user.id)
       .single();
 
-    // Generate a one-time link token (expires in 5 minutes)
-    const token = `${user.id}_${Date.now()}`;
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    // Generate a 5-character alphanumeric token
+    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude confusing chars
+    let token = '';
+    for (let i = 0; i < 5; i++) {
+      token += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+
+    // Store token in database (expires in 5 minutes)
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    
+    const { error: insertError } = await supabase
+      .from("line_link_tokens")
+      .insert({
+        token,
+        user_id: user.id,
+        expires_at: expiresAt.toISOString(),
+      });
+
+    if (insertError) {
+      console.error("Error storing link token:", insertError);
+      throw new Error("Failed to generate link token");
+    }
+
+    console.log(`Generated link token ${token} for user ${user.id}`);
 
     return new Response(
       JSON.stringify({
         token,
-        expiresAt,
+        expiresAt: expiresAt.toISOString(),
         isLinked: !!existingLink,
         linkData: existingLink || null,
       }),

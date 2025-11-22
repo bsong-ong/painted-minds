@@ -64,11 +64,16 @@ serve(async (req) => {
       );
     }
 
-    // Verify the link token format
-    const parts = linkToken.split("_");
-    if (parts.length < 3 || parts[0] !== "LINE") {
+    // Look up the token in database
+    const { data: tokenData, error: tokenError } = await supabase
+      .from("line_link_tokens")
+      .select("*")
+      .eq("token", linkToken.toUpperCase())
+      .single();
+
+    if (tokenError || !tokenData) {
       return new Response(
-        JSON.stringify({ error: "Invalid link token format" }),
+        JSON.stringify({ error: "Invalid or expired link token" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -76,17 +81,23 @@ serve(async (req) => {
       );
     }
 
-    const lineUserId = parts[1];
-    const timestamp = parseInt(parts[2]);
-
-    // Check token expiration (5 minutes)
-    const now = Date.now();
-    const tokenAge = now - timestamp;
-    const fiveMinutes = 5 * 60 * 1000;
-
-    if (tokenAge > fiveMinutes) {
+    // Check token expiration
+    if (new Date(tokenData.expires_at) < new Date()) {
       return new Response(
-        JSON.stringify({ error: "Link token has expired. Please request a new one from LINE." }),
+        JSON.stringify({ error: "Link token has expired. Please request a new one." }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Get the LINE user ID from the token
+    const lineUserId = tokenData.line_user_id;
+    
+    if (!lineUserId) {
+      return new Response(
+        JSON.stringify({ error: "Invalid token: LINE user ID not found" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -125,6 +136,12 @@ serve(async (req) => {
       console.error("Error linking LINE account:", error);
       throw error;
     }
+
+    // Delete the used token
+    await supabase
+      .from("line_link_tokens")
+      .delete()
+      .eq("token", linkToken.toUpperCase());
 
     console.log(`Successfully linked LINE account ${lineUserId} to user ${userId}`);
 
