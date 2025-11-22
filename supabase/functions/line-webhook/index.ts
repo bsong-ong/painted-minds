@@ -183,39 +183,11 @@ serve(async (req) => {
                 },
               ]);
             } else if (messageText.includes("test reminder")) {
-              // Send test reminder
-              const liffId = Deno.env.get('VITE_LIFF_ID');
-              
-              if (!liffId) {
-                console.error('VITE_LIFF_ID not configured');
-                await replyMessage(event.replyToken, [
-                  {
-                    type: "text",
-                    text: "⚠️ Reminder feature is being configured. Please try again soon.",
-                  },
-                ]);
-                break;
-              }
-              
+              // Send test reminder - matches actual daily reminder format
               await replyMessage(event.replyToken, [
                 {
                   type: "text",
-                  text: "🌟 Daily Gratitude Reminder\n\nTake a moment to reflect on what you're grateful for today and create your gratitude art! 🎨✨",
-                },
-                {
-                  type: "template",
-                  altText: "Start your gratitude drawing",
-                  template: {
-                    type: "buttons",
-                    text: "Ready to express your gratitude?",
-                    actions: [
-                      {
-                        type: "uri",
-                        label: "🎨 Start Drawing",
-                        uri: `https://liff.line.me/${liffId}`,
-                      },
-                    ],
-                  },
+                  text: "🌟 Daily Gratitude Reminder\n\nTake a moment to reflect... What are you grateful for today? 💭✨\n\nShare your thoughts with me!",
                 },
               ]);
             } else {
