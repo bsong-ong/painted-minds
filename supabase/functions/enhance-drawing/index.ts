@@ -95,7 +95,7 @@ serve(async (req) => {
     // Create enhanced prompt for image generation, prioritizing user intent
     const userIntent = userDescription ? `The user intended to draw: ${userDescription}. ` : '';
     const styleHint = prompt ? `Style: ${prompt}. ` : '';
-    const enhancedPrompt = `A charming colored pencil drawing, soft and artistic style, beautiful colors, hand-drawn aesthetic. ${userIntent}${styleHint}Based on the visual analysis: ${description}. Warm and inviting art style, detailed but not overly complex, pleasant and appealing.`;
+    const enhancedPrompt = `A charming colored pencil drawing, soft and artistic style, beautiful colors, hand-drawn aesthetic. ${userIntent}${styleHint}Based on the visual analysis: ${description}. Warm and inviting art style, detailed but not overly complex, pleasant and appealing. IMPORTANT: Do not add any text, titles, words, or labels to the image. Pure visual artwork only, no text overlay.`;
 
     console.log('Generating enhanced image with Lovable AI...');
     
