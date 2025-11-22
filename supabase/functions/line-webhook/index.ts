@@ -212,6 +212,105 @@ serve(async (req) => {
                   text: getMessage(userLanguage, 'dailyReminder.title') + '\n\n' + getMessage(userLanguage, 'dailyReminder.text'),
                 },
               ]);
+            } else if (messageText.includes("journal")) {
+              // Show journal entries from last 7 days
+              const sevenDaysAgo = new Date();
+              sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+              
+              const { data: journals, error: journalError } = await supabase
+                .from('thought_journal')
+                .select('id, title, summary, created_at')
+                .eq('user_id', linkedAccount.user_id)
+                .gte('created_at', sevenDaysAgo.toISOString())
+                .order('created_at', { ascending: false });
+
+              if (journalError) {
+                console.error('Error fetching journals:', journalError);
+                await replyMessage(event.replyToken, [
+                  {
+                    type: "text",
+                    text: getMessage(userLanguage, 'errors.fetchJournalFailed'),
+                  },
+                ]);
+                break;
+              }
+
+              if (!journals || journals.length === 0) {
+                await replyMessage(event.replyToken, [
+                  {
+                    type: "text",
+                    text: getMessage(userLanguage, 'journal.noEntries'),
+                  },
+                ]);
+                break;
+              }
+
+              // Create carousel of journal entries
+              const bubbles = journals.map(journal => {
+                const date = new Date(journal.created_at);
+                const formattedDate = date.toLocaleDateString(userLanguage === 'th' ? 'th-TH' : 'en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                });
+                
+                return {
+                  type: "bubble",
+                  size: "kilo",
+                  header: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                      {
+                        type: "text",
+                        text: journal.title || getMessage(userLanguage, 'journal.untitled'),
+                        weight: "bold",
+                        size: "lg",
+                        wrap: true,
+                        color: "#1DB446"
+                      },
+                      {
+                        type: "text",
+                        text: formattedDate,
+                        size: "xs",
+                        color: "#999999",
+                        margin: "sm"
+                      }
+                    ],
+                    paddingAll: "15px"
+                  },
+                  body: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                      {
+                        type: "text",
+                        text: journal.summary || getMessage(userLanguage, 'journal.noSummary'),
+                        wrap: true,
+                        size: "sm",
+                        color: "#666666"
+                      }
+                    ],
+                    paddingAll: "15px"
+                  },
+                  styles: {
+                    footer: {
+                      separator: true
+                    }
+                  }
+                };
+              });
+
+              await replyMessage(event.replyToken, [
+                {
+                  type: "flex",
+                  altText: getMessage(userLanguage, 'journal.carouselAlt', journals.length),
+                  contents: {
+                    type: "carousel",
+                    contents: bubbles
+                  }
+                }
+              ]);
             } else {
               // User is sending gratitude - store it and offer to draw
               console.log(`Received gratitude text from ${lineUserId}: "${event.message.text}"`);
