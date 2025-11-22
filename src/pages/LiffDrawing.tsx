@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Send } from "lucide-react";
-
-const LIFF_ID = import.meta.env.VITE_LIFF_ID || "";
+import { LIFF_CONFIG } from "@/config/liff";
 
 export default function LiffDrawing() {
   const [isLiffReady, setIsLiffReady] = useState(false);
@@ -23,14 +22,14 @@ export default function LiffDrawing() {
     const initLiff = async () => {
       try {
         // Check if LIFF_ID is set
-        if (!LIFF_ID) {
+        if (!LIFF_CONFIG.liffId) {
           console.error("LIFF_ID is not set");
-          toast.error("LIFF ID is not configured. Please add VITE_LIFF_ID to your secrets.");
+          toast.error("LIFF ID is not configured. Please add your LIFF ID to src/config/liff.ts");
           return;
         }
 
-        console.log("Initializing LIFF with ID:", LIFF_ID);
-        await liff.init({ liffId: LIFF_ID });
+        console.log("Initializing LIFF with ID:", LIFF_CONFIG.liffId);
+        await liff.init({ liffId: LIFF_CONFIG.liffId });
         
         if (!liff.isLoggedIn()) {
           console.log("User not logged in, redirecting to login");
