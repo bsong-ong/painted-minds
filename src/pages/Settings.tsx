@@ -86,23 +86,30 @@ const Settings = () => {
     }
   };
 
-  const handleLanguageChange = async (newLang: 'en' | 'th') => {
+  const handleLanguageChange = async (newLang: string) => {
     if (!user) return;
+
+    const lang = newLang as 'en' | 'th';
+    console.log('Changing language to:', lang);
 
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ language: newLang })
+        .update({ language: lang })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Language update error:', error);
+        throw error;
+      }
 
-      setUserLanguage(newLang);
-      setLanguage(newLang);
+      console.log('Language updated successfully in database');
+      setUserLanguage(lang);
+      setLanguage(lang);
       toast.success('Language updated successfully');
     } catch (error: any) {
       console.error('Error updating language:', error);
-      toast.error('Failed to update language');
+      toast.error('Failed to update language: ' + error.message);
     }
   };
 
