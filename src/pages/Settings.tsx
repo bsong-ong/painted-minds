@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, User, Bell, Palette, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,12 +17,13 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 const Settings = () => {
   const { user, loading } = useAuth();
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
   const [saving, setSaving] = useState(false);
+  const [userLanguage, setUserLanguage] = useState<'en' | 'th'>('en');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -49,6 +51,10 @@ const Settings = () => {
         setProfile(data);
         setDisplayName(data.display_name || '');
         setUsername(data.username || '');
+        const lang = (data.language || 'en') as 'en' | 'th';
+        setUserLanguage(lang);
+        // Sync with app language
+        setLanguage(lang);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -77,6 +83,26 @@ const Settings = () => {
       toast.error(error.message || 'Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleLanguageChange = async (newLang: 'en' | 'th') => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ language: newLang })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setUserLanguage(newLang);
+      setLanguage(newLang);
+      toast.success('Language updated successfully');
+    } catch (error: any) {
+      console.error('Error updating language:', error);
+      toast.error('Failed to update language');
     }
   };
 
@@ -300,6 +326,26 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Language</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Set your preferred language for the app and LINE messages
+                    </p>
+                  </div>
+                  <Select value={userLanguage} onValueChange={handleLanguageChange}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="th">ไทย (Thai)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Separator />
+
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Dark Mode</Label>

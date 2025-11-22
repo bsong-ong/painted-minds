@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { getMessage, type Language } from "../_shared/line-messages.ts";
 
 const LINE_CHANNEL_SECRET = Deno.env.get("LINE_CHANNEL_SECRET");
 const LINE_CHANNEL_ACCESS_TOKEN = Deno.env.get("LINE_CHANNEL_ACCESS_TOKEN");
@@ -145,7 +146,7 @@ serve(async (req) => {
         continue;
       }
 
-      // Check if this LINE user is linked to an app account
+      // Check if this LINE user is linked to an app account and get language
       const { data: linkedAccount } = await supabase
         .from("line_accounts")
         .select("user_id")
@@ -153,6 +154,20 @@ serve(async (req) => {
         .single();
 
       console.log(`LINE user ${lineUserId} linked:`, !!linkedAccount);
+
+      // Get user's language preference
+      let userLanguage: Language = 'en';
+      if (linkedAccount) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("language")
+          .eq("id", linkedAccount.user_id)
+          .single();
+        
+        if (profile?.language) {
+          userLanguage = profile.language as Language;
+        }
+      }
 
       switch (event.type) {
         case "message":
@@ -171,7 +186,7 @@ serve(async (req) => {
               await replyMessage(event.replyToken, [
                 {
                   type: "text",
-                  text: `🔗 Link Your Account\n\nYour link token is:\n\n${linkToken}\n\nCopy this token and paste it in the Painted Minds app under Settings > LINE to connect your account.\n\nThis token expires in 5 minutes.`,
+                  text: getMessage(userLanguage, 'linkAccount.title') + '\n\n' + getMessage(userLanguage, 'linkAccount.message', linkToken),
                 },
               ]);
             } else if (messageText.includes("help") || messageText.includes("menu")) {
@@ -179,7 +194,7 @@ serve(async (req) => {
               await replyMessage(event.replyToken, [
                 {
                   type: "text",
-                  text: "✨ Painted Minds Help\n\n📝 Your account is linked!\n\n🎨 Send me what you're grateful for to start drawing!\n\nExample: \"I'm grateful for my family\"\n\n⭐ Track your streaks and achievements in the app\n🔔 Get daily reminders\n\n💡 Type 'test reminder' to preview the daily reminder\n\nVisit the app for more features!",
+                  text: getMessage(userLanguage, 'help.title') + '\n\n' + getMessage(userLanguage, 'help.message'),
                 },
               ]);
             } else if (messageText.includes("test reminder")) {
@@ -187,7 +202,7 @@ serve(async (req) => {
               await replyMessage(event.replyToken, [
                 {
                   type: "text",
-                  text: "🌟 Daily Gratitude Reminder\n\nTake a moment to reflect... What are you grateful for today? 💭✨\n\nShare your thoughts with me!",
+                  text: getMessage(userLanguage, 'dailyReminder.title') + '\n\n' + getMessage(userLanguage, 'dailyReminder.text'),
                 },
               ]);
             } else {
@@ -202,7 +217,7 @@ serve(async (req) => {
                 await replyMessage(event.replyToken, [
                   {
                     type: "text",
-                    text: "✨ Thank you for sharing your gratitude!\n\nDrawing feature is being set up. Please try again soon or visit the app directly.",
+                    text: getMessage(userLanguage, 'errors.liffNotConfigured'),
                   },
                 ]);
                 break;
@@ -214,18 +229,18 @@ serve(async (req) => {
               await replyMessage(event.replyToken, [
                 {
                   type: "text",
-                  text: `✨ "${event.message.text}"\n\nLovely! Would you like to draw something to express your gratitude?`,
+                  text: getMessage(userLanguage, 'gratitudeReceived.thankYou', event.message.text),
                 },
                 {
                   type: "template",
-                  altText: "Draw your gratitude",
+                  altText: getMessage(userLanguage, 'gratitudeReceived.buttonLabel'),
                   template: {
                     type: "buttons",
-                    text: "Tap below to open the drawing canvas",
+                    text: getMessage(userLanguage, 'gratitudeReceived.buttonText'),
                     actions: [
                       {
                         type: "uri",
-                        label: "🎨 Start Drawing",
+                        label: getMessage(userLanguage, 'gratitudeReceived.buttonLabel'),
                         uri: liffUrl,
                       },
                     ],
@@ -241,7 +256,7 @@ serve(async (req) => {
           await replyMessage(event.replyToken, [
             {
               type: "text",
-              text: "🎨 Welcome to Painted Minds!\n\nSend me any message to get your link token and connect your account.\n\nOnce linked, you'll receive:\n✅ Daily gratitude reminders\n✅ Achievement notifications\n✅ Personalized encouragement",
+              text: getMessage(userLanguage, 'welcome.newFollower'),
             },
           ]);
           break;
