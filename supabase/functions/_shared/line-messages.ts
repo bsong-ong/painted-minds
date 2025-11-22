@@ -20,7 +20,7 @@ export const lineMessages = {
     },
     help: {
       title: '✨ Painted Minds Help',
-      message: '📝 Your account is linked!\n\n🎨 Send me what you\'re grateful for to start drawing!\n\nExample: "I\'m grateful for my family"\n\n📔 Type \'journal\' to view your recent entries\n⭐ Track your streaks and achievements in the app\n🔔 Get daily reminders\n\n💡 Type \'test reminder\' to preview the daily reminder\n\nVisit the app for more features!'
+      message: '📝 Your account is linked!\n\n🎨 Send me what you\'re grateful for to start drawing!\n\nExample: "I\'m grateful for my family"\n\n📔 Type \'journal\' to view your recent gratitude drawings\n⭐ Track your streaks and achievements in the app\n🔔 Get daily reminders\n\n💡 Type \'test reminder\' to preview the daily reminder\n\nVisit the app for more features!'
     },
     errors: {
       liffNotConfigured: '✨ Thank you for sharing your gratitude!\n\nDrawing feature is being set up. Please try again soon or visit the app directly.',
@@ -28,10 +28,10 @@ export const lineMessages = {
       fetchJournalFailed: '❌ Sorry, I couldn\'t fetch your journal entries. Please try again later.'
     },
     journal: {
-      noEntries: '📔 You don\'t have any recent journal entries.\n\nCreate new entries in the app!',
-      untitled: 'Untitled Entry',
-      noSummary: 'No summary available',
-      carouselAlt: (count: number) => `Your ${count} most recent journal entries`
+      noEntries: '📔 You don\'t have any recent gratitude drawings.\n\nCreate new drawings in the app!',
+      untitled: 'Untitled Drawing',
+      noSummary: 'No description available',
+      carouselAlt: (count: number) => `Your ${count} most recent gratitude drawings`
     }
   },
   th: {
@@ -53,7 +53,7 @@ export const lineMessages = {
     },
     help: {
       title: '✨ ความช่วยเหลือ Painted Minds',
-      message: '📝 บัญชีของคุณเชื่อมต่อแล้ว!\n\n🎨 ส่งสิ่งที่คุณรู้สึกขอบคุณให้ฉันเพื่อเริ่มวาดรูป!\n\nตัวอย่าง: "ฉันรู้สึกขอบคุณครอบครัวของฉัน"\n\n📔 พิมพ์ \'journal\' เพื่อดูรายการล่าสุดของคุณ\n⭐ ติดตามความต่อเนื่องและความสำเร็จของคุณในแอป\n🔔 รับการเตือนประจำวัน\n\n💡 พิมพ์ \'test reminder\' เพื่อดูตัวอย่างการเตือนประจำวัน\n\nเยี่ยมชมแอปสำหรับคุณสมบัติเพิ่มเติม!'
+      message: '📝 บัญชีของคุณเชื่อมต่อแล้ว!\n\n🎨 ส่งสิ่งที่คุณรู้สึกขอบคุณให้ฉันเพื่อเริ่มวาดรูป!\n\nตัวอย่าง: "ฉันรู้สึกขอบคุณครอบครัวของฉัน"\n\n📔 พิมพ์ \'journal\' เพื่อดูภาพวาดความกตัญญูล่าสุดของคุณ\n⭐ ติดตามความต่อเนื่องและความสำเร็จของคุณในแอป\n🔔 รับการเตือนประจำวัน\n\n💡 พิมพ์ \'test reminder\' เพื่อดูตัวอย่างการเตือนประจำวัน\n\nเยี่ยมชมแอปสำหรับคุณสมบัติเพิ่มเติม!'
     },
     errors: {
       liffNotConfigured: '✨ ขอบคุณที่แบ่งปันความกตัญญูของคุณ!\n\nกำลังตั้งค่าคุณสมบัติการวาดรูป โปรดลองอีกครั้งในไม่ช้าหรือเยี่ยมชมแอปโดยตรง',
@@ -61,10 +61,10 @@ export const lineMessages = {
       fetchJournalFailed: '❌ ขออภัย ฉันไม่สามารถดึงรายการบันทึกของคุณได้ โปรดลองอีกครั้งในภายหลัง'
     },
     journal: {
-      noEntries: '📔 คุณไม่มีบันทึกล่าสุด\n\nสร้างรายการใหม่ในแอป!',
-      untitled: 'รายการไม่มีชื่อ',
-      noSummary: 'ไม่มีสรุป',
-      carouselAlt: (count: number) => `บันทึก ${count} รายการล่าสุดของคุณ`
+      noEntries: '📔 คุณไม่มีภาพวาดความกตัญญูล่าสุด\n\nสร้างภาพวาดใหม่ในแอป!',
+      untitled: 'ภาพวาดไม่มีชื่อ',
+      noSummary: 'ไม่มีคำอธิบาย',
+      carouselAlt: (count: number) => `ภาพวาดความกตัญญู ${count} รายการล่าสุดของคุณ`
     }
   }
 };
