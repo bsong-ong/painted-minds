@@ -158,16 +158,23 @@ serve(async (req) => {
       // Get user's language preference
       let userLanguage: Language = 'en';
       if (linkedAccount) {
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("language")
           .eq("id", linkedAccount.user_id)
           .single();
         
+        console.log('Profile query result:', { profile, profileError, userId: linkedAccount.user_id });
+        
         if (profile?.language) {
           userLanguage = profile.language as Language;
+          console.log('User language set to:', userLanguage);
+        } else {
+          console.log('No language in profile, defaulting to en');
         }
       }
+      
+      console.log('Final userLanguage for messages:', userLanguage);
 
       switch (event.type) {
         case "message":
