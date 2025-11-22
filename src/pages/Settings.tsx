@@ -37,6 +37,10 @@ const Settings = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    console.log('Current userLanguage state:', userLanguage);
+  }, [userLanguage]);
+
   const loadProfile = async () => {
     try {
       const { data, error } = await supabase
