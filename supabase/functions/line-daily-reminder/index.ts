@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getMessage, type Language } from "../_shared/line-messages.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,10 +26,15 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get all linked LINE accounts
+    // Get all linked LINE accounts with user language preferences
     const { data: lineAccounts, error: fetchError } = await supabase
       .from('line_accounts')
-      .select('line_user_id, display_name');
+      .select(`
+        line_user_id,
+        display_name,
+        user_id,
+        profiles!inner(language)
+      `);
 
     if (fetchError) {
       console.error('Error fetching LINE accounts:', fetchError);
@@ -46,14 +52,17 @@ serve(async (req) => {
     console.log(`Sending reminders to ${lineAccounts.length} users`);
 
     // Send reminder to each user
-    const sendPromises = lineAccounts.map(async (account) => {
+    const sendPromises = lineAccounts.map(async (account: any) => {
       try {
+        // Get user's language preference (default to 'en' if not set)
+        const userLanguage: Language = account.profiles?.language || 'en';
+        
         const message = {
           to: account.line_user_id,
           messages: [
             {
               type: 'text',
-              text: '🌟 Daily Gratitude Reminder\n\nTake a moment to reflect... What are you grateful for today? 💭✨\n\nShare your thoughts with me!'
+              text: getMessage(userLanguage, 'dailyReminder.title') + '\n\n' + getMessage(userLanguage, 'dailyReminder.text')
             }
           ]
         };
