@@ -179,114 +179,51 @@ serve(async (req) => {
               await replyMessage(event.replyToken, [
                 {
                   type: "text",
-                  text: "✨ Painted Minds Help\n\n📝 Your account is linked!\n\n🎨 Send me what you're grateful for and I'll create a beautiful image for you!\n\nExample: \"I'm grateful for my family\"\n\n⭐ Track your streaks and achievements in the app\n🔔 Get daily reminders\n\nVisit the app for more features!",
+                  text: "✨ Painted Minds Help\n\n📝 Your account is linked!\n\n🎨 Send me what you're grateful for to start drawing!\n\nExample: \"I'm grateful for my family\"\n\n⭐ Track your streaks and achievements in the app\n🔔 Get daily reminders\n\nVisit the app for more features!",
                 },
               ]);
             } else {
-              // User is sending gratitude - generate image
+              // User is sending gratitude - store it and offer to draw
+              console.log(`Received gratitude text from ${lineUserId}: "${event.message.text}"`);
+              
+              // Get LIFF ID from environment
+              const liffId = Deno.env.get('VITE_LIFF_ID');
+              
+              if (!liffId) {
+                console.error('VITE_LIFF_ID not configured');
+                await replyMessage(event.replyToken, [
+                  {
+                    type: "text",
+                    text: "✨ Thank you for sharing your gratitude!\n\nDrawing feature is being set up. Please try again soon or visit the app directly.",
+                  },
+                ]);
+                break;
+              }
+              
+              // Create LIFF URL with gratitude text as parameter
+              const liffUrl = `https://liff.line.me/${liffId}?gratitude=${encodeURIComponent(event.message.text || '')}`;
+              
               await replyMessage(event.replyToken, [
                 {
                   type: "text",
-                  text: "🎨 Creating your gratitude image...\n\nThis may take a moment. I'll send it to you shortly! ✨",
+                  text: `✨ "${event.message.text}"\n\nLovely! Would you like to draw something to express your gratitude?`,
+                },
+                {
+                  type: "template",
+                  altText: "Draw your gratitude",
+                  template: {
+                    type: "buttons",
+                    text: "Tap below to open the drawing canvas",
+                    actions: [
+                      {
+                        type: "uri",
+                        label: "🎨 Start Drawing",
+                        uri: liffUrl,
+                      },
+                    ],
+                  },
                 },
               ]);
-
-              // Generate image in background
-              try {
-                console.log(`Generating image for gratitude: "${event.message.text}"`);
-                
-                const imageResponse = await fetch(
-                  `${SUPABASE_URL}/functions/v1/generate-gratitude-image`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
-                    },
-                    body: JSON.stringify({
-                      gratitudeText: event.message.text,
-                      userId: linkedAccount.user_id,
-                    }),
-                  }
-                );
-
-                if (!imageResponse.ok) {
-                  throw new Error(`Image generation failed: ${imageResponse.status}`);
-                }
-
-                const imageData = await imageResponse.json();
-                console.log("Image generated, sending to LINE");
-
-                // Convert base64 to blob URL for LINE
-                const base64Image = imageData.imageUrl.split(",")[1];
-                const binaryData = Uint8Array.from(atob(base64Image), (c) => c.charCodeAt(0));
-                
-                // Upload to temporary storage for LINE
-                const fileName = `temp_${lineUserId}_${Date.now()}.png`;
-                const uploadResponse = await fetch(
-                  `${SUPABASE_URL}/storage/v1/object/drawings/${fileName}`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
-                      "Content-Type": "image/png",
-                    },
-                    body: binaryData,
-                  }
-                );
-
-                if (!uploadResponse.ok) {
-                  throw new Error("Failed to upload image");
-                }
-
-                // Get public URL
-                const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/drawings/${fileName}`;
-
-                // Send image via LINE
-                await fetch("https://api.line.me/v2/bot/message/push", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
-                  },
-                  body: JSON.stringify({
-                    to: lineUserId,
-                    messages: [
-                      {
-                        type: "image",
-                        originalContentUrl: publicUrl,
-                        previewImageUrl: publicUrl,
-                      },
-                      {
-                        type: "text",
-                        text: `✨ Here's your gratitude image!\n\n"${event.message.text}"\n\nYou can view all your gratitude entries in the Painted Minds app. Keep up the great work! 🌟`,
-                      },
-                    ],
-                  }),
-                });
-
-                console.log("Image sent successfully to LINE");
-              } catch (error) {
-                console.error("Error generating/sending image:", error);
-                
-                // Send error message to user
-                await fetch("https://api.line.me/v2/bot/message/push", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
-                  },
-                  body: JSON.stringify({
-                    to: lineUserId,
-                    messages: [
-                      {
-                        type: "text",
-                        text: "Sorry, I had trouble creating your image. Please try again or send 'help' for options.",
-                      },
-                    ],
-                  }),
-                });
-              }
             }
           }
           break;
