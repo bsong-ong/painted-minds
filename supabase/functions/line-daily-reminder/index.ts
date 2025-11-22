@@ -53,22 +53,7 @@ serve(async (req) => {
           messages: [
             {
               type: 'text',
-              text: '🌟 Daily Gratitude Reminder\n\nTake a moment to reflect on what you\'re grateful for today and create your gratitude art! 🎨✨'
-            },
-            {
-              type: 'template',
-              altText: 'Start your gratitude drawing',
-              template: {
-                type: 'buttons',
-                text: 'Ready to express your gratitude?',
-                actions: [
-                  {
-                    type: 'uri',
-                    label: '🎨 Start Drawing',
-                    uri: `https://liff.line.me/${liffId}`
-                  }
-                ]
-              }
+              text: '🌟 Daily Gratitude Reminder\n\nTake a moment to reflect... What are you grateful for today? 💭✨\n\nShare your thoughts with me!'
             }
           ]
         };
