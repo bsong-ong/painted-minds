@@ -54,26 +54,29 @@ export default function LiffDrawing() {
         addDebug(`LINE User ID: ${lineUserId}`);
 
         // Find the app user linked to this LINE account via edge function
-        addDebug("Calling edge function...");
+        addDebug(`Calling edge function with ID: ${lineUserId}`);
         const { data, error: functionError } = await supabase.functions.invoke("line-get-user-id", {
           body: { lineUserId },
         });
 
-        addDebug(`Edge function response: ${JSON.stringify({ data, error: functionError })}`);
+        addDebug(`Response: ${JSON.stringify(data)}`);
+        if (functionError) {
+          addDebug(`Error: ${JSON.stringify(functionError)}`);
+        }
 
         if (functionError) {
-          addDebug(`ERROR: ${JSON.stringify(functionError)}`);
+          addDebug(`Function error occurred`);
           toast.error("LINE account not linked. Please link your account in the app settings.");
           return;
         }
 
         if (!data?.userId) {
-          addDebug(`ERROR: No userId in response: ${JSON.stringify(data)}`);
+          addDebug(`No userId in response`);
           toast.error("LINE account not linked. Please link your account in the app settings.");
           return;
         }
 
-        addDebug(`Found linked account: ${data.userId}`);
+        addDebug(`Success! User ID: ${data.userId}`);
         setUserId(data.userId);
       } catch (error) {
         addDebug(`EXCEPTION: ${error instanceof Error ? error.message : String(error)}`);

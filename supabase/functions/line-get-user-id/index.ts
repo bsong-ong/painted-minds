@@ -19,7 +19,10 @@ serve(async (req) => {
 
     const { lineUserId } = await req.json();
 
+    console.log("Received request with LINE user ID:", lineUserId);
+
     if (!lineUserId) {
+      console.error("No lineUserId provided in request");
       return new Response(
         JSON.stringify({ error: "lineUserId is required" }),
         {
@@ -30,11 +33,14 @@ serve(async (req) => {
     }
 
     // Query line_accounts using service role to bypass RLS
+    console.log("Querying database for LINE user ID:", lineUserId);
     const { data, error } = await supabase
       .from("line_accounts")
-      .select("user_id")
+      .select("user_id, line_user_id")
       .eq("line_user_id", lineUserId)
       .maybeSingle();
+
+    console.log("Database query result:", { data, error });
 
     if (error) {
       console.error("Database query error:", error);
@@ -42,8 +48,9 @@ serve(async (req) => {
     }
 
     if (!data) {
+      console.log("No matching LINE account found for:", lineUserId);
       return new Response(
-        JSON.stringify({ error: "LINE account not linked" }),
+        JSON.stringify({ error: "LINE account not linked", receivedId: lineUserId }),
         {
           status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -51,6 +58,7 @@ serve(async (req) => {
       );
     }
 
+    console.log("Found user:", data.user_id);
     return new Response(
       JSON.stringify({ userId: data.user_id }),
       {
