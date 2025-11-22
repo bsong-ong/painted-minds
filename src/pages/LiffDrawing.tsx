@@ -1,18 +1,23 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import liff from "@line/liff";
-import { MobileCanvas } from "@/components/MobileCanvas";
 import type { MobileCanvasRef } from "@/components/MobileCanvas";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Sparkles } from "lucide-react";
 import { LIFF_CONFIG } from "@/config/liff";
+import { supabase } from "@/integrations/supabase/client";
+import { CanvasLoader } from "@/components/CanvasLoader";
+
+// Lazy load the heavy MobileCanvas component (contains fabric.js ~400KB)
+const MobileCanvas = lazy(() => import("@/components/MobileCanvas"));
 
 export default function LiffDrawing() {
   const [searchParams] = useSearchParams();
   const gratitudeParam = searchParams.get('gratitude');
   const [isLiffReady, setIsLiffReady] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [loadingStage, setLoadingStage] = useState<string>("Connecting to LINE...");
   const [activeTool, setActiveTool] = useState<"draw" | "select" | "rectangle" | "circle">("draw");
   const [activeColor, setActiveColor] = useState("#000000");
   const [isSaving, setIsSaving] = useState(false);
@@ -29,6 +34,7 @@ export default function LiffDrawing() {
           return;
         }
 
+        setLoadingStage("Connecting to LINE...");
         await liff.init({ liffId: LIFF_CONFIG.liffId });
         
         if (!liff.isLoggedIn()) {
@@ -36,26 +42,21 @@ export default function LiffDrawing() {
           return;
         }
 
+        setLoadingStage("Authenticating...");
         setIsLiffReady(true);
         
         // Get LINE user profile
         const profile = await liff.getProfile();
         const lineUserId = profile.userId;
 
+        setLoadingStage("Loading your account...");
+        
         // Find the app user linked to this LINE account via edge function
-        const functionUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/line-get-user-id`;
-        const response = await fetch(functionUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttaG5ua3djeHJveHlma2JocWlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0Njk5OTMsImV4cCI6MjA3NTA0NTk5M30.VlcxLNhoyj_aoFzg9a3ma-5a01zfPr32wfcvm0UF5Xo',
-          },
-          body: JSON.stringify({ lineUserId }),
+        const { data, error } = await supabase.functions.invoke('line-get-user-id', {
+          body: { lineUserId }
         });
 
-        const data = await response.json();
-
-        if (!response.ok || !data.userId) {
+        if (error || !data?.userId) {
           toast.error("LINE account not linked. Please link your account in the app settings.");
           if (liff.isInClient()) {
             setTimeout(() => liff.closeWindow(), 2000);
@@ -86,46 +87,32 @@ export default function LiffDrawing() {
     try {
       const dataUrl = canvasRef.current.getDataURL();
 
-      const functionUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/save-liff-drawing`;
-      const response = await fetch(functionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('save-liff-drawing', {
+        body: {
           imageData: dataUrl,
           userId: userId,
           gratitudePrompt: gratitudeParam || null,
-        }),
+        }
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data?.success) {
-        throw new Error(data?.error || 'Failed to save drawing');
+      if (error || !data?.success) {
+        throw new Error(error?.message || data?.error || 'Failed to save drawing');
       }
 
       // If in gratitude mode, enhance the drawing
       if (isGratitudeMode && data.drawingId) {
         setIsEnhancing(true);
         
-        const enhanceUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/enhance-drawing`;
-        const enhanceResponse = await fetch(enhanceUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        const { data: enhanceData, error: enhanceError } = await supabase.functions.invoke('enhance-drawing', {
+          body: {
             imageData: dataUrl,
             prompt: '',
             userDescription: gratitudeParam,
             drawingId: data.drawingId,
-          }),
+          }
         });
 
-        const enhanceData = await enhanceResponse.json();
-
-        if (enhanceResponse.ok && enhanceData.enhancedImageUrl && liff.isInClient()) {
+        if (!enhanceError && enhanceData?.enhancedImageUrl && liff.isInClient()) {
           // Send enhanced image to LINE
           try {
             await liff.sendMessages([
@@ -178,24 +165,16 @@ export default function LiffDrawing() {
         return;
       }
 
-      const functionUrl = `https://kmhnnkwcxroxyfkbhqia.supabase.co/functions/v1/save-liff-drawing`;
-      
-      const response = await fetch(functionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('save-liff-drawing', {
+        body: {
           imageData: dataUrl,
           userId: userId,
           gratitudePrompt: gratitudeParam || null,
-        }),
+        }
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data?.success || !data?.publicUrl) {
-        throw new Error(data?.error || 'Failed to upload image');
+      if (error || !data?.success || !data?.publicUrl) {
+        throw new Error(error?.message || data?.error || 'Failed to upload image');
       }
       
       // Send public URL to LINE chat
@@ -220,8 +199,9 @@ export default function LiffDrawing() {
 
   if (!isLiffReady || !userId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">{loadingStage}</p>
       </div>
     );
   }
@@ -277,12 +257,14 @@ export default function LiffDrawing() {
       )}
 
       {/* Canvas */}
-      <div className="flex-1 overflow-hidden">
-        <MobileCanvas
-          ref={canvasRef}
-          activeTool={activeTool}
-          activeColor={activeColor}
-        />
+      <div className="flex-1 overflow-hidden p-4">
+        <Suspense fallback={<CanvasLoader />}>
+          <MobileCanvas
+            ref={canvasRef}
+            activeTool={activeTool}
+            activeColor={activeColor}
+          />
+        </Suspense>
       </div>
 
       {/* Action buttons */}

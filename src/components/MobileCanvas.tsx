@@ -18,7 +18,7 @@ export interface MobileCanvasRef {
   getDataURL: () => string;
 }
 
-export const MobileCanvas = forwardRef<MobileCanvasRef, MobileCanvasProps>(
+const MobileCanvas = forwardRef<MobileCanvasRef, MobileCanvasProps>(
   ({ activeTool, activeColor, onToolChange }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -51,12 +51,9 @@ export const MobileCanvas = forwardRef<MobileCanvasRef, MobileCanvasProps>(
     useEffect(() => {
       if (!canvasRef.current || !containerRef.current) return;
 
-      const container = containerRef.current;
-      const containerRect = container.getBoundingClientRect();
-      
-      // Calculate optimal canvas size for mobile
-      const maxWidth = isMobile ? Math.min(containerRect.width - 32, window.innerWidth - 32) : 800;
-      const maxHeight = isMobile ? Math.min(window.innerHeight * 0.4, 400) : 400;
+      // Use fixed initial size for faster load, will resize dynamically
+      const maxWidth = isMobile ? Math.min(window.innerWidth - 64, 350) : 800;
+      const maxHeight = 350;
       
       const canvas = new FabricCanvas(canvasRef.current, {
         width: maxWidth,
@@ -93,11 +90,10 @@ export const MobileCanvas = forwardRef<MobileCanvasRef, MobileCanvasProps>(
 
       // Handle window resize
       const handleResize = () => {
-        if (!container || !canvas) return;
+        if (!containerRef.current || !canvas) return;
         
-        const newRect = container.getBoundingClientRect();
-        const newMaxWidth = isMobile ? Math.min(newRect.width - 32, window.innerWidth - 32) : 800;
-        const newMaxHeight = isMobile ? Math.min(window.innerHeight * 0.4, 400) : 400;
+        const newMaxWidth = isMobile ? Math.min(window.innerWidth - 64, 350) : 800;
+        const newMaxHeight = 350;
         
         canvas.setDimensions({
           width: newMaxWidth,
@@ -265,3 +261,9 @@ export const MobileCanvas = forwardRef<MobileCanvasRef, MobileCanvasProps>(
 );
 
 MobileCanvas.displayName = 'MobileCanvas';
+
+// Named export for backward compatibility
+export { MobileCanvas };
+
+// Default export for lazy loading
+export default MobileCanvas;
