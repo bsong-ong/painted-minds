@@ -344,13 +344,19 @@ const Settings = () => {
                       Set your preferred language for the app and LINE messages
                     </p>
                   </div>
-                  <Select value={userLanguage} onValueChange={handleLanguageChange}>
-                    <SelectTrigger className="w-[140px]">
+                  <Select 
+                    value={userLanguage} 
+                    onValueChange={(value) => {
+                      console.log('Select onValueChange triggered with value:', value);
+                      handleLanguageChange(value);
+                    }}
+                  >
+                    <SelectTrigger className="w-[140px]" onClick={() => console.log('SelectTrigger clicked, current value:', userLanguage)}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="th">ไทย (Thai)</SelectItem>
+                      <SelectItem value="en" onClick={() => console.log('English option clicked')}>English</SelectItem>
+                      <SelectItem value="th" onClick={() => console.log('Thai option clicked')}>ไทย (Thai)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
