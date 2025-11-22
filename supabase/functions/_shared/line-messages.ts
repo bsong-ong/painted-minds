@@ -28,10 +28,10 @@ export const lineMessages = {
       fetchJournalFailed: '❌ Sorry, I couldn\'t fetch your journal entries. Please try again later.'
     },
     journal: {
-      noEntries: '📔 You don\'t have any journal entries from the last 7 days.\n\nCreate new entries in the app!',
+      noEntries: '📔 You don\'t have any recent journal entries.\n\nCreate new entries in the app!',
       untitled: 'Untitled Entry',
       noSummary: 'No summary available',
-      carouselAlt: (count: number) => `Your ${count} journal entries from the last 7 days`
+      carouselAlt: (count: number) => `Your ${count} most recent journal entries`
     }
   },
   th: {
@@ -61,10 +61,10 @@ export const lineMessages = {
       fetchJournalFailed: '❌ ขออภัย ฉันไม่สามารถดึงรายการบันทึกของคุณได้ โปรดลองอีกครั้งในภายหลัง'
     },
     journal: {
-      noEntries: '📔 คุณไม่มีบันทึกใดๆ จาก 7 วันที่ผ่านมา\n\nสร้างรายการใหม่ในแอป!',
+      noEntries: '📔 คุณไม่มีบันทึกล่าสุด\n\nสร้างรายการใหม่ในแอป!',
       untitled: 'รายการไม่มีชื่อ',
       noSummary: 'ไม่มีสรุป',
-      carouselAlt: (count: number) => `บันทึก ${count} รายการของคุณจาก 7 วันที่ผ่านมา`
+      carouselAlt: (count: number) => `บันทึก ${count} รายการล่าสุดของคุณ`
     }
   }
 };
