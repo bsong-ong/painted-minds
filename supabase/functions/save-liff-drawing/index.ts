@@ -12,13 +12,14 @@ serve(async (req) => {
   }
 
   try {
-    const { imageData, userId } = await req.json();
+    const { imageData, userId, gratitudePrompt } = await req.json();
 
     if (!imageData || !userId) {
       throw new Error('Missing imageData or userId');
     }
 
     console.log('Processing drawing save for user:', userId);
+    console.log('Gratitude prompt:', gratitudePrompt);
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -55,16 +56,19 @@ serve(async (req) => {
     console.log('Public URL:', publicUrl);
 
     // Insert into database
-    const { error: insertError } = await supabase
+    const { data: drawingData, error: insertError } = await supabase
       .from('drawings')
       .insert({
         user_id: userId,
         image_url: publicUrl,
         storage_path: filePath,
-        title: 'LINE Drawing',
-        is_gratitude_entry: false,
+        title: gratitudePrompt ? gratitudePrompt.substring(0, 100) : 'LINE Drawing',
+        gratitude_prompt: gratitudePrompt || null,
+        is_gratitude_entry: !!gratitudePrompt,
         is_public: false,
-      });
+      })
+      .select()
+      .single();
 
     if (insertError) {
       console.error('Insert error:', insertError);
@@ -77,6 +81,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         publicUrl,
+        drawingId: drawingData.id,
         message: 'Drawing saved successfully'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
