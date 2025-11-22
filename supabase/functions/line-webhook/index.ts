@@ -179,7 +179,43 @@ serve(async (req) => {
               await replyMessage(event.replyToken, [
                 {
                   type: "text",
-                  text: "✨ Painted Minds Help\n\n📝 Your account is linked!\n\n🎨 Send me what you're grateful for to start drawing!\n\nExample: \"I'm grateful for my family\"\n\n⭐ Track your streaks and achievements in the app\n🔔 Get daily reminders\n\nVisit the app for more features!",
+                  text: "✨ Painted Minds Help\n\n📝 Your account is linked!\n\n🎨 Send me what you're grateful for to start drawing!\n\nExample: \"I'm grateful for my family\"\n\n⭐ Track your streaks and achievements in the app\n🔔 Get daily reminders\n\n💡 Type 'test reminder' to preview the daily reminder\n\nVisit the app for more features!",
+                },
+              ]);
+            } else if (messageText.includes("test reminder")) {
+              // Send test reminder
+              const liffId = Deno.env.get('VITE_LIFF_ID');
+              
+              if (!liffId) {
+                console.error('VITE_LIFF_ID not configured');
+                await replyMessage(event.replyToken, [
+                  {
+                    type: "text",
+                    text: "⚠️ Reminder feature is being configured. Please try again soon.",
+                  },
+                ]);
+                break;
+              }
+              
+              await replyMessage(event.replyToken, [
+                {
+                  type: "text",
+                  text: "🌟 Daily Gratitude Reminder\n\nTake a moment to reflect on what you're grateful for today and create your gratitude art! 🎨✨",
+                },
+                {
+                  type: "template",
+                  altText: "Start your gratitude drawing",
+                  template: {
+                    type: "buttons",
+                    text: "Ready to express your gratitude?",
+                    actions: [
+                      {
+                        type: "uri",
+                        label: "🎨 Start Drawing",
+                        uri: `https://liff.line.me/${liffId}`,
+                      },
+                    ],
+                  },
                 },
               ]);
             } else {
