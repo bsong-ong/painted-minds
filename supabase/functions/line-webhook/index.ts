@@ -360,7 +360,7 @@ serve(async (req) => {
 
               console.log(`Audio uploaded: ${urlData.publicUrl}`);
 
-              // Send audio response via LINE
+              // Send both text and audio response via LINE
               const pushResponse = await fetch("https://api.line.me/v2/bot/message/push", {
                 method: "POST",
                 headers: {
@@ -371,6 +371,10 @@ serve(async (req) => {
                   to: lineUserId,
                   messages: [
                     {
+                      type: "text",
+                      text: `💬 ${cbtText}`,
+                    },
+                    {
                       type: "audio",
                       originalContentUrl: urlData.publicUrl,
                       duration: 60000, // 60 seconds max
@@ -380,7 +384,7 @@ serve(async (req) => {
               });
 
               if (!pushResponse.ok) {
-                console.error(`Failed to send audio: ${await pushResponse.text()}`);
+                console.error(`Failed to send response: ${await pushResponse.text()}`);
               }
 
               console.log(`Voice thought buddy session completed for ${lineUserId}`);
