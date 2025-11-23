@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { audio, language } = await req.json();
+    const { audio, language, contentType } = await req.json();
     
     if (!audio) {
       throw new Error('No audio data provided');
@@ -21,6 +21,11 @@ serve(async (req) => {
     // Default to English if no language specified, or if invalid language
     const validLanguage = (language === 'th' || language === 'en') ? language : 'en';
     console.log('Transcribing audio in language:', validLanguage);
+
+    // Determine audio format from content type
+    const audioType = contentType || 'audio/webm';
+    const extension = audioType.includes('m4a') ? 'm4a' : audioType.includes('webm') ? 'webm' : 'mp3';
+    console.log('Audio format:', audioType, 'extension:', extension);
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
@@ -38,8 +43,8 @@ serve(async (req) => {
 
     // Create form data for transcription
     const formData = new FormData();
-    const audioBlob = new Blob([bytes], { type: 'audio/webm' });
-    formData.append('file', audioBlob, 'audio.webm');
+    const audioBlob = new Blob([bytes], { type: audioType });
+    formData.append('file', audioBlob, `audio.${extension}`);
     formData.append('model', 'gpt-4o-transcribe');
     formData.append('language', validLanguage);
 
