@@ -178,6 +178,234 @@ serve(async (req) => {
 
       switch (event.type) {
         case "message":
+          // Handle audio messages for voice thought buddy
+          if (event.message?.type === "audio") {
+            console.log(`Received audio message from ${lineUserId}`);
+
+            if (!linkedAccount) {
+              // User needs to link account first
+              const linkToken = `LINE_${lineUserId}_${Date.now()}`;
+              await replyMessage(event.replyToken, [
+                {
+                  type: "text",
+                  text: getMessage(userLanguage, 'linkAccount.title') + '\n\n' + getMessage(userLanguage, 'linkAccount.message', linkToken),
+                },
+              ]);
+              break;
+            }
+
+            try {
+              // Send processing message
+              await replyMessage(event.replyToken, [
+                {
+                  type: "text",
+                  text: getMessage(userLanguage, 'voiceTherapy.processing'),
+                },
+              ]);
+
+              // Download audio from LINE
+              const audioResponse = await fetch(
+                `https://api-data.line.me/v2/bot/message/${event.message.id}/content`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
+                  },
+                }
+              );
+
+              if (!audioResponse.ok) {
+                throw new Error(`Failed to download audio: ${audioResponse.statusText}`);
+              }
+
+              // Convert to base64
+              const audioBuffer = await audioResponse.arrayBuffer();
+              const audioBase64 = btoa(
+                String.fromCharCode(...new Uint8Array(audioBuffer))
+              );
+
+              console.log(`Audio downloaded, size: ${audioBuffer.byteLength} bytes`);
+
+              // Transcribe audio
+              const transcribeResponse = await fetch(
+                `${SUPABASE_URL}/functions/v1/transcribe-audio`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+                  },
+                  body: JSON.stringify({
+                    audio: audioBase64,
+                    language: userLanguage,
+                  }),
+                }
+              );
+
+              if (!transcribeResponse.ok) {
+                throw new Error(`Transcription failed: ${await transcribeResponse.text()}`);
+              }
+
+              const { text: transcribedText } = await transcribeResponse.json();
+              console.log(`Transcribed text: ${transcribedText}`);
+
+              // Get or create conversation history
+              const { data: existingConversation } = await supabase
+                .from("thought_journal")
+                .select("*")
+                .eq("user_id", linkedAccount.user_id)
+                .order("updated_at", { ascending: false })
+                .limit(1)
+                .single();
+
+              let conversationHistory = [];
+              if (existingConversation?.conversation_data) {
+                conversationHistory = Array.isArray(existingConversation.conversation_data)
+                  ? existingConversation.conversation_data
+                  : [];
+              }
+
+              // Process through CBT assistant
+              const cbtResponse = await fetch(
+                `${SUPABASE_URL}/functions/v1/cbt-assistant`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+                  },
+                  body: JSON.stringify({
+                    message: transcribedText,
+                    conversationHistory,
+                  }),
+                }
+              );
+
+              if (!cbtResponse.ok) {
+                throw new Error(`CBT processing failed: ${await cbtResponse.text()}`);
+              }
+
+              const { response: cbtText } = await cbtResponse.json();
+              console.log(`CBT response generated`);
+
+              // Update conversation history
+              conversationHistory.push(
+                { role: "user", content: transcribedText },
+                { role: "assistant", content: cbtText }
+              );
+
+              // Save or update conversation
+              if (existingConversation) {
+                await supabase
+                  .from("thought_journal")
+                  .update({
+                    conversation_data: conversationHistory,
+                    summary: cbtText.substring(0, 200),
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", existingConversation.id);
+              } else {
+                await supabase
+                  .from("thought_journal")
+                  .insert({
+                    user_id: linkedAccount.user_id,
+                    conversation_data: conversationHistory,
+                    summary: cbtText.substring(0, 200),
+                    title: "Voice Thought Buddy Session",
+                  });
+              }
+
+              // Generate speech response
+              const ttsResponse = await fetch(
+                `${SUPABASE_URL}/functions/v1/text-to-speech-cbt`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+                  },
+                  body: JSON.stringify({
+                    text: cbtText,
+                    voice: "alloy",
+                  }),
+                }
+              );
+
+              if (!ttsResponse.ok) {
+                throw new Error(`TTS failed: ${await ttsResponse.text()}`);
+              }
+
+              const { audioContent } = await ttsResponse.json();
+              console.log(`Audio response generated`);
+
+              // Upload audio to storage
+              const audioFileName = `voice-responses/${linkedAccount.user_id}/${Date.now()}.mp3`;
+              const audioBytes = Uint8Array.from(atob(audioContent), c => c.charCodeAt(0));
+
+              const { error: uploadError } = await supabase.storage
+                .from("drawings")
+                .upload(audioFileName, audioBytes, {
+                  contentType: "audio/mpeg",
+                  upsert: true,
+                });
+
+              if (uploadError) {
+                throw new Error(`Failed to upload audio: ${uploadError.message}`);
+              }
+
+              // Get public URL
+              const { data: urlData } = supabase.storage
+                .from("drawings")
+                .getPublicUrl(audioFileName);
+
+              console.log(`Audio uploaded: ${urlData.publicUrl}`);
+
+              // Send audio response via LINE
+              const pushResponse = await fetch("https://api.line.me/v2/bot/message/push", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
+                },
+                body: JSON.stringify({
+                  to: lineUserId,
+                  messages: [
+                    {
+                      type: "audio",
+                      originalContentUrl: urlData.publicUrl,
+                      duration: 60000, // 60 seconds max
+                    },
+                  ],
+                }),
+              });
+
+              if (!pushResponse.ok) {
+                console.error(`Failed to send audio: ${await pushResponse.text()}`);
+              }
+
+              console.log(`Voice thought buddy session completed for ${lineUserId}`);
+            } catch (error) {
+              console.error("Error processing voice message:", error);
+              // Send error message to user
+              const pushErrorResponse = await fetch("https://api.line.me/v2/bot/message/push", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`,
+                },
+                body: JSON.stringify({
+                  to: lineUserId,
+                  messages: [
+                    {
+                      type: "text",
+                      text: getMessage(userLanguage, 'errors.voiceProcessingFailed'),
+                    },
+                  ],
+                }),
+              });
+            }
+            break;
+          }
+          
           if (event.message?.type === "text") {
             console.log(
               `Received message from ${lineUserId}: ${event.message.text}`
