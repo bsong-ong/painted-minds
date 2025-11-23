@@ -26,15 +26,10 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get all linked LINE accounts with user language preferences
+    // Get all linked LINE accounts
     const { data: lineAccounts, error: fetchError } = await supabase
       .from('line_accounts')
-      .select(`
-        line_user_id,
-        display_name,
-        user_id,
-        profiles!inner(language)
-      `);
+      .select('line_user_id, display_name, user_id');
 
     if (fetchError) {
       console.error('Error fetching LINE accounts:', fetchError);
@@ -51,11 +46,23 @@ serve(async (req) => {
 
     console.log(`Sending reminders to ${lineAccounts.length} users`);
 
+    // Get all user profiles for language preferences
+    const userIds = lineAccounts.map((acc: any) => acc.user_id);
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, language')
+      .in('id', userIds);
+
+    // Create a map of user_id to language
+    const languageMap = new Map(
+      profiles?.map((p: any) => [p.id, p.language || 'en']) || []
+    );
+
     // Send reminder to each user
     const sendPromises = lineAccounts.map(async (account: any) => {
       try {
         // Get user's language preference (default to 'en' if not set)
-        const userLanguage: Language = account.profiles?.language || 'en';
+        const userLanguage: Language = languageMap.get(account.user_id) || 'en';
         
         const message = {
           to: account.line_user_id,
