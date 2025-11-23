@@ -58,18 +58,63 @@ serve(async (req) => {
       profiles?.map((p: any) => [p.id, p.language || 'en']) || []
     );
 
+    // Generate AI quotes for both languages
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      console.error('LOVABLE_API_KEY not configured');
+      throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    const generateQuote = async (language: string) => {
+      const prompt = language === 'th' 
+        ? 'สร้างคำคมสั้นๆ ที่สร้างแรงบันดาลใจเกี่ยวกับความกตัญญูหรือความสุข ไม่เกิน 2 ประโยค ตอบเป็นภาษาไทย'
+        : 'Generate a short, inspiring quote about gratitude or happiness. Maximum 2 sentences. Respond in English.';
+
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: 'You are a mindful assistant that creates inspiring quotes.' },
+            { role: 'user', content: prompt }
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`AI quote generation failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content.trim();
+    };
+
+    const [quoteEn, quoteTh] = await Promise.all([
+      generateQuote('en'),
+      generateQuote('th')
+    ]);
+
+    console.log('Generated quotes:', { en: quoteEn, th: quoteTh });
+
     // Send reminder to each user
     const sendPromises = lineAccounts.map(async (account: any) => {
       try {
         // Get user's language preference (default to 'en' if not set)
         const userLanguage: Language = languageMap.get(account.user_id) || 'en';
+        const quote = userLanguage === 'th' ? quoteTh : quoteEn;
         
         const message = {
           to: account.line_user_id,
           messages: [
             {
               type: 'text',
-              text: getMessage(userLanguage, 'dailyReminder.title') + '\n\n' + getMessage(userLanguage, 'dailyReminder.text')
+              text: getMessage(userLanguage, 'dailyReminder.title') + '\n\n' + 
+                    getMessage(userLanguage, 'dailyReminder.text') + '\n\n' +
+                    `✨ ${quote}`
             }
           ]
         };
