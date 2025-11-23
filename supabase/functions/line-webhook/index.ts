@@ -225,7 +225,7 @@ serve(async (req) => {
 
               console.log(`Audio downloaded, size: ${audioBuffer.byteLength} bytes`);
 
-              // Transcribe audio
+              // Transcribe audio (LINE sends M4A format)
               const transcribeResponse = await fetch(
                 `${SUPABASE_URL}/functions/v1/transcribe-audio`,
                 {
@@ -237,6 +237,7 @@ serve(async (req) => {
                   body: JSON.stringify({
                     audio: audioBase64,
                     language: userLanguage,
+                    contentType: "audio/m4a",
                   }),
                 }
               );
